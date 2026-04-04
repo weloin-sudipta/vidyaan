@@ -1,0 +1,144 @@
+{
+    "doctype": "DocType",
+    "name": "Library Member",
+    "module": "Library",
+    "title_field": "member_name",
+    "autoname": "format:LIB-M-{#####}",
+    "fields": [
+        {
+            "fieldname": "basic_section",
+            "fieldtype": "Section Break",
+            "label": "Basic Info"
+        },
+        {
+            "fieldname": "user",
+            "fieldtype": "Link",
+            "label": "User",
+            "options": "User"
+        },
+        {
+            "fieldname": "member_name",
+            "fieldtype": "Data",
+            "label": "Member Name",
+            "reqd": 1,
+            "in_list_view": 1
+        },
+        {
+            "fieldname": "member_id",
+            "fieldtype": "Data",
+            "label": "Member ID",
+            "unique": 1,
+            "read_only": 1
+        },
+        {
+            "fieldname": "member_type",
+            "fieldtype": "Select",
+            "label": "Member Type",
+            "options": "Student\nTeacher\nStaff\nExternal",
+            "reqd": 1
+        },
+        {
+            "fieldname": "library",
+            "fieldtype": "Link",
+            "label": "Library",
+            "options": "Library",
+            "reqd": 1
+        },
+        {
+            "fieldname": "col_break_1",
+            "fieldtype": "Column Break"
+        },
+        {
+            "fieldname": "phone",
+            "fieldtype": "Data",
+            "label": "Phone"
+        },
+        {
+            "fieldname": "email",
+            "fieldtype": "Data",
+            "label": "Email"
+        },
+        {
+            "fieldname": "join_date",
+            "fieldtype": "Date",
+            "label": "Join Date",
+            "default": "Today"
+        },
+
+        {
+            "fieldname": "membership_section",
+            "fieldtype": "Section Break",
+            "label": "Membership Details"
+        },
+        {
+            "fieldname": "status",
+            "fieldtype": "Select",
+            "label": "Status",
+            "options": "Active\nSuspended\nExpired",
+            "default": "Active",
+            "in_list_view": 1
+        },
+        {
+            "fieldname": "max_books_allowed",
+            "fieldtype": "Int",
+            "label": "Max Books Allowed",
+            "default": 3
+        },
+        {
+            "fieldname": "current_issued_books",
+            "fieldtype": "Int",
+            "label": "Current Issued Books",
+            "read_only": 1
+        },
+
+        {
+            "fieldname": "col_break_2",
+            "fieldtype": "Column Break"
+        },
+        {
+            "fieldname": "membership_id_card",
+            "fieldtype": "Attach Image",
+            "label": "ID Card"
+        },
+        {
+            "fieldname": "barcode",
+            "fieldtype": "Data",
+            "label": "Barcode"
+        },
+
+        {
+            "fieldname": "tracking_section",
+            "fieldtype": "Section Break",
+            "label": "Tracking"
+        },
+        {
+            "fieldname": "last_activity",
+            "fieldtype": "Datetime",
+            "label": "Last Activity"
+        }
+    ],
+
+    "permissions": [
+        {
+            "role": "System Manager",
+            "read": 1,
+            "write": 1,
+            "create": 1,
+            "delete": 1
+        },
+        {
+            "role": "Librarian",
+            "read": 1,
+            "write": 1,
+            "create": 1
+        },
+        {
+            "role": "Student",
+            "read": 1
+        },
+        {
+            "role": "Instructor",
+            "read": 1
+        }
+    ]
+}

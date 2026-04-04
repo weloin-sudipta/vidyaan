@@ -1,0 +1,332 @@
+{% set upcoming_plans = frappe.db.sql("""
+    SELECT
+        ap.name AS plan_id,
+        ap.assessment_name,
+        c.course_name AS course_name,
+        ag.assessment_group_name AS group_name,
+        ap.schedule_date,
+        ap.from_time,
+        ap.to_time,
+        ap.room,
+        ap.examiner_name
+    FROM `tabAssessment Plan` ap
+    JOIN `tabStudent Group Student` sgs ON sgs.parent = ap.student_group
+    JOIN `tabCourse` c ON c.name = ap.course
+    JOIN `tabAssessment Group` ag ON ag.name = ap.assessment_group
+    WHERE sgs.student = %(student)s
+      AND ap.docstatus = 1
+      AND ag.parent_assessment_group IN (
+          SELECT name FROM `tabAssessment Group` WHERE assessment_group_name = 'Exams'
+      )
+    ORDER BY ap.schedule_date, ap.from_time
+""", {"student": doc.name}, as_dict=True) %}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admit Card – {{ doc.student_name }}</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap');
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #f0f4ff;
+            padding: 30px;
+            color: #1e293b;
+        }
+
+        .admit-wrapper {
+            max-width: 780px;
+            margin: 0 auto;
+        }
+
+        /* ── TOP HEADER CARD ── */
+        .header-card {
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+            border-radius: 20px;
+            padding: 28px 36px;
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 40px rgba(79, 70, 229, 0.4);
+        }
+
+        .header-left h1 {
+            font-size: 26px;
+            font-weight: 900;
+            letter-spacing: -0.5px;
+        }
+
+        .header-left p {
+            font-size: 11px;
+            opacity: 0.75;
+            margin-top: 4px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+        }
+
+        .header-badge {
+            background: rgba(255,255,255,0.2);
+            border-radius: 12px;
+            padding: 12px 20px;
+            text-align: center;
+            backdrop-filter: blur(10px);
+        }
+
+        .header-badge span {
+            display: block;
+            font-size: 10px;
+            opacity: 0.7;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .header-badge strong {
+            font-size: 18px;
+            font-weight: 800;
+        }
+
+        /* ── STUDENT INFO CARD ── */
+        .student-card {
+            background: white;
+            border-radius: 16px;
+            padding: 24px 32px;
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 16px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 20px rgba(0,0,0,0.06);
+        }
+
+        .info-block label {
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+            color: #94a3b8;
+            display: block;
+            margin-bottom: 4px;
+        }
+
+        .info-block span {
+            font-size: 14px;
+            font-weight: 600;
+            color: #1e293b;
+        }
+
+        /* ── EXAM TABLE ── */
+        .exams-section h2 {
+            font-size: 13px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: #64748b;
+            margin-bottom: 12px;
+        }
+
+        .exam-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0 8px;
+        }
+
+        .exam-table thead th {
+            font-size: 10px;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+            color: #94a3b8;
+            padding: 0 16px 8px;
+            text-align: left;
+        }
+
+        .exam-table tbody tr {
+            background: white;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+            border-radius: 12px;
+        }
+
+        .exam-table tbody td {
+            padding: 14px 16px;
+            font-size: 13px;
+            color: #334155;
+        }
+
+        .exam-table tbody tr td:first-child {
+            border-radius: 12px 0 0 12px;
+            font-weight: 700;
+            color: #4f46e5;
+        }
+
+        .exam-table tbody tr td:last-child {
+            border-radius: 0 12px 12px 0;
+        }
+
+        .time-pill {
+            display: inline-block;
+            background: #ede9fe;
+            color: #5b21b6;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+            padding: 3px 10px;
+        }
+
+        .room-pill {
+            display: inline-block;
+            background: #dcfce7;
+            color: #166534;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+            padding: 3px 10px;
+        }
+
+        .no-exams {
+            background: white;
+            border-radius: 14px;
+            padding: 40px;
+            text-align: center;
+            color: #94a3b8;
+            font-size: 14px;
+        }
+
+        /* ── FOOTER ── */
+        .footer {
+            margin-top: 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 10px;
+            color: #94a3b8;
+        }
+
+        .signature-box {
+            text-align: center;
+        }
+
+        .sig-line {
+            width: 160px;
+            height: 1px;
+            background: #cbd5e1;
+            margin: 0 auto 4px;
+        }
+
+        @media print {
+            body { background: white; padding: 10px; }
+        }
+    </style>
+</head>
+<body>
+<div class="admit-wrapper">
+
+    <!-- Header -->
+    <div class="header-card">
+        <div class="header-left">
+            <h1>Admit Card</h1>
+            <p>Official Examination Entry Pass</p>
+        </div>
+        <div class="header-badge">
+            <span>Academic Year</span>
+            <strong>{{ doc.get("academic_year") or "Current" }}</strong>
+        </div>
+    </div>
+
+    <!-- Student Info -->
+    <div class="student-card">
+        <div class="info-block">
+            <label>Student Name</label>
+            <span>{{ doc.student_name or doc.name }}</span>
+        </div>
+        <div class="info-block">
+            <label>Student ID</label>
+            <span>{{ doc.name }}</span>
+        </div>
+        <div class="info-block">
+            <label>Program</label>
+            <span>{{ doc.get("program") or "—" }}</span>
+        </div>
+        <div class="info-block">
+            <label>Email</label>
+            <span>{{ doc.student_email_id or "—" }}</span>
+        </div>
+        <div class="info-block">
+            <label>Student Mobile No</label>
+            <span>{{ doc.student_mobile_number or "—" }}</span>
+        </div>
+        <div class="info-block">
+            <label>Date of Birth</label>
+            <span>{{ frappe.utils.formatdate(doc.date_of_birth) if doc.date_of_birth else "—" }}</span>
+        </div>
+    </div>
+
+    <!-- Exam Schedule Table -->
+    <div class="exams-section">
+        <h2>📋 Examination Schedule</h2>
+
+        {% if upcoming_plans %}
+        <table class="exam-table">
+            <thead>
+                <tr>
+                    <th>Subject</th>
+                    <th>Exam Type</th>
+                    <th>Date</th>
+                    <th>Time</th>
+                    <th>Room</th>
+                    <th>Examiner</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for plan in upcoming_plans %}
+                <tr>
+                    <td>{{ plan.course_name }}</td>
+                    <td>{{ plan.group_name }}</td>
+                    <td>{{ frappe.utils.formatdate(plan.schedule_date) }}</td>
+                    <td>
+                        <span class="time-pill">
+                            {{ plan.from_time[:5] }} – {{ plan.to_time[:5] }}
+                        </span>
+                    </td>
+                    <td>
+                        {% if plan.room %}
+                        <span class="room-pill">{{ plan.room }}</span>
+                        {% else %}
+                        —
+                        {% endif %}
+                    </td>
+                    <td>{{ plan.examiner_name or "—" }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <div class="no-exams">
+            No upcoming examinations scheduled for this student.
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Footer Signatures -->
+    <div class="footer">
+        <div class="signature-box">
+            <div class="sig-line"></div>
+            Student Signature
+        </div>
+        <div style="text-align:center; font-size:10px; color:#cbd5e1;">
+            This admit card is auto-generated by Vidyaan ERP
+        </div>
+        <div class="signature-box">
+            <div class="sig-line"></div>
+            Institute Admin Signature
+        </div>
+    </div>
+
+</div>
+</body>
+</html>

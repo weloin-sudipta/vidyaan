@@ -1,0 +1,146 @@
+{
+ "actions": [],
+ "creation": "2026-03-31 12:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "issingle": 1,
+ "field_order": [
+  "general_section",
+  "company",
+  "default_academic_year",
+  "column_break_gen",
+  "default_academic_term",
+  "routine_section",
+  "default_periods_per_day",
+  "default_days",
+  "column_break_routine",
+  "max_subject_per_day",
+  "max_teacher_periods_per_day",
+  "min_teacher_weekly_load",
+  "max_teacher_weekly_load",
+  "solver_timeout",
+  "period_timings_section",
+  "period_timings"
+ ],
+ "fields": [
+  {
+   "fieldname": "general_section",
+   "fieldtype": "Section Break",
+   "label": "General Settings"
+  },
+  {
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "label": "Default Company",
+   "options": "Company"
+  },
+  {
+   "fieldname": "default_academic_year",
+   "fieldtype": "Link",
+   "label": "Default Academic Year",
+   "options": "Academic Year"
+  },
+  {
+   "fieldname": "column_break_gen",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "default_academic_term",
+   "fieldtype": "Link",
+   "label": "Default Academic Term",
+   "options": "Academic Term"
+  },
+  {
+   "fieldname": "routine_section",
+   "fieldtype": "Section Break",
+   "label": "Routine Generation Defaults"
+  },
+  {
+   "default": "5",
+   "fieldname": "default_periods_per_day",
+   "fieldtype": "Int",
+   "label": "Default Periods Per Day"
+  },
+  {
+   "default": "Monday,Tuesday,Wednesday,Thursday,Friday",
+   "fieldname": "default_days",
+   "fieldtype": "Data",
+   "label": "Default School Days",
+   "description": "Comma-separated: Monday,Tuesday,Wednesday,Thursday,Friday"
+  },
+  {
+   "fieldname": "column_break_routine",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "2",
+   "fieldname": "max_subject_per_day",
+   "fieldtype": "Int",
+   "label": "Max Same Subject Per Day (per section)"
+  },
+  {
+   "default": "4",
+   "fieldname": "max_teacher_periods_per_day",
+   "fieldtype": "Int",
+   "label": "Max Teacher Periods Per Day"
+  },
+  {
+   "default": "8",
+   "fieldname": "min_teacher_weekly_load",
+   "fieldtype": "Int",
+   "label": "Min Teacher Weekly Load"
+  },
+  {
+   "default": "18",
+   "fieldname": "max_teacher_weekly_load",
+   "fieldtype": "Int",
+   "label": "Max Teacher Weekly Load"
+  },
+  {
+   "default": "30",
+   "fieldname": "solver_timeout",
+   "fieldtype": "Int",
+   "label": "Solver Timeout (seconds)"
+  },
+  {
+   "fieldname": "period_timings_section",
+   "fieldtype": "Section Break",
+   "label": "Period Timings"
+  },
+  {
+   "fieldname": "period_timings",
+   "fieldtype": "Table",
+   "label": "Period Timings",
+   "options": "Period Timing"
+  }
+ ],
+ "links": [],
+ "modified": "2026-03-31 12:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Vidyaan",
+ "name": "Vidyaan Settings",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "read": 1,
+   "role": "System Administrator",
+   "write": 1
+  },
+  {
+   "create": 1,
+   "read": 1,
+   "role": "System Manager",
+   "write": 1
+  },
+  {
+   "create": 1,
+   "read": 1,
+   "role": "Institute Admin",
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

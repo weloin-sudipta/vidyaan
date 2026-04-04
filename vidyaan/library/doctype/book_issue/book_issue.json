@@ -1,0 +1,152 @@
+{
+    "actions": [],
+    "allow_rename": 1,
+    "autoname": "format:ISS-{#####}",
+    "doctype": "DocType",
+    "editable_grid": 1,
+    "engine": "InnoDB",
+    "field_order": [
+        "library",
+        "member",
+        "book",
+        "book_copy",
+        "cb1",
+        "issue_date",
+        "due_date",
+        "return_date",
+        "sb1",
+        "status",
+        "fine_amount",
+        "book_request",
+        "renew_requested",
+        "renewal_count"
+    ],
+    "fields": [
+        {
+            "fieldname": "library",
+            "fieldtype": "Link",
+            "in_list_view": 1,
+            "label": "Library",
+            "options": "Library",
+            "reqd": 1
+        },
+        {
+            "fieldname": "member",
+            "fieldtype": "Link",
+            "in_list_view": 1,
+            "label": "Member",
+            "options": "Library Member",
+            "reqd": 1
+        },
+        {
+            "fieldname": "book",
+            "fieldtype": "Link",
+            "in_list_view": 1,
+            "label": "Book",
+            "options": "Book",
+            "reqd": 1
+        },
+        {
+            "fieldname": "book_copy",
+            "fieldtype": "Link",
+            "label": "Book Copy",
+            "options": "Book Copy",
+            "reqd": 1
+        },
+        {
+            "fieldname": "cb1",
+            "fieldtype": "Column Break"
+        },
+        {
+            "default": "Today",
+            "fieldname": "issue_date",
+            "fieldtype": "Date",
+            "in_list_view": 1,
+            "label": "Issue Date",
+            "reqd": 1
+        },
+        {
+            "fieldname": "due_date",
+            "fieldtype": "Date",
+            "in_list_view": 1,
+            "label": "Due Date",
+            "reqd": 1
+        },
+        {
+            "fieldname": "return_date",
+            "fieldtype": "Date",
+            "label": "Return Date"
+        },
+        {
+            "fieldname": "sb1",
+            "fieldtype": "Section Break"
+        },
+        {
+            "default": "Issued",
+            "fieldname": "status",
+            "fieldtype": "Select",
+            "in_list_view": 1,
+            "label": "Status",
+            "options": "Issued\nReturned\nOverdue"
+        },
+        {
+            "fieldname": "fine_amount",
+            "fieldtype": "Currency",
+            "label": "Fine Amount",
+            "read_only": 1
+        },
+        {
+            "fieldname": "book_request",
+            "fieldtype": "Link",
+            "label": "Book Request",
+            "options": "Book Request",
+            "read_only": 1
+        },
+        {
+            "fieldname": "renew_requested",
+            "fieldtype": "Check",
+            "label": "Renew Requested",
+            "default": "0",
+            "read_only": 1
+        },
+        {
+            "fieldname": "renewal_count",
+            "fieldtype": "Int",
+            "label": "Renewal Count",
+            "default": "0",
+            "read_only": 1
+        }
+    ],
+    "index_web_pages_for_search": 1,
+    "links": [],
+    "module": "Library",
+    "name": "Book Issue",
+    "naming_rule": "Expression (old style)",
+    "owner": "Administrator",
+    "permissions": [
+        {
+            "create": 1,
+            "delete": 1,
+            "read": 1,
+            "role": "System Manager",
+            "write": 1
+        },
+        {
+            "create": 1,
+            "delete": 1,
+            "read": 1,
+            "role": "Librarian",
+            "write": 1
+        },
+        {
+            "create": 1,
+            "delete": 1,
+            "read": 1,
+            "role": "Student",
+            "write": 1
+        }
+    ],
+    "sort_field": "modified",
+    "sort_order": "DESC",
+    "title_field": "member"
+}

@@ -1,0 +1,27 @@
+{
+  "name": "frontend",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "build": "nuxt build",
+    "dev": "NODE_OPTIONS=--max-old-space-size=4096 nuxt dev",
+    "generate": "nuxt generate",
+    "preview": "nuxt preview",
+    "postinstall": "nuxt prepare"
+  },
+  "dependencies": {
+    "@nuxtjs/color-mode": "^4.0.0",
+    "apexcharts": "^5.10.0",
+    "frappe-ui": "^0.1.265",
+    "nuxt": "^4.3.1",
+    "playwright": "^1.58.2",
+    "vue": "^3.5.28",
+    "vue-router": "^4.6.4"
+  },
+  "devDependencies": {
+    "@nuxtjs/tailwindcss": "^6.14.0",
+    "@types/node": "^25.5.0",
+    "@types/three": "^0.183.1",
+    "three": "^0.183.2"
+  }
+}

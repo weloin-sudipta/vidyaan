@@ -1,0 +1,279 @@
+{
+    "actions": [],
+    "allow_rename": 0,
+    "autoname": "naming_series:",
+    "creation": "2026-04-03 10:00:00.000000",
+    "doctype": "DocType",
+    "engine": "InnoDB",
+    "is_submittable": 1,
+    "naming_rule": "By \"Naming Series\" field",
+    "field_order": [
+        "student_section",
+        "naming_series",
+        "student",
+        "student_name",
+        "program",
+        "academic_year",
+        "cb1",
+        "category",
+        "priority",
+        "request_date",
+        "status",
+        "workflow_state",
+        "details_section",
+        "subject",
+        "description",
+        "attachments_section",
+        "attachment",
+        "response_section",
+        "assigned_to",
+        "response",
+        "response_date",
+        "cb2",
+        "resolved_by",
+        "resolution_date",
+        "resolution_remarks",
+        "amended_from"
+    ],
+    "fields": [
+        {
+            "fieldname": "student_section",
+            "fieldtype": "Section Break",
+            "label": "Student Information"
+        },
+        {
+            "fieldname": "naming_series",
+            "fieldtype": "Select",
+            "label": "Naming Series",
+            "options": "EDU-REQ-.YYYY.-.#####",
+            "default": "EDU-REQ-.YYYY.-.#####",
+            "reqd": 1,
+            "no_copy": 1,
+            "hidden": 1
+        },
+        {
+            "fieldname": "student",
+            "fieldtype": "Link",
+            "label": "Student",
+            "options": "Student",
+            "reqd": 1,
+            "in_list_view": 1
+        },
+        {
+            "fieldname": "student_name",
+            "fieldtype": "Data",
+            "label": "Student Name",
+            "read_only": 1,
+            "fetch_from": "student.student_name",
+            "in_list_view": 1
+        },
+        {
+            "fieldname": "program",
+            "fieldtype": "Link",
+            "label": "Program",
+            "options": "Program",
+            "read_only": 0
+        },
+        {
+            "fieldname": "academic_year",
+            "fieldtype": "Link",
+            "label": "Academic Year",
+            "options": "Academic Year"
+        },
+        {
+            "fieldname": "cb1",
+            "fieldtype": "Column Break"
+        },
+        {
+            "fieldname": "category",
+            "fieldtype": "Select",
+            "label": "Category",
+            "options": "General\nAcademic\nAdministrative\nFacility\nComplaint\nPermission\nOther",
+            "reqd": 1,
+            "in_list_view": 1
+        },
+        {
+            "fieldname": "priority",
+            "fieldtype": "Select",
+            "label": "Priority",
+            "options": "Low\nMedium\nHigh\nUrgent",
+            "default": "Medium",
+            "in_list_view": 1
+        },
+        {
+            "fieldname": "request_date",
+            "fieldtype": "Date",
+            "label": "Request Date",
+            "default": "Today",
+            "reqd": 1,
+            "read_only": 1
+        },
+        {
+            "fieldname": "status",
+            "fieldtype": "Select",
+            "label": "Status",
+            "options": "Draft\nOpen\nIn Review\nApproved\nRejected\nResolved\nClosed",
+            "default": "Draft",
+            "in_list_view": 1,
+            "read_only": 1,
+            "allow_on_submit": 1
+        },
+        {
+            "fieldname": "workflow_state",
+            "fieldtype": "Link",
+            "label": "Workflow State",
+            "options": "Workflow State",
+            "hidden": 1,
+            "read_only": 1,
+            "allow_on_submit": 1,
+            "no_copy": 1
+        },
+        {
+            "fieldname": "details_section",
+            "fieldtype": "Section Break",
+            "label": "Request Details"
+        },
+        {
+            "fieldname": "subject",
+            "fieldtype": "Data",
+            "label": "Subject",
+            "reqd": 1,
+            "in_list_view": 1
+        },
+        {
+            "fieldname": "description",
+            "fieldtype": "Text Editor",
+            "label": "Description",
+            "reqd": 1
+        },
+        {
+            "fieldname": "attachments_section",
+            "fieldtype": "Section Break",
+            "label": "Attachments"
+        },
+        {
+            "fieldname": "attachment",
+            "fieldtype": "Attach",
+            "label": "Attachment"
+        },
+        {
+            "fieldname": "response_section",
+            "fieldtype": "Section Break",
+            "label": "Response",
+            "description": "Filled by the authority handling this request"
+        },
+        {
+            "fieldname": "assigned_to",
+            "fieldtype": "Link",
+            "label": "Assigned To",
+            "options": "User",
+            "allow_on_submit": 1
+        },
+        {
+            "fieldname": "response",
+            "fieldtype": "Text Editor",
+            "label": "Response",
+            "allow_on_submit": 1
+        },
+        {
+            "fieldname": "response_date",
+            "fieldtype": "Datetime",
+            "label": "Response Date",
+            "read_only": 1,
+            "allow_on_submit": 1
+        },
+        {
+            "fieldname": "cb2",
+            "fieldtype": "Column Break"
+        },
+        {
+            "fieldname": "resolved_by",
+            "fieldtype": "Link",
+            "label": "Resolved By",
+            "options": "User",
+            "read_only": 1,
+            "allow_on_submit": 1
+        },
+        {
+            "fieldname": "resolution_date",
+            "fieldtype": "Datetime",
+            "label": "Resolution Date",
+            "read_only": 1,
+            "allow_on_submit": 1
+        },
+        {
+            "fieldname": "resolution_remarks",
+            "fieldtype": "Small Text",
+            "label": "Resolution Remarks",
+            "allow_on_submit": 1
+        },
+        {
+            "fieldname": "amended_from",
+            "fieldtype": "Link",
+            "label": "Amended From",
+            "no_copy": 1,
+            "options": "Student Request",
+            "print_hide": 1,
+            "read_only": 1
+        }
+    ],
+    "index_web_pages_for_search": 1,
+    "links": [],
+    "modified": "2026-04-03 10:00:00.000000",
+    "modified_by": "Administrator",
+    "module": "Vidyaan",
+    "name": "Student Request",
+    "owner": "Administrator",
+    "permissions": [
+        {
+            "create": 1,
+            "delete": 1,
+            "email": 1,
+            "export": 1,
+            "print": 1,
+            "read": 1,
+            "report": 1,
+            "role": "System Manager",
+            "share": 1,
+            "submit": 1,
+            "cancel": 1,
+            "write": 1
+        },
+        {
+            "create": 1,
+            "delete": 1,
+            "email": 1,
+            "export": 1,
+            "print": 1,
+            "read": 1,
+            "report": 1,
+            "role": "Institute Admin",
+            "share": 1,
+            "submit": 1,
+            "cancel": 1,
+            "write": 1
+        },
+        {
+            "email": 1,
+            "print": 1,
+            "read": 1,
+            "report": 1,
+            "role": "Instructor",
+            "write": 1,
+            "submit": 1,
+            "allow_on_submit": 1
+        },
+        {
+            "create": 1,
+            "email": 1,
+            "print": 1,
+            "read": 1,
+            "role": "Student"
+        }
+    ],
+    "sort_field": "modified",
+    "sort_order": "DESC",
+    "states": [],
+    "title_field": "subject",
+    "track_changes": 1
+}

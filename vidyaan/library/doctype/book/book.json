@@ -1,0 +1,184 @@
+{
+    "actions": [],
+    "autoname": "hash",
+    "doctype": "DocType",
+    "engine": "InnoDB",
+    "fields": [
+        {
+            "fieldname": "basic_info_section",
+            "fieldtype": "Section Break",
+            "label": "Basic Information"
+        },
+        {
+            "fieldname": "title",
+            "fieldtype": "Data",
+            "in_list_view": 1,
+            "label": "Title",
+            "reqd": 1
+        },
+        {
+            "fieldname": "author",
+            "fieldtype": "Data",
+            "in_list_view": 1,
+            "label": "Author"
+        },
+        {
+            "fieldname": "col_break_1",
+            "fieldtype": "Column Break"
+        },
+        {
+            "fieldname": "language",
+            "fieldtype": "Data",
+            "label": "Language"
+        },
+        {
+            "fieldname": "book_type",
+            "fieldtype": "Select",
+            "label": "Book Type",
+            "options": "Physical\nDigital\nBoth",
+            "reqd": 1
+        },
+        {
+            "fieldname": "publication_details_section",
+            "fieldtype": "Section Break",
+            "label": "Publication Details"
+        },
+        {
+            "fieldname": "isbn",
+            "fieldtype": "Data",
+            "in_list_view": 1,
+            "label": "ISBN"
+        },
+        {
+            "fieldname": "publisher",
+            "fieldtype": "Data",
+            "label": "Publisher"
+        },
+        {
+            "fieldname": "publication_year",
+            "fieldtype": "Int",
+            "in_list_view": 1,
+            "label": "Publication Year"
+        },
+        {
+            "fieldname": "col_break_2",
+            "fieldtype": "Column Break"
+        },
+        {
+            "fieldname": "category",
+            "fieldtype": "Link",
+            "in_list_view": 1,
+            "label": "Category",
+            "options": "Book Category"
+        },
+        {
+            "fieldname": "edition",
+            "fieldtype": "Data",
+            "label": "Edition"
+        },
+        {
+            "fieldname": "upload_date",
+            "fieldtype": "Datetime",
+            "in_list_view": 1,
+            "label": "Upload Date"
+        },
+        {
+            "fieldname": "shelf",
+            "fieldtype": "Data",
+            "label": "Shelf"
+        },
+        {
+            "fieldname": "digital_data_section",
+            "fieldtype": "Section Break",
+            "label": "Digital Data",
+            "depends_on": "eval:in_list(['Digital','Both'], doc.book_type)"
+        },
+        {
+            "fieldname": "external_link",
+            "fieldtype": "Data",
+            "label": "External Link",
+            "depends_on": "eval:in_list(['Digital','Both'], doc.book_type)"
+        },
+        {
+            "fieldname": "col_break_4",
+            "fieldtype": "Column Break"
+        },
+        {
+            "fieldname": "book_file",
+            "fieldtype": "Attach",
+            "label": "Book File (PDF/Doc)",
+            "depends_on": "eval:in_list(['Digital','Both'], doc.book_type)"
+        },
+        {
+            "fieldname": "col_break_5",
+            "fieldtype": "Column Break"
+        },
+        {
+            "fieldname": "media_section",
+            "fieldtype": "Section Break",
+            "label": "Media & Tags"
+        },
+        {
+            "fieldname": "cover_image",
+            "fieldtype": "Attach Image",
+            "label": "Cover Image"
+        },
+        {
+            "fieldname": "col_break_6",
+            "fieldtype": "Column Break"
+        },
+        {
+            "fieldname": "tags",
+            "fieldtype": "Table MultiSelect",
+            "label": "Tags",
+            "options": "Book Tag"
+        },
+        {
+            "fieldname": "description_section",
+            "fieldtype": "Section Break",
+            "label": "Description"
+        },
+        {
+            "fieldname": "library",
+            "fieldtype": "Link",
+            "label": "Library",
+            "options": "Library",
+            "reqd": 1
+        },
+        {
+            "fieldname": "description",
+            "fieldtype": "Small Text",
+            "label": "Description"
+        }
+    ],
+    "index_web_pages_for_search": 1,
+    "module": "Library",
+    "name": "Book",
+    "naming_rule": "Random",
+    "permissions": [
+        {
+            "role": "System Manager",
+            "read": 1,
+            "write": 1,
+            "create": 1,
+            "delete": 1
+        },
+        {
+            "role": "Librarian",
+            "read": 1,
+            "write": 1,
+            "create": 1
+        },
+        {
+            "role": "Student",
+            "read": 1
+        },
+        {
+            "role": "Instructor",
+            "read": 1
+        }
+    ],
+    "sort_field": "upload_date",
+    "sort_order": "DESC",
+    "title_field": "title"
+}

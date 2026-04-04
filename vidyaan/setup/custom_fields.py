@@ -1,0 +1,79 @@
+import frappe
+from frappe.custom.doctype.custom_field.custom_field import create_custom_fields
+
+def cleanup_stale_fields():
+    """Remove orphan custom fields from previous Vidyaan installs that block reinstall."""
+    stale_fieldnames = ["institute"]
+    education_doctypes = [
+        "Student", "Instructor", "Program", "Course", "Topic", "Article",
+        "Program Enrollment", "Course Schedule", "Student Group", "Student Attendance"
+    ]
+    for dt in education_doctypes:
+        for fn in stale_fieldnames:
+            cf_name = f"{dt}-{fn}"
+            if frappe.db.exists("Custom Field", cf_name):
+                frappe.delete_doc("Custom Field", cf_name, ignore_permissions=True)
+    frappe.db.commit()
+
+def create_vidyaan_custom_fields():
+    """
+    Injects a mandatory 'Company' field into standard ERPNext Education Doctypes
+    to enable Multi-Tenant SaaS Isolation per School/Institute.
+    """
+    # Clean up orphan fields from previous installs (fixes BUG-001)
+    cleanup_stale_fields()
+
+    # The doctypes we must isolate per school
+    education_doctypes = [
+        "Student", 
+        "Instructor", 
+        "Program", 
+        "Course", 
+        "Topic", 
+        "Article", 
+        "Program Enrollment", 
+        "Course Schedule", 
+        "Student Group", 
+        "Student Attendance"
+    ]
+
+    custom_fields = {}
+    
+    for dt in education_doctypes:
+        custom_fields[dt] = [
+            {
+                "fieldname": "company",
+                "label": "Institute / Company",
+                "fieldtype": "Link",
+                "options": "Company",
+                "insert_after": "naming_series" if dt in ["Student", "Instructor"] else "",
+                "reqd": 1, # Mandatory for True SaaS isolation
+                "in_list_view": 1,
+                "in_standard_filter": 1,
+                "default": "frappe.defaults.get_user_default('Company')"
+            }
+        ]
+
+    # Create the company fields natively
+    create_custom_fields(custom_fields)
+
+    # Inject Instructor Course Mapping table onto Instructor doctype
+    instructor_fields = {
+        "Instructor": [
+            {
+                "fieldname": "course_mapping_section",
+                "fieldtype": "Section Break",
+                "label": "Course & Program Mapping",
+                "insert_after": "instructor_log"
+            },
+            {
+                "fieldname": "course_mappings",
+                "fieldtype": "Table",
+                "label": "Courses I Teach",
+                "options": "Instructor Course Mapping",
+                "insert_after": "course_mapping_section"
+            }
+        ]
+    }
+    create_custom_fields(instructor_fields)
+

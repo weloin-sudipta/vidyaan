@@ -1,0 +1,262 @@
+{
+ "actions": [],
+ "autoname": "naming_series:",
+ "creation": "2026-03-31 12:00:00.000000",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "is_submittable": 1,
+ "field_order": [
+  "naming_series",
+  "company",
+  "status",
+  "column_break_basic",
+  "academic_year",
+  "academic_term",
+  "config_section",
+  "programs",
+  "days_section",
+  "monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday",
+  "column_break_days",
+  "periods_per_day",
+  "constraints_section",
+  "max_subject_per_day",
+  "max_teacher_periods_per_day",
+  "column_break_constraints",
+  "min_teacher_weekly_load",
+  "max_teacher_weekly_load",
+  "solver_timeout",
+  "readiness_section",
+  "readiness_html",
+  "output_section",
+  "routine_slots",
+  "amended_from"
+ ],
+ "fields": [
+  {
+   "fieldname": "naming_series",
+   "fieldtype": "Select",
+   "label": "Naming Series",
+   "options": "VDY-RTN-.YYYY.-",
+   "set_only_once": 1
+  },
+  {
+   "fieldname": "company",
+   "fieldtype": "Link",
+   "label": "Institute",
+   "options": "Company",
+   "reqd": 1,
+   "default": "{frappe.defaults.get_user_default('Company')}",
+   "read_only_depends_on": "eval:!doc.__islocal"
+  },
+  {
+   "default": "Draft",
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "label": "Status",
+   "options": "Draft\nGenerated\nFailed",
+   "read_only": 1,
+   "in_list_view": 1
+  },
+  {
+   "fieldname": "column_break_basic",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "academic_year",
+   "fieldtype": "Link",
+   "label": "Academic Year",
+   "options": "Academic Year",
+   "reqd": 1
+  },
+  {
+   "fieldname": "academic_term",
+   "fieldtype": "Link",
+   "label": "Academic Term",
+   "options": "Academic Term"
+  },
+  {
+   "fieldname": "config_section",
+   "fieldtype": "Section Break",
+   "label": "Programs to Generate Routine For"
+  },
+  {
+   "fieldname": "programs",
+   "fieldtype": "Table",
+   "label": "Programs",
+   "options": "Routine Generation Program",
+   "reqd": 1
+  },
+  {
+   "fieldname": "days_section",
+   "fieldtype": "Section Break",
+   "label": "Active School Days & Periods"
+  },
+  {
+   "default": "1",
+   "fieldname": "monday",
+   "fieldtype": "Check",
+   "label": "Monday"
+  },
+  {
+   "default": "1",
+   "fieldname": "tuesday",
+   "fieldtype": "Check",
+   "label": "Tuesday"
+  },
+  {
+   "default": "1",
+   "fieldname": "wednesday",
+   "fieldtype": "Check",
+   "label": "Wednesday"
+  },
+  {
+   "default": "1",
+   "fieldname": "thursday",
+   "fieldtype": "Check",
+   "label": "Thursday"
+  },
+  {
+   "default": "1",
+   "fieldname": "friday",
+   "fieldtype": "Check",
+   "label": "Friday"
+  },
+  {
+   "default": "0",
+   "fieldname": "saturday",
+   "fieldtype": "Check",
+   "label": "Saturday"
+  },
+  {
+   "default": "0",
+   "fieldname": "sunday",
+   "fieldtype": "Check",
+   "label": "Sunday"
+  },
+  {
+   "fieldname": "column_break_days",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "5",
+   "fieldname": "periods_per_day",
+   "fieldtype": "Int",
+   "label": "Periods Per Day",
+   "reqd": 1
+  },
+  {
+   "fieldname": "constraints_section",
+   "fieldtype": "Section Break",
+   "label": "Constraints",
+   "collapsible": 1
+  },
+  {
+   "default": "2",
+   "fieldname": "max_subject_per_day",
+   "fieldtype": "Int",
+   "label": "Max Same Subject Per Day (per section)"
+  },
+  {
+   "default": "4",
+   "fieldname": "max_teacher_periods_per_day",
+   "fieldtype": "Int",
+   "label": "Max Teacher Periods Per Day"
+  },
+  {
+   "fieldname": "column_break_constraints",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "8",
+   "fieldname": "min_teacher_weekly_load",
+   "fieldtype": "Int",
+   "label": "Min Teacher Weekly Load"
+  },
+  {
+   "default": "18",
+   "fieldname": "max_teacher_weekly_load",
+   "fieldtype": "Int",
+   "label": "Max Teacher Weekly Load"
+  },
+  {
+   "default": "30",
+   "fieldname": "solver_timeout",
+   "fieldtype": "Int",
+   "label": "Solver Timeout (seconds)"
+  },
+  {
+   "fieldname": "readiness_section",
+   "fieldtype": "Section Break",
+   "label": "Readiness Check"
+  },
+  {
+   "fieldname": "readiness_html",
+   "fieldtype": "HTML",
+   "label": "Readiness Status"
+  },
+  {
+   "fieldname": "output_section",
+   "fieldtype": "Section Break",
+   "label": "Generated Routine"
+  },
+  {
+   "fieldname": "routine_slots",
+   "fieldtype": "Table",
+   "label": "Routine Slots",
+   "options": "Routine Slot",
+   "read_only": 1
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "Routine Generation",
+   "print_hide": 1,
+   "read_only": 1
+  }
+ ],
+ "links": [],
+ "modified": "2026-03-31 12:00:00.000000",
+ "modified_by": "Administrator",
+ "module": "Vidyaan",
+ "name": "Routine Generation",
+ "naming_rule": "By \"Naming Series\" field",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "read": 1,
+   "submit": 1,
+   "cancel": 1,
+   "amend": 1,
+   "write": 1,
+   "role": "System Administrator"
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "read": 1,
+   "submit": 1,
+   "cancel": 1,
+   "amend": 1,
+   "write": 1,
+   "role": "Institute Admin"
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "read": 1,
+   "submit": 1,
+   "cancel": 1,
+   "amend": 1,
+   "write": 1,
+   "role": "System Manager"
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "status"
+}

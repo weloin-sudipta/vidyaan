@@ -1,0 +1,62 @@
+{
+    "doctype": "DocType",
+    "name": "Book Copy",
+    "module": "Library",
+    "autoname": "format:BC-{#####}",
+    "fields": [
+        {
+            "fieldname": "book",
+            "fieldtype": "Link",
+            "label": "Book",
+            "options": "Book",
+            "reqd": 1
+        },
+        {
+            "fieldname": "barcode",
+            "fieldtype": "Data",
+            "label": "Barcode",
+            "unique": 1
+        },
+        {
+            "fieldname": "shelf",
+            "fieldtype": "Data",
+            "label": "Shelf"
+        },
+        {
+            "fieldname": "col_break",
+            "fieldtype": "Column Break"
+        },
+        {
+            "fieldname": "status",
+            "fieldtype": "Select",
+            "label": "Status",
+            "options": "Available\nIssued\nReserved\nLost\nDamaged",
+            "default": "Available"
+        },
+        {
+            "fieldname": "condition",
+            "fieldtype": "Select",
+            "label": "Condition",
+            "options": "New\nGood\nOld\nDamaged"
+        }
+    ],
+    "permissions": [
+        {
+            "role": "System Manager",
+            "read": 1,
+            "write": 1,
+            "create": 1,
+            "delete": 1
+        },
+        {
+            "role": "Librarian",
+            "read": 1,
+            "write": 1,
+            "create": 1
+        },
+        {
+            "role": "Student",
+            "read": 1
+        }
+    ]
+}

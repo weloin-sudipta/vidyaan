@@ -1,0 +1,32 @@
+{
+    "doctype": "DocType",
+    "name": "Book Tag",
+    "module": "Library",
+    "istable": 1,
+    "fields": [
+        {
+            "fieldname": "tag_name",
+            "fieldtype": "Link",
+            "label": "Tag",
+            "options": "Tag",
+            "reqd": 1,
+            "in_list_view": 1,
+            "columns": 2
+        }
+    ],
+    "permissions": [
+        {
+            "role": "System Manager",
+            "read": 1,
+            "write": 1,
+            "create": 1,
+            "delete": 1
+        },
+        {
+            "role": "Librarian",
+            "read": 1,
+            "write": 1,
+            "create": 1
+        }
+    ]
+}

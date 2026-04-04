@@ -1,0 +1,194 @@
+{
+    "doctype": "DocType",
+    "name": "Library",
+    "module": "Library",
+    "title_field": "library_name",
+    "autoname": "field:library_code",
+    "fields": [
+        {
+            "fieldname": "basic_section",
+            "fieldtype": "Section Break",
+            "label": "Basic Information"
+        },
+        {
+            "fieldname": "library_name",
+            "fieldtype": "Data",
+            "label": "Library Name",
+            "reqd": 1,
+            "in_list_view": 1
+        },
+        {
+            "fieldname": "library_code",
+            "fieldtype": "Data",
+            "label": "Library Code",
+            "reqd": 1,
+            "unique": 1
+        },
+        {
+            "fieldname": "library_type",
+            "fieldtype": "Select",
+            "label": "Library Type",
+            "options": "School\nPublic",
+            "default": "School",
+            "reqd": 1,
+            "in_list_view": 1
+        },
+        {
+            "fieldname": "owner_type",
+            "fieldtype": "Select",
+            "label": "Owner Type",
+            "options": "Organization\nIndividual",
+            "reqd": 1
+        },
+        {
+            "fieldname": "organization",
+            "fieldtype": "Link",
+            "label": "Organization",
+            "options": "Company",
+            "depends_on": "eval:doc.owner_type=='Organization'"
+        },
+        {
+            "fieldname": "owner_user",
+            "fieldtype": "Link",
+            "label": "Owner User",
+            "options": "User",
+            "depends_on": "eval:doc.owner_type=='Individual'"
+        },
+        {
+            "fieldname": "col_break_1",
+            "fieldtype": "Column Break"
+        },
+        {
+            "fieldname": "librarian",
+            "fieldtype": "Link",
+            "label": "Librarian",
+            "options": "User"
+        },
+        {
+            "fieldname": "contact_email",
+            "fieldtype": "Data",
+            "label": "Email"
+        },
+        {
+            "fieldname": "contact_phone",
+            "fieldtype": "Data",
+            "label": "Phone"
+        },
+
+        {
+            "fieldname": "address_section",
+            "fieldtype": "Section Break",
+            "label": "Address"
+        },
+        {
+            "fieldname": "address",
+            "fieldtype": "Small Text",
+            "label": "Address"
+        },
+        {
+            "fieldname": "city",
+            "fieldtype": "Data",
+            "label": "City"
+        },
+        {
+            "fieldname": "state",
+            "fieldtype": "Data",
+            "label": "State"
+        },
+        {
+            "fieldname": "country",
+            "fieldtype": "Data",
+            "label": "Country",
+            "default": "India"
+        },
+
+        {
+            "fieldname": "settings_section",
+            "fieldtype": "Section Break",
+            "label": "Library Settings"
+        },
+        {
+            "fieldname": "max_books_per_member",
+            "fieldtype": "Int",
+            "label": "Max Books Per Member",
+            "default": 3
+        },
+        {
+            "fieldname": "issue_duration_days",
+            "fieldtype": "Int",
+            "label": "Issue Duration (Days)",
+            "default": 7
+        },
+        {
+            "fieldname": "fine_per_day",
+            "fieldtype": "Currency",
+            "label": "Fine Per Day",
+            "default": 5
+        },
+        {
+            "fieldname": "max_renewals",
+            "fieldtype": "Int",
+            "label": "Max Renewals Allowed",
+            "default": 2
+        },
+
+        {
+            "fieldname": "col_break_2",
+            "fieldtype": "Column Break"
+        },
+        {
+            "fieldname": "allow_reservation",
+            "fieldtype": "Check",
+            "label": "Allow Reservation",
+            "default": 1
+        },
+        {
+            "fieldname": "auto_assign_on_return",
+            "fieldtype": "Check",
+            "label": "Auto Assign Book on Return",
+            "default": 1
+        },
+        {
+            "fieldname": "allow_digital_access",
+            "fieldtype": "Check",
+            "label": "Allow Digital Access",
+            "default": 1
+        },
+
+        {
+            "fieldname": "tracking_section",
+            "fieldtype": "Section Break",
+            "label": "Tracking"
+        },
+        {
+            "fieldname": "creation_date",
+            "fieldtype": "Datetime",
+            "label": "Created On",
+            "read_only": 1
+        }
+    ],
+
+    "permissions": [
+        {
+            "role": "System Manager",
+            "read": 1,
+            "write": 1,
+            "create": 1,
+            "delete": 1
+        },
+        {
+            "role": "Librarian",
+            "read": 1,
+            "write": 1,
+            "create": 1
+        },
+        {
+            "role": "Student",
+            "read": 1
+        },
+        {
+            "role": "Instructor",
+            "read": 1
+        }
+    ]
+}

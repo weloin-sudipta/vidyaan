@@ -1,0 +1,330 @@
+{
+    "actions": [],
+    "allow_rename": 0,
+    "autoname": "naming_series:",
+    "creation": "2026-04-03 10:00:00.000000",
+    "doctype": "DocType",
+    "engine": "InnoDB",
+    "is_submittable": 1,
+    "naming_rule": "By \"Naming Series\" field",
+    "field_order": [
+        "student_section",
+        "naming_series",
+        "student",
+        "student_name",
+        "program",
+        "academic_year",
+        "cb1",
+        "noc_type",
+        "application_date",
+        "status",
+        "workflow_state",
+        "details_section",
+        "purpose",
+        "cb2",
+        "effective_date",
+        "destination",
+        "attachments_section",
+        "supporting_document",
+        "clearance_section",
+        "library_clearance",
+        "accounts_clearance",
+        "lab_clearance",
+        "hostel_clearance",
+        "cb3",
+        "library_remarks",
+        "accounts_remarks",
+        "lab_remarks",
+        "hostel_remarks",
+        "approval_section",
+        "approved_by",
+        "approval_date",
+        "admin_remarks",
+        "amended_from"
+    ],
+    "fields": [
+        {
+            "fieldname": "student_section",
+            "fieldtype": "Section Break",
+            "label": "Student Information"
+        },
+        {
+            "fieldname": "naming_series",
+            "fieldtype": "Select",
+            "label": "Naming Series",
+            "options": "EDU-NOC-.YYYY.-.#####",
+            "default": "EDU-NOC-.YYYY.-.#####",
+            "reqd": 1,
+            "no_copy": 1,
+            "hidden": 1
+        },
+        {
+            "fieldname": "student",
+            "fieldtype": "Link",
+            "label": "Student",
+            "options": "Student",
+            "reqd": 1,
+            "in_list_view": 1
+        },
+        {
+            "fieldname": "student_name",
+            "fieldtype": "Data",
+            "label": "Student Name",
+            "read_only": 1,
+            "fetch_from": "student.student_name",
+            "in_list_view": 1
+        },
+        {
+            "fieldname": "program",
+            "fieldtype": "Link",
+            "label": "Program",
+            "options": "Program",
+            "read_only": 0
+        },
+        {
+            "fieldname": "academic_year",
+            "fieldtype": "Link",
+            "label": "Academic Year",
+            "options": "Academic Year"
+        },
+        {
+            "fieldname": "cb1",
+            "fieldtype": "Column Break"
+        },
+        {
+            "fieldname": "noc_type",
+            "fieldtype": "Select",
+            "label": "NOC Type",
+            "options": "Leaving Certificate\nTransfer Certificate\nBonafide Certificate\nNo Dues Certificate\nCharacter Certificate\nOther",
+            "reqd": 1,
+            "in_list_view": 1
+        },
+        {
+            "fieldname": "application_date",
+            "fieldtype": "Date",
+            "label": "Application Date",
+            "default": "Today",
+            "reqd": 1,
+            "read_only": 1
+        },
+        {
+            "fieldname": "status",
+            "fieldtype": "Select",
+            "label": "Status",
+            "options": "Draft\nPending\nIn Progress\nApproved\nRejected\nCancelled",
+            "default": "Draft",
+            "in_list_view": 1,
+            "read_only": 1,
+            "allow_on_submit": 1
+        },
+        {
+            "fieldname": "workflow_state",
+            "fieldtype": "Link",
+            "label": "Workflow State",
+            "options": "Workflow State",
+            "hidden": 1,
+            "read_only": 1,
+            "allow_on_submit": 1,
+            "no_copy": 1
+        },
+        {
+            "fieldname": "details_section",
+            "fieldtype": "Section Break",
+            "label": "NOC Details"
+        },
+        {
+            "fieldname": "purpose",
+            "fieldtype": "Text",
+            "label": "Purpose / Reason",
+            "reqd": 1
+        },
+        {
+            "fieldname": "cb2",
+            "fieldtype": "Column Break"
+        },
+        {
+            "fieldname": "effective_date",
+            "fieldtype": "Date",
+            "label": "Effective Date",
+            "description": "Date from which NOC is needed"
+        },
+        {
+            "fieldname": "destination",
+            "fieldtype": "Data",
+            "label": "Destination / Institution",
+            "description": "Where the student is transferring to (if applicable)"
+        },
+        {
+            "fieldname": "attachments_section",
+            "fieldtype": "Section Break",
+            "label": "Attachments"
+        },
+        {
+            "fieldname": "supporting_document",
+            "fieldtype": "Attach",
+            "label": "Supporting Document"
+        },
+        {
+            "fieldname": "clearance_section",
+            "fieldtype": "Section Break",
+            "label": "Department Clearance",
+            "description": "Filled by respective departments during approval"
+        },
+        {
+            "fieldname": "library_clearance",
+            "fieldtype": "Select",
+            "label": "Library Clearance",
+            "options": "\nCleared\nPending Dues\nNot Applicable",
+            "allow_on_submit": 1
+        },
+        {
+            "fieldname": "accounts_clearance",
+            "fieldtype": "Select",
+            "label": "Accounts Clearance",
+            "options": "\nCleared\nPending Dues\nNot Applicable",
+            "allow_on_submit": 1
+        },
+        {
+            "fieldname": "lab_clearance",
+            "fieldtype": "Select",
+            "label": "Lab Clearance",
+            "options": "\nCleared\nPending Dues\nNot Applicable",
+            "allow_on_submit": 1
+        },
+        {
+            "fieldname": "hostel_clearance",
+            "fieldtype": "Select",
+            "label": "Hostel Clearance",
+            "options": "\nCleared\nPending Dues\nNot Applicable",
+            "allow_on_submit": 1
+        },
+        {
+            "fieldname": "cb3",
+            "fieldtype": "Column Break"
+        },
+        {
+            "fieldname": "library_remarks",
+            "fieldtype": "Small Text",
+            "label": "Library Remarks",
+            "allow_on_submit": 1
+        },
+        {
+            "fieldname": "accounts_remarks",
+            "fieldtype": "Small Text",
+            "label": "Accounts Remarks",
+            "allow_on_submit": 1
+        },
+        {
+            "fieldname": "lab_remarks",
+            "fieldtype": "Small Text",
+            "label": "Lab Remarks",
+            "allow_on_submit": 1
+        },
+        {
+            "fieldname": "hostel_remarks",
+            "fieldtype": "Small Text",
+            "label": "Hostel Remarks",
+            "allow_on_submit": 1
+        },
+        {
+            "fieldname": "approval_section",
+            "fieldtype": "Section Break",
+            "label": "Approval"
+        },
+        {
+            "fieldname": "approved_by",
+            "fieldtype": "Link",
+            "label": "Approved By",
+            "options": "User",
+            "read_only": 1,
+            "allow_on_submit": 1
+        },
+        {
+            "fieldname": "approval_date",
+            "fieldtype": "Datetime",
+            "label": "Approval Date",
+            "read_only": 1,
+            "allow_on_submit": 1
+        },
+        {
+            "fieldname": "admin_remarks",
+            "fieldtype": "Small Text",
+            "label": "Admin Remarks",
+            "allow_on_submit": 1
+        },
+        {
+            "fieldname": "amended_from",
+            "fieldtype": "Link",
+            "label": "Amended From",
+            "no_copy": 1,
+            "options": "Student NOC",
+            "print_hide": 1,
+            "read_only": 1
+        }
+    ],
+    "index_web_pages_for_search": 1,
+    "links": [],
+    "modified": "2026-04-03 10:00:00.000000",
+    "modified_by": "Administrator",
+    "module": "Vidyaan",
+    "name": "Student NOC",
+    "owner": "Administrator",
+    "permissions": [
+        {
+            "create": 1,
+            "delete": 1,
+            "email": 1,
+            "export": 1,
+            "print": 1,
+            "read": 1,
+            "report": 1,
+            "role": "System Manager",
+            "share": 1,
+            "submit": 1,
+            "cancel": 1,
+            "write": 1
+        },
+        {
+            "create": 1,
+            "delete": 1,
+            "email": 1,
+            "export": 1,
+            "print": 1,
+            "read": 1,
+            "report": 1,
+            "role": "Institute Admin",
+            "share": 1,
+            "submit": 1,
+            "cancel": 1,
+            "write": 1
+        },
+        {
+            "email": 1,
+            "print": 1,
+            "read": 1,
+            "report": 1,
+            "role": "Instructor",
+            "write": 1,
+            "submit": 1,
+            "allow_on_submit": 1
+        },
+        {
+            "read": 1,
+            "role": "Librarian",
+            "write": 1,
+            "allow_on_submit": 1
+        },
+        {
+            "create": 1,
+            "email": 1,
+            "print": 1,
+            "read": 1,
+            "role": "Student"
+        }
+    ],
+    "sort_field": "modified",
+    "sort_order": "DESC",
+    "states": [],
+    "title_field": "student_name",
+    "track_changes": 1
+}

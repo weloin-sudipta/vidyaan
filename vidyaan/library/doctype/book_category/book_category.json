@@ -1,0 +1,54 @@
+{
+    "actions": [],
+    "allow_rename": 1,
+    "doctype": "DocType",
+    "editable_grid": 1,
+    "autoname": "field:category_name",
+    "title_field": "category_name",
+    "engine": "InnoDB",
+    "fields": [
+        {
+            "fieldname": "category_name",
+            "fieldtype": "Data",
+            "in_list_view": 1,
+            "label": "Category Name",
+            "reqd": 1
+        },
+        {
+            "fieldname": "description",
+            "fieldtype": "Small Text",
+            "in_list_view": 1,
+            "label": "Description"
+        }
+    ],
+    "index_web_pages_for_search": 1,
+    "links": [],
+    "module": "Library",
+    "name": "Book Category",
+    "owner": "Administrator",
+    "permissions": [
+        {
+            "create": 1,
+            "delete": 1,
+            "read": 1,
+            "role": "System Manager",
+            "write": 1
+        },
+        {
+            "create": 1,
+            "read": 1,
+            "role": "Librarian",
+            "write": 1
+        },
+        {
+            "read": 1,
+            "role": "Student"
+        },
+        {
+            "read": 1,
+            "role": "Instructor"
+        }
+    ],
+    "sort_field": "modified",
+    "sort_order": "DESC"
+}
