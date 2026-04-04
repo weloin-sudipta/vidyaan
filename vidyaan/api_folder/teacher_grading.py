@@ -21,7 +21,8 @@ def get_my_exams():
             "assessment_group", "schedule_date", "from_time", "to_time",
             "room", "maximum_assessment_score", "grading_scale"
         ],
-        order_by="schedule_date desc"
+        order_by="schedule_date desc",
+        ignore_permissions=True,
     )
 
     # Also include plans where instructor is supervisor
@@ -37,7 +38,8 @@ def get_my_exams():
             "assessment_group", "schedule_date", "from_time", "to_time",
             "room", "maximum_assessment_score", "grading_scale"
         ],
-        order_by="schedule_date desc"
+        order_by="schedule_date desc",
+        ignore_permissions=True,
     )
 
     all_exams = exams + supervisor_exams

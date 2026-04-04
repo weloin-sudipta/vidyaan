@@ -5,7 +5,7 @@ from vidyaan.api_folder.profile import _get_student_for_user, _get_user_company
 
 @frappe.whitelist()
 def get_student_by_institute(user_email=None):
-    """Get students by institute (company)."""
+    """Get students by institute with enrollment details for teacher students page."""
     company = _get_user_company()
     if not company:
         return []
@@ -14,13 +14,39 @@ def get_student_by_institute(user_email=None):
     if user_email:
         filters["student_email_id"] = user_email
 
-    return frappe.get_all(
+    students = frappe.get_all(
         "Student",
         filters=filters,
         fields=["name", "first_name", "last_name", "student_email_id",
                 "image", "gender", "company"],
-        order_by="first_name asc"
+        order_by="first_name asc",
+        ignore_permissions=True,
     )
+
+    # Enrich with enrollment data (teacher students page expects these)
+    for s in students:
+        s["student"] = s["name"]
+        s["student_name"] = f"{s['first_name']} {s.get('last_name', '')}".strip()
+        enrollment = frappe.get_all(
+            "Program Enrollment",
+            filters={"student": s["name"], "docstatus": 1},
+            fields=["program", "academic_year", "academic_term", "enrollment_date", "name"],
+            order_by="creation desc",
+            limit=1,
+            ignore_permissions=True,
+        )
+        if enrollment:
+            s["program"] = enrollment[0].program
+            s["academic_year"] = enrollment[0].academic_year or ""
+            s["academic_term"] = enrollment[0].academic_term or ""
+            s["enrollment_date"] = str(enrollment[0].enrollment_date) if enrollment[0].enrollment_date else ""
+        else:
+            s["program"] = ""
+            s["academic_year"] = ""
+            s["academic_term"] = ""
+            s["enrollment_date"] = ""
+
+    return students
 
 
 @frappe.whitelist()

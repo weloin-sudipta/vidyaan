@@ -5,11 +5,17 @@ from vidyaan.api_folder.profile import _get_instructor_for_user
 
 @frappe.whitelist()
 def get_my_classes():
-    """Get today's class schedule for the logged-in instructor."""
+    """Get class schedule for the logged-in instructor.
+
+    Returns today's classes if available, otherwise returns
+    the most recent week's classes so the dashboard is never empty.
+    Also includes total_students, program, instructor_name for the dashboard.
+    """
     instructor = _get_instructor_for_user()
     if not instructor:
         return {"classes": []}
 
+    # Try today first
     schedules = frappe.get_all(
         "Course Schedule",
         filters={
@@ -18,28 +24,59 @@ def get_my_classes():
         },
         fields=[
             "name", "student_group", "course", "instructor",
-            "from_time", "to_time", "room", "schedule_date"
+            "instructor_name", "from_time", "to_time", "room",
+            "schedule_date", "program"
         ],
-        order_by="from_time asc"
+        order_by="from_time asc",
+        ignore_permissions=True,
     )
+
+    # If no classes today, get the most recent day's classes
+    if not schedules:
+        latest = frappe.get_all(
+            "Course Schedule",
+            filters={"instructor": instructor.name},
+            fields=["schedule_date"],
+            order_by="schedule_date desc",
+            limit=1,
+            ignore_permissions=True,
+        )
+        if latest:
+            schedules = frappe.get_all(
+                "Course Schedule",
+                filters={
+                    "instructor": instructor.name,
+                    "schedule_date": latest[0].schedule_date
+                },
+                fields=[
+                    "name", "student_group", "course", "instructor",
+                    "instructor_name", "from_time", "to_time", "room",
+                    "schedule_date", "program"
+                ],
+                order_by="from_time asc",
+                ignore_permissions=True,
+            )
 
     classes = []
     for s in schedules:
         course_name = frappe.db.get_value("Course", s.course, "course_name") or s.course
         group_name = frappe.db.get_value("Student Group", s.student_group, "student_group_name") or s.student_group
+        program = s.program or frappe.db.get_value("Student Group", s.student_group, "program") or ""
 
         # Get students in this group
         students = frappe.get_all(
             "Student Group Student",
             filters={"parent": s.student_group, "active": 1},
-            fields=["student", "student_name"]
+            fields=["student", "student_name"],
+            ignore_permissions=True,
         )
 
-        # Check attendance status for each student
+        # Check attendance status for each student (for today only)
+        schedule_date = str(s.schedule_date) if s.schedule_date else frappe.utils.today()
         for st in students:
             att = frappe.db.get_value(
                 "Student Attendance",
-                {"student": st.student, "date": frappe.utils.today(), "student_group": s.student_group},
+                {"student": st.student, "date": schedule_date, "student_group": s.student_group},
                 "status"
             )
             st["status"] = att.lower() if att else ""
@@ -50,13 +87,21 @@ def get_my_classes():
             "course_name": course_name,
             "student_group": s.student_group,
             "group_name": group_name,
+            "program": program,
+            "instructor": instructor.name,
+            "instructor_name": s.instructor_name or instructor.instructor_name,
             "from_time": str(s.from_time) if s.from_time else "",
             "to_time": str(s.to_time) if s.to_time else "",
             "room": s.room or "",
-            "students": students
+            "schedule_date": str(s.schedule_date) if s.schedule_date else "",
+            "total_students": len(students),
+            "students": students,
         })
 
-    return {"classes": classes}
+    return {
+        "classes": classes,
+        "instructor": instructor.instructor_name,
+    }
 
 
 @frappe.whitelist()
@@ -69,7 +114,6 @@ def mark_attendance_bulk(course_schedule=None, students=None):
     if isinstance(students, str):
         students = json.loads(students)
 
-    # Validate course schedule exists
     if not frappe.db.exists("Course Schedule", course_schedule):
         frappe.throw(_("Course Schedule not found"))
 
@@ -86,7 +130,6 @@ def mark_attendance_bulk(course_schedule=None, students=None):
             continue
 
         try:
-            # Check if attendance already exists for today
             existing = frappe.db.get_value(
                 "Student Attendance",
                 {"student": student_id, "date": frappe.utils.today(), "student_group": cs.student_group},
@@ -94,11 +137,9 @@ def mark_attendance_bulk(course_schedule=None, students=None):
             )
 
             if existing:
-                # Update existing
                 frappe.db.set_value("Student Attendance", existing, "status", status)
                 success.append(student_id)
             else:
-                # Create new
                 att = frappe.get_doc({
                     "doctype": "Student Attendance",
                     "student": student_id,

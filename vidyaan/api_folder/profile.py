@@ -32,8 +32,15 @@ def _get_student_for_user(user=None):
 
 
 def _get_instructor_for_user(user=None):
-    """Resolve User → Employee → Instructor."""
+    """Resolve User → Instructor.
+
+    Tries multiple paths:
+    1. User → Employee → Instructor (standard ERPNext path)
+    2. User full_name → Instructor.instructor_name (direct match)
+    """
     user = user or frappe.session.user
+
+    # Path 1: via Employee
     employees = frappe.get_all("Employee", filters={"user_id": user}, pluck="name")
     if employees:
         instructors = frappe.get_all(
@@ -44,6 +51,19 @@ def _get_instructor_for_user(user=None):
         )
         if instructors:
             return instructors[0]
+
+    # Path 2: match by User full_name → Instructor.instructor_name
+    user_fullname = frappe.db.get_value("User", user, "full_name")
+    if user_fullname:
+        instructors = frappe.get_all(
+            "Instructor",
+            filters={"instructor_name": user_fullname},
+            fields=["name", "instructor_name", "employee", "company", "status"],
+            limit=1
+        )
+        if instructors:
+            return instructors[0]
+
     return None
 
 
