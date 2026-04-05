@@ -282,7 +282,7 @@ Features that the backend supports or the project requires, but have NO frontend
 | **Real Notification System** | Replace hardcoded data with backend push/poll notifications |
 | **Global Search** | Implement actual search across pages/content |
 | **Fee Management** | Fee structure display, payment status, receipts |
-| **Quick Attendance Grid** | Teacher-facing bulk attendance marking (not calendar) |
+| **Quick Attendance Grid** | Teacher-facing bulk attendance marking (grid, not calendar) |
 | **Student Report Card PDF** | Generate weighted report cards as PDF |
 | **Programs & Courses CRUD** | Admin pages for managing academic programs/courses |
 | **Student Group Manager** | Manage sections and student groupings |
@@ -305,7 +305,7 @@ Features that the backend supports or the project requires, but have NO frontend
 ### Core / Auth
 | Composable | File | Purpose |
 |-----------|------|---------|
-| `useFrappeFetch` | `useFrappeFetch.ts` | API wrapper — `createResource()`, `createListResource()`, `call()`, `auth.*` |
+| `useFrappeFetch` | `useFrappeFetch.ts` | API wrapper — `createResource()`, `createListResource()`, `createDocumentResource()`, `call()`, `auth.*` |
 | `useAuth` | `useAuth.js` | `login()`, `logout()` functions |
 | `useUserProfile` | `useUserProfile.js` | Global SSR-safe auth state — profile, role, isAuthenticated |
 

@@ -1,4 +1,4 @@
-# Vidyaan - Feature Backlog & Roadmap
+# Vidyaan - Future Scope & Roadmap
 
 ## How to Read This Document
 
@@ -98,8 +98,6 @@ Each item includes:
   - Today's schedule from Course Schedule (filtered by instructor + today's date)
   - Grading queue: Assessment Plans where instructor is examiner, results not yet submitted
   - Recent publications/announcements
-  - Quick links: Mark Attendance, Enter Grades
-- **Composable:** `useTeacherDashboard.js` (exists, needs refactor)
 
 ### ENH-004: Student dashboard
 - **Priority:** Medium | **Effort:** L
@@ -110,7 +108,6 @@ Each item includes:
   - Upcoming exams from Assessment Plans
   - Recent grades from Assessment Results
   - Notices from Publications (filtered by student's Student Group)
-- **Composable:** `useStudent.js` (exists, needs refactor)
 
 ### ENH-005: Fee management integration
 - **Priority:** Medium | **Effort:** L
@@ -120,7 +117,6 @@ Each item includes:
   - Add Company field filtering (already injected)
   - Frontend page for students to view fee status
   - Admin page to generate fees from Fee Schedule
-- **Doctypes:** Fee Structure, Fees, Fee Schedule (all native)
 
 ---
 
@@ -136,15 +132,12 @@ Each item includes:
 - **Status:** Idea
 - **Approach:** Add hard constraint to OR-Tools model: no two sections in same Room at same time/day. Requires Room records to exist. Add `room` to Routine Slot output.
 
-### NEW-003: Student Application/Leave system
+### NEW-003: Dynamic Application & Approval Engine
 - **Priority:** Low | **Effort:** L
 - **Status:** Idea (Plan 5 redesign)
-- **Recommended approach:** Simple `Student Application` doctype with native Frappe Workflow:
-  - Fields: application_type (Select), from_date, to_date, reason (Text), status
-  - Workflow states: Draft → Pending Approval → Approved/Rejected
-  - Workflow transitions: Student submits → Class Teacher reviews → Institute Admin approves
-  - Leverage Frappe's built-in notification and assignment system
-- **Why not Plan 5's approach:** Key-Value child tables are hard to query/report on. Native Workflow is more robust and maintainable.
+- **Recommended approach:** Custom solution instead of Frappe Workflow for dynamic forms and multi-role approvals.
+- **Architecture:** 6 doctypes (Application Type, Application Field, Approval Step, Student Application, Application Value, Approval Log)
+- **Why not Frappe Workflow:** Needs dynamic form fields, multi-role per level (OR logic), student-facing UI, various application types from one engine.
 
 ### NEW-004: SMS/Email notifications
 - **Priority:** Low | **Effort:** M
@@ -193,7 +186,7 @@ LATER (Sprint 3-4)
 
 FUTURE (Sprint 5+)
   ├── NEW-001: Material sharing
-  ├── NEW-002: Room in solver
+  ├── NEW-002: Room solver
   ├── NEW-003: Application system
   ├── NEW-004: Notifications
   ├── NEW-005: Portal login

@@ -87,7 +87,7 @@ apps/vidyaan/
 │   │   ├── install.py                    # After-install orchestrator
 │   │   ├── custom_fields.py             # Injects Company field into education doctypes
 │   │   ├── roles.py                      # Role creation & permissions
-│   │   ├── user.py                       # Default admin user creation
+│   │   ├── user.py                      # Default admin user creation
 │   │   ├── wizard.py                     # First-run setup wizard backend
 │   │   ├── onboarding.py                # Module onboarding steps
 │   │   └── workspace.py                 # Dashboard workspace builder

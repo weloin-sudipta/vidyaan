@@ -9,14 +9,11 @@
 
 Before touching any code, read these files **in order**:
 
-1. `docs/PROJECT.md` — understand what Vidyaan is
-2. `docs/DOCTYPES.md` — know every doctype and what it maps to
-3. `docs/CUSTOMIZATIONS.md` — know every hook, custom field, and modification already made
-4. `docs/FEATURES.md` — know what's done, what's partial, what's planned
-5. `docs/IMPLEMENTATION_PLAN.md` — understand past plans, bugs, and the phased roadmap
-6. `docs/BACKLOG.md` — know active bugs and priorities
-7. `docs/architecture_and_workflow.md` — understand multi-tenant SaaS architecture
-8. `docs/implementation/plan1.md` through `plan5.md` — understand design decisions
+1. `docs/overview.md` — understand what Vidyaan is
+2. `docs/folder-structure/backend.md` — know every doctype and what it maps to
+3. `docs/architecture.md` — understand multi-tenant SaaS architecture
+4. `docs/future-scope.md` — know active bugs and priorities
+5. `docs/modules/` — understand past plans and phased roadmap
 
 **If you have not read these files, STOP and read them now.** Do not assume anything about the project structure.
 
@@ -195,33 +192,22 @@ doc_events = {
 
 ---
 
-## Quick Reference — Existing Doctypes
+## ARCHITECTURE CHANGE PROTOCOL
 
-**DO NOT recreate these. They already exist:**
+If you add, remove, or significantly modify:
+- New DocTypes or custom fields
+- New whitelisted API methods
+- New hooks or events
+- Changes to existing DocType structures
+- Major backend feature additions
 
-| Concept | Use This Doctype |
-|---------|-----------------|
-| School/Institute | `Company` |
-| Teacher | `Instructor` (linked via `Employee`) |
-| Student | `Student` |
-| Class/Stream | `Program` |
-| Subject | `Course` |
-| Chapter | `Topic` |
-| Lesson/Material | `Article` |
-| Section | `Student Group` |
-| Enrollment | `Program Enrollment` |
-| Attendance | `Student Attendance` |
-| Timetable slot | `Course Schedule` |
-| Exam/Test | `Assessment Plan` |
-| Marks/Grade | `Assessment Result` |
-| Exam category | `Assessment Group` (tree) |
-| Grading scale | `Grading Scale` |
-| Fee template | `Fee Structure` |
-| Fee invoice | `Fees` |
-| Classroom | `Room` |
-| Notice/News | `Publication` (custom) |
-| Timetable config | `Vidyaan Settings` (custom) |
-| Timetable generator | `Routine Generation` (custom) |
+THEN call the ARCHIVIST agent to update docs:
+
+```
+Call archivist to sync docs with new architecture changes.
+```
+
+This ensures docs/FEATURES.md and docs/DOCTYPES.md stay accurate with the current backend.
 
 ---
 
