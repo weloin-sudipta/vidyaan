@@ -1,26 +1,59 @@
 import frappe
 from frappe.utils.password import update_password
 
+# Import new setup functions
+from .setup_stages import get_setup_stages, setup_complete as setup_complete_stages
+from .operations.institute_setup import (
+	create_institute,
+	create_institute_admin_user,
+	setup_institute_defaults,
+	_generate_unique_abbr,
+)
+
 
 @frappe.whitelist()
-def complete_setup(institute_name):
-	"""Complete Vidyaan setup with just the institute name. All other defaults are set automatically."""
+def complete_setup(institute_name, admin_email=None, admin_password=None):
+	"""Complete Vidyaan setup with institute information.
+	
+	Args:
+		institute_name: Name of the institute
+		admin_email: Admin email (optional)
+		admin_password: Admin password (optional)
+	
+	Returns:
+		True on success
+	"""
 	_ensure_country_and_currency()
-	create_company(institute_name)
+	
+	# Use new setup system if admin details provided
+	if admin_email and admin_password:
+		args = frappe._dict({
+			"institute_name": institute_name,
+			"admin_email": admin_email,
+			"admin_name": admin_email.split("@")[0],
+			"admin_password": admin_password,
+			"country": "India",
+			"currency": "INR",
+		})
+		setup_complete_stages(args)
+	else:
+		# Legacy setup - just create company
+		create_company(institute_name)
 
-	# Mark vidyaan setup as complete
-	frappe.defaults.set_global_default("vidyaan_setup_complete", 1)
+		# Mark vidyaan setup as complete
+		frappe.defaults.set_global_default("vidyaan_setup_complete", 1)
 
-	# Set default company and country in Global Defaults
-	frappe.defaults.set_global_default("default_company", institute_name)
-	if frappe.db.exists("Global Defaults", "Global Defaults"):
-		frappe.db.set_value("Global Defaults", None, "default_company", institute_name)
-		frappe.db.set_value("Global Defaults", None, "country", "India")
+		# Set default company and country in Global Defaults
+		frappe.defaults.set_global_default("default_company", institute_name)
+		if frappe.db.exists("Global Defaults", "Global Defaults"):
+			frappe.db.set_value("Global Defaults", None, "default_company", institute_name)
+			frappe.db.set_value("Global Defaults", None, "country", "India")
 
-	# Mark Frappe + ERPNext setup wizard as complete so their wizards don't show
-	_mark_setup_wizard_complete()
+		# Mark Frappe + ERPNext setup wizard as complete so their wizards don't show
+		_mark_setup_wizard_complete()
 
-	frappe.db.commit()
+		frappe.db.commit()
+
 	return True
 
 
@@ -58,7 +91,7 @@ def _mark_setup_wizard_complete():
 
 
 def _generate_unique_abbr(name):
-	"""Generate a unique abbreviation for a company name."""
+	"""Generate a unique abbreviation for a company name (deprecated - use institute_setup version)."""
 	abbr = "".join([c[0] for c in name.split() if c.isalnum()]).upper()
 	if not abbr:
 		abbr = name[:2].upper()
@@ -74,6 +107,7 @@ def _generate_unique_abbr(name):
 
 
 def create_company(name):
+	"""Create a company (institute) - for backward compatibility."""
 	if frappe.db.exists("Company", name):
 		return frappe.get_doc("Company", name)
 
@@ -93,6 +127,7 @@ def create_company(name):
 
 
 def create_admin_user(email, first_name, password):
+	"""Create an admin user - for backward compatibility."""
 	if not frappe.db.exists("User", email):
 		user = frappe.get_doc({
 			"doctype": "User",
