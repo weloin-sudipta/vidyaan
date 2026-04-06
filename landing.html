@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vidyaan | Kinetic Academic Systems</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;700;900&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+    
+    <style>
+        :root {
+            --bg: #080808;
+            --text: #ffffff;
+            --accent: #444;
+            --card-bg: #121212;
+            --highlight: #fff;
+            --scan-color: rgba(255, 255, 255, 0.5);
+        }
+
+        [data-theme="light"] {
+            --bg: #f0f0f2;
+            --text: #000000;
+            --accent: #bbb;
+            --card-bg: #ffffff;
+            --highlight: #000;
+            --scan-color: rgba(0, 0, 0, 0.5);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; cursor: none; }
+        body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; overflow-x: hidden; transition: background 0.6s ease; }
+
+        /* --- CURSOR --- */
+        #cursor-dot { position: fixed; top: 0; left: 0; width: 4px; height: 4px; background: var(--highlight); border-radius: 50%; z-index: 10001; pointer-events: none; }
+        #cursor-outline { position: fixed; top: 0; left: 0; width: 35px; height: 35px; border: 1px solid var(--highlight); border-radius: 50%; z-index: 10000; pointer-events: none; }
+
+        /* --- NAVIGATION --- */
+        nav { position: fixed; top: 0; width: 100%; padding: 40px 6%; display: flex; justify-content: space-between; z-index: 1000; mix-blend-mode: difference; }
+        .logo { font-weight: 900; font-size: 1.4rem; letter-spacing: -1px; }
+        .nav-links { display: flex; gap: 40px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; }
+
+        /* --- HERO --- */
+        .hero { height: 100vh; display: flex; flex-direction: column; justify-content: center; padding: 0 10%; }
+        .hero h1 { font-size: clamp(4rem, 12vw, 10rem); line-height: 0.85; font-weight: 900; letter-spacing: -6px; margin-bottom: 20px; }
+        .hero-sub { max-width: 500px; font-size: 1.1rem; color: var(--accent); line-height: 1.4; border-left: 1px solid var(--accent); padding-left: 20px; }
+
+        /* --- KINETIC SPREAD SECTION --- */
+        .spread-container { position: relative; height: 300vh; background: var(--bg); }
+        .spread-sticky { position: sticky; top: 0; height: 100vh; overflow: hidden; display: flex; justify-content: center; align-items: center; }
+        
+        .p-card {
+            position: absolute; width: 320px; height: 420px; background: var(--card-bg);
+            border: 1px solid var(--accent); padding: 30px; display: flex; flex-direction: column;
+            justify-content: space-between; transition: border 0.3s ease; z-index: 2;
+        }
+        .p-card:hover { border-color: var(--highlight); }
+        .p-card h3 { font-size: 1.5rem; letter-spacing: -1px; margin-bottom: 10px; }
+        .p-card p { font-size: 0.85rem; color: var(--accent); line-height: 1.5; }
+        .card-num { font-size: 0.7rem; font-weight: 900; opacity: 0.3; }
+        
+        .img-placeholder { width: 100%; height: 180px; background: #1a1a1a; margin-top: 20px; filter: grayscale(1); transition: 0.5s; }
+        .p-card:hover .img-placeholder { filter: grayscale(0); }
+
+        /* --- DATA STRIP --- */
+        .data-strip { padding: 100px 10%; display: grid; grid-template-columns: repeat(4, 1fr); gap: 40px; border-top: 1px solid var(--accent); }
+        .stat-item h4 { font-size: 3rem; font-weight: 900; margin-bottom: 5px; }
+        .stat-item p { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 1px; color: var(--accent); }
+
+        /* --- SCANNER FOOTER --- */
+        .footer-reveal { position: relative; width: 100%; background: var(--bg); border-top: 1px solid var(--accent); overflow: hidden; }
+        .scan-bar { 
+            position: absolute; top: 0; left: -100%; width: 3px; height: 100%; 
+            background: var(--highlight); box-shadow: 0 0 30px var(--highlight); z-index: 5;
+        }
+        footer { padding: 100px 10%; display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 60px; opacity: 0; transform: translateX(-20px); transition: 1s ease; }
+        .footer-visible { opacity: 1; transform: translateX(0); }
+        footer .col h5 { font-size: 10px; letter-spacing: 2px; color: var(--accent); margin-bottom: 25px; text-transform: uppercase; }
+        footer .col p { margin-bottom: 12px; font-size: 13px; cursor: pointer; transition: 0.3s; }
+        footer .col p:hover { color: var(--accent); padding-left: 5px; }
+
+        @media (max-width: 900px) {
+            .data-strip { grid-template-columns: 1fr 1fr; }
+            footer { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body data-theme="dark">
+
+    <div id="cursor-dot"></div>
+    <div id="cursor-outline"></div>
+
+    <nav>
+        <div class="logo target">VIDYAAN.</div>
+        <div class="nav-links">
+            <span class="target" onclick="document.body.setAttribute('data-theme', document.body.getAttribute('data-theme') === 'dark' ? 'light' : 'dark')">Toggle Mood</span>
+            <span class="target">Ecosystem</span>
+            <span class="target">Security</span>
+            <span class="target">Login</span>
+        </div>
+    </nav>
+
+    <section class="hero">
+        <h1 class="target">KINETIC<br>LEARNING.</h1>
+        <div class="hero-sub">
+            Vidyaan is a multi-dimensional ERP designed to synchronize institutional data with human intuition. Experience the flow of intelligence.
+        </div>
+    </section>
+
+    <div class="spread-container">
+        <div class="spread-sticky">
+            <div class="p-card card-item target" id="c1">
+                <span class="card-num">01 / ADMISSIONS</span>
+                <h3>Fluid Onboarding</h3>
+                <p>Automated workflow for student registration, document OCR, and dynamic seat allocation.</p>
+                <div class="img-placeholder" style="background-image: url('https://images.unsplash.com/photo-1523240795612-9a054b0db644?q=80&w=400'); background-size: cover;"></div>
+            </div>
+
+            <div class="p-card card-item target" id="c2">
+                <span class="card-num">02 / ACADEMICS</span>
+                <h3>Curriculum Sync</h3>
+                <p>Real-time syllabus tracking and AI-assisted lesson planning for faculty excellence.</p>
+                <div class="img-placeholder" style="background-image: url('https://images.unsplash.com/photo-1503676260728-1c00da094a0b?q=80&w=400'); background-size: cover;"></div>
+            </div>
+
+            <div class="p-card card-item target" id="c3">
+                <span class="card-num">03 / ANALYTICS</span>
+                <h3>Cognitive Mapping</h3>
+                <p>Visualize student performance through 12 unique behavioral and academic dimensions.</p>
+                <div class="img-placeholder" style="background-image: url('https://images.unsplash.com/photo-1551288049-bbbda536339a?q=80&w=400'); background-size: cover;"></div>
+            </div>
+
+            <div class="p-card card-item target" id="c4">
+                <span class="card-num">04 / FINANCE</span>
+                <h3>Quantum Billing</h3>
+                <p>One-click fee reconciliation with end-to-end cryptographic security and audit logs.</p>
+                <div class="img-placeholder" style="background-image: url('https://images.unsplash.com/photo-1554224155-6726b3ff858f?q=80&w=400'); background-size: cover;"></div>
+            </div>
+        </div>
+    </div>
+
+    <section class="data-strip">
+        <div class="stat-item"><h4>99.9%</h4><p>Uptime Security</p></div>
+        <div class="stat-item"><h4>120+</h4><p>Institutions Active</p></div>
+        <div class="stat-item"><h4>500K</h4><p>Students Managed</p></div>
+        <div class="stat-item"><h4>0.2s</h4><p>Sync Latency</p></div>
+    </section>
+
+    <div class="footer-reveal">
+        <div class="scan-bar"></div>
+        <footer>
+            <div class="col">
+                <h2 class="logo">VIDYAAN.</h2>
+                <p style="margin-top: 20px; max-width: 300px; color: var(--accent);">Transforming institutional chaos into a structured digital symphony. Join the evolution.</p>
+            </div>
+            <div class="col">
+                <h5>Architecture</h5>
+                <p>Nexus Core</p><p>Cloud Integration</p><p>Security Mesh</p><p>API Terminal</p>
+            </div>
+            <div class="col">
+                <h5>Modules</h5>
+                <p>Student Portal</p><p>Staff Hub</p><p>Parent Sync</p><p>Board View</p>
+            </div>
+            <div class="col">
+                <h5>Contact</h5>
+                <p>Burdwan, WB</p><p>hello@vidyaan.io</p><p>+91 000 111 22</p>
+            </div>
+        </footer>
+    </div>
+
+    <script>
+        gsap.registerPlugin(ScrollTrigger);
+
+        // --- 1. CURSOR ---
+        const dot = document.getElementById('cursor-dot');
+        const outline = document.getElementById('cursor-outline');
+        let mx = 0, my = 0, ox = 0, oy = 0;
+        window.addEventListener('mousemove', e => { mx = e.clientX; my = e.clientY; });
+        function moveCursor() {
+            ox += (mx - ox) * 0.12; oy += (my - oy) * 0.12;
+            gsap.set(dot, { x: mx, y: my, xPercent: -50, yPercent: -50 });
+            gsap.set(outline, { x: ox, y: oy, xPercent: -50, yPercent: -50 });
+            requestAnimationFrame(moveCursor);
+        }
+        moveCursor();
+        document.querySelectorAll('.target').forEach(el => {
+            el.addEventListener('mouseenter', () => gsap.to(outline, { scale: 2.2, backgroundColor: "rgba(255,255,255,0.1)" }));
+            el.addEventListener('mouseleave', () => gsap.to(outline, { scale: 1, backgroundColor: "transparent" }));
+        });
+
+        // --- 2. KINETIC SPREAD ANIMATION ---
+        const spreadTL = gsap.timeline({
+            scrollTrigger: {
+                trigger: ".spread-container",
+                start: "top top",
+                end: "bottom bottom",
+                scrub: 1.5
+            }
+        });
+
+        // Spread cards from center to asymmetric grid positions
+        spreadTL.to("#c1", { x: -450, y: -200, rotation: -5 }, 0)
+                .to("#c2", { x: 400, y: -150, rotation: 8 }, 0)
+                .to("#c3", { x: -380, y: 220, rotation: -2 }, 0)
+                .to("#c4", { x: 420, y: 250, rotation: 4 }, 0);
+
+        // --- 3. DATA STRIP REVEAL ---
+        gsap.from(".stat-item", {
+            opacity: 0, y: 30, stagger: 0.15,
+            scrollTrigger: { trigger: ".data-strip", start: "top 85%" }
+        });
+
+        // --- 4. LIGHT SCAN FOOTER ---
+        const footerReveal = gsap.timeline({
+            scrollTrigger: {
+                trigger: ".footer-reveal",
+                start: "top 75%",
+                once: true
+            }
+        });
+
+        footerReveal.to(".scan-bar", {
+            left: "100%",
+            duration: 1.8,
+            ease: "power3.inOut"
+        })
+        .to("footer", {
+            className: "footer-visible",
+            duration: 0.1
+        }, "-=1.2");
+
+    </script>
+</body>
+</html>
