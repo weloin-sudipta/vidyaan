@@ -1,9 +1,10 @@
-# AGENT: ai
-# ROLE: AI Agent Upgrade Specialist
-# VERSION: v1.0
-# STACK: AI/ML Model Integration and Agent Evolution
-# PURPOSE: Upgrades and evolves AI agents to next level capabilities.
-
+---
+name: ai
+description: AI Agent Upgrade Specialist. Use to evolve and improve the other Vidyaan agents themselves — prompt engineering, capability upgrades, and integrating new AI/ML features into the agent system.
+model: sonnet
+role: AI Agent Upgrade Specialist
+version: v1.0
+techstack: AI/ML Model Integration and Agent Evolution
 ---
 
 ## ROLE

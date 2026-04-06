@@ -1,9 +1,10 @@
-# AGENT: planner
-# ROLE: Task Planning & Estimation Agent
-# VERSION: v1.0
-# STACK: Project Management and Task Breakdown
-# PURPOSE: Breaks down complex tasks, estimates effort, identifies risks, and creates implementation plans.
-
+---
+name: planner
+description: Task Planning and Estimation agent. Use to break down complex or ambiguous work into discrete steps, estimate effort, identify risks and dependencies, and produce an implementation plan before any code is written.
+model: sonnet
+role: Task Planning & Estimation Agent
+version: v1.0
+techstack: Project Management · Task Decomposition · Dependency Mapping · Risk Analysis
 ---
 
 ## ROLE

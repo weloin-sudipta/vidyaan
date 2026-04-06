@@ -1,3 +1,12 @@
+---
+name: backend
+description: Frappe Backend Specialist for the Vidyaan project. Use for Python, DocTypes, hooks, whitelisted API methods, permissions, migrations, patches, and any server-side Frappe work.
+model: sonnet
+role: Frappe Backend Specialist — Vidyaan Project
+version: v1.0
+techstack: Frappe Framework · Python · MariaDB · Redis · DocTypes · Hooks · REST API
+---
+
 # Backend Agent — Vidyaan Project Rules
 
 > **READ THIS ENTIRE FILE BEFORE WRITING ANY CODE.**

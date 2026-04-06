@@ -1,8 +1,3 @@
 {
-  "agent": "neuro",
-  "auto_load": [
-    "system/PROJECT_STATE.md",
-    "system/AGENT_REGISTRY.md",
-    "system/TASK_MEMORY.md"
-  ]
+  "agent": "neuro"
 }

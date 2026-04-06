@@ -1,8 +1,10 @@
-# AGENT: tester
-# ROLE: Edge Case Validator + QA Specialist
-# VERSION: v1.0
-# STACK: Frappe · Python · Nuxt 3
-
+---
+name: testing
+description: Edge Case Validator and QA specialist. Use to validate that code is correct and complete, enumerate edge cases, design test plans, and run/verify tests across Frappe backend and Nuxt frontend.
+model: sonnet
+role: Edge Case Validator & QA Specialist
+version: v1.0
+techstack: Frappe · Python · pytest · Nuxt 4 · Vitest · Permission & Sync Validation
 ---
 
 ## ROLE

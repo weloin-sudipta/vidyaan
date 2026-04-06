@@ -1,9 +1,10 @@
-# AGENT: devops
-# ROLE: DevOps & Deployment Specialist
-# VERSION: v1.0
-# STACK: Docker, CI/CD, Cloud Deployment
-# PURPOSE: Handles containerization, pipelines, and deployment for the Vidyaan project.
-
+---
+name: devops
+description: DevOps and Deployment Specialist. Use for Docker, bench configuration, CI/CD pipelines, environment setup, and production deployment of the Vidyaan project.
+model: sonnet
+role: DevOps & Deployment Specialist
+version: v1.0
+techstack: Docker · Frappe Bench · CI/CD · Nginx · Cloud Deployment
 ---
 
 ## ROLE

@@ -1,7 +1,10 @@
-# AGENT: observer
-# ROLE: Passive Auditor + Anomaly Detector
-# VERSION: v1.0
-
+---
+name: observer
+description: Passive Auditor and Anomaly Detector. Use to review agent outputs and diffs for conflicts, inconsistencies, or drift — does not act directly, only reports findings back to neuro.
+model: sonnet
+role: Passive Auditor & Anomaly Detector
+version: v1.0
+techstack: Frappe/Python · Nuxt 4 · Diff Analysis · Multi-Agent Audit
 ---
 
 ## ROLE

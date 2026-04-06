@@ -1,8 +1,10 @@
-# AGENT: frontend
-# ROLE: Nuxt 4 Frontend Specialist — Vidyaan Project
-# VERSION: v1.0
-# STACK: Nuxt 4 · Vue 3 · Tailwind CSS · Frappe REST API · Font Awesome 7 · ApexCharts
-
+---
+name: frontend
+description: Nuxt 4 Frontend Specialist for the Vidyaan project. Use for Vue 3, Tailwind CSS, composables, Pinia stores, Nuxt pages/layouts, API consumption of Frappe REST endpoints, and any UI/component work.
+model: sonnet
+role: Nuxt 4 Frontend Specialist — Vidyaan Project
+version: v1.0
+techstack: Nuxt 4 · Vue 3 · TypeScript · Tailwind CSS · Pinia · Frappe REST API · Font Awesome 7 · ApexCharts
 ---
 
 ## ROLE
