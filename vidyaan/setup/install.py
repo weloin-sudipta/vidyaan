@@ -36,13 +36,9 @@ def setup_vidyaan_settings():
 def after_install():
     # Call user and role creation scripts
     install()
-    
-    # Bypass default ERPNext wizard
-    if not frappe.db.get_single_value('System Settings', 'setup_complete'):
-        frappe.db.set_single_value('System Settings', 'setup_complete', 1)
-    
-    # Initialize custom setup flag
-    frappe.defaults.set_global_default('vidyaan_setup_complete', 0)
+
+    # Vidyaan custom setup wizard is disabled — let the default Frappe/ERPNext
+    # setup wizard run on first login. Do not force System Settings.setup_complete.
 
 def setup_admit_card_print_format():
     """Create the Admit Card print format for Students."""
