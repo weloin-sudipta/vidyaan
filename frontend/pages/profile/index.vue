@@ -506,7 +506,7 @@ const saveEditModal = async () => {
                             <button class="btn-icon" title="Print Profile" @click="downloadResumePDF">
                                 <i class="fa fa-print"></i>
                             </button>
-                            <button class="btn-primary" @click="showEditModal = true">Edit Information</button>
+                            <!-- <button class="btn-primary" @click="showEditModal = true">Edit Information</button> -->
                         </div>
                     </div>
 

@@ -111,10 +111,10 @@
                 </template>
                 <template v-else>
                     <CurrentProgram v-if="programData.name && programData.name !== 'N/A'" :program-data="programData" @click="showModal = true" />
-                    <TodayClass v-if="todayClasses && todayClasses.length > 0" :todayClasses="todayClasses" />
+                    <TodayClass v-if="todayClasses && todayClasses.length > 0" :todayClasses="todayClassesPreview" />
                     <UpcomingExams v-if="upcomingExams && upcomingExams.length > 0" :upcomingExams="upcomingExams" />
                     <Assignment v-if="assignments && assignments.length > 0" :assignments="assignments" />
-                    <PaymentHistory v-if="dashboardData?.fees && dashboardData.fees.length > 0" :fees="dashboardData?.fees.slice(0, 2)" />
+                    <PaymentHistory v-if="dashboardData?.fees?.fees?.length > 0" :fees="dashboardData?.fees" />
                 </template>
             </div>
 
@@ -226,7 +226,7 @@ import { useNotices } from "~/composable/useNotices";
 
 const { dashboardData, loading, error, loadDashboard } = useStudentDashboard();
 const { assignments: allAssignments, fetchAssignments } = useAssignments();
-const assignments = computed(() => allAssignments.value.slice(0, 2));
+const assignments = computed(() => allAssignments.value.slice(0, 3));
 const showModal = ref(false);
 
 // class schedule data
@@ -236,12 +236,13 @@ const {
     currentDaySchedule: todayClasses,
     fetchSchedule,
 } = useTimetable();
+const todayClassesPreview = computed(() => todayClasses.value);
 const today = new Date().toLocaleDateString("en-US", { weekday: "long" });
 if (weekDays.includes(today)) activeDay.value = today;
 
 // notice data
 const { notices: allNotices, fetchNotices } = useNotices();
-const notices = computed(() => allNotices.value.slice(0, 2));
+const notices = computed(() => allNotices.value.slice(0, 3));
 
 /* PROGRAM DATA */
 const programData = computed(() => {
@@ -282,7 +283,8 @@ const upcomingExams = computed(() => {
             month: a.month,
         }))
         .filter((a) => new Date(a.date) >= today)
-        .sort((a, b) => new Date(a.date) - new Date(b.date));
+        .sort((a, b) => new Date(a.date) - new Date(b.date))
+        .slice(0, 3);
 });
 
 /* BOOKS */

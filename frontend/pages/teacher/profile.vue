@@ -10,7 +10,6 @@
         </div>
       </div>
 
-      <!-- Error State -->
       <div v-if="error && !loading" class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-[2.5rem] p-8 text-center">
         <p class="text-red-600 dark:text-red-400 font-bold">{{ error }}</p>
         <button @click="fetchTeacherData" class="mt-4 px-6 py-3 bg-red-600 text-white rounded-2xl font-bold hover:bg-red-700 transition-colors">
@@ -18,7 +17,6 @@
         </button>
       </div>
 
-      <!-- Main Content -->
       <template v-else-if="user && !loading">
         <header class="bg-white dark:bg-slate-900 rounded-[2.5rem] shadow-sm border border-slate-200/60 dark:border-slate-800 p-6 transition-all">
           <div class="flex flex-col md:flex-row items-center gap-8">
@@ -68,16 +66,15 @@
               <a :href="`mailto:${teacherProfile.email}`" class="p-3 rounded-2xl bg-slate-50 dark:bg-slate-800 text-slate-400 hover:text-indigo-600 transition-colors border border-slate-200 dark:border-slate-700">
                 <i class="fas fa-envelope"></i>
               </a>
-              <button class="px-6 py-3 bg-slate-900 dark:bg-indigo-600 text-white rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-indigo-600 transition-all shadow-lg">
+              <!-- <button class="px-6 py-3 bg-slate-900 dark:bg-indigo-600 text-white rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-indigo-600 transition-all shadow-lg">
                 Edit Profile
-              </button>
+              </button> -->
             </div>
           </div>
         </header>
 
         <main class="grid grid-cols-1 lg:grid-cols-3 gap-6 animate-in fade-in duration-700">
           
-          <!-- Statistics Section -->
           <div class="lg:col-span-3 grid grid-cols-1 md:grid-cols-4 gap-4">
             <div class="bg-gradient-to-br from-blue-500 to-blue-600 dark:from-blue-600 dark:to-blue-700 rounded-2xl p-6 text-white shadow-lg">
               <div class="text-3xl font-black mb-2">{{ assignedCourses.length }}</div>
@@ -98,34 +95,6 @@
           </div>
 
           <div class="lg:col-span-2 space-y-6">
-            <!-- Professional Credentials -->
-            <!-- <section v-if="hasCredentials" class="bg-white dark:bg-slate-900 rounded-[2.5rem] p-8 border border-slate-200/60 dark:border-slate-800 shadow-sm">
-              <div class="flex items-center gap-3 mb-8">
-                <div class="w-1.5 h-6 bg-indigo-600 dark:bg-indigo-400 rounded-full"></div>
-                <h3 class="text-lg font-black text-slate-800 dark:text-white tracking-tight">Professional Information</h3>
-              </div>
-              
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div v-if="teacherProfile.gender" class="space-y-1">
-                  <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Gender</p>
-                  <p class="text-sm font-bold text-slate-700 dark:text-slate-200">{{ teacherProfile.gender }}</p>
-                </div>
-                <div v-if="teacherProfile.user_type" class="space-y-1">
-                  <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">User Type</p>
-                  <p class="text-sm font-bold text-slate-700 dark:text-slate-200">{{ teacherProfile.user_type }}</p>
-                </div>
-                <div v-if="teacherProfile.language" class="space-y-1">
-                  <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Language</p>
-                  <p class="text-sm font-bold text-slate-700 dark:text-slate-200">{{ teacherProfile.language }}</p>
-                </div>
-                <div v-if="teacherProfile.time_zone" class="space-y-1">
-                  <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Time Zone</p>
-                  <p class="text-sm font-bold text-slate-700 dark:text-slate-200">{{ teacherProfile.time_zone }}</p>
-                </div>
-              </div>
-            </section> -->
-
-            <!-- Contact Information -->
             <section class="bg-white dark:bg-slate-900 rounded-[2.5rem] p-8 border border-slate-200/60 dark:border-slate-800 shadow-sm">
               <h3 class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-6">Contact Information</h3>
               <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -144,7 +113,6 @@
               </div>
             </section>
 
-            <!-- Professional Info -->
             <section v-if="hasCredentials" class="bg-white dark:bg-slate-900 rounded-[2.5rem] p-8 border border-slate-200/60 dark:border-slate-800 shadow-sm">
               <h3 class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-6">Professional Information</h3>
               <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -167,7 +135,6 @@
               </div>
             </section>
 
-            <!-- Login Activity -->
             <section v-if="teacherProfile.last_login || teacherProfile.last_active" class="bg-white dark:bg-slate-900 rounded-[2.5rem] p-8 border border-slate-200/60 dark:border-slate-800 shadow-sm">
               <h3 class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-6">Activity Information</h3>
               <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -184,7 +151,6 @@
           </div>
 
           <div class="space-y-6">
-            <!-- Workload Stats -->
             <div class="bg-indigo-600 dark:bg-indigo-700 rounded-[2.5rem] p-8 text-white shadow-xl shadow-indigo-100 dark:shadow-none">
               <p class="text-[10px] font-black uppercase tracking-[0.2em] opacity-60 mb-1">Teaching Load</p>
               <h4 class="text-4xl font-black mb-6">{{ assignedCourses.length }}<span class="text-lg opacity-50">courses</span></h4>
@@ -200,11 +166,20 @@
               </div>
             </div>
 
-            <!-- Assigned Classes -->
             <div v-if="assignedCourses.length > 0" class="bg-white dark:bg-slate-900 rounded-[2.5rem] p-8 border border-slate-200/60 dark:border-slate-800">
-              <h3 class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-6">Assigned Classes</h3>
+              <div class="flex items-center justify-between mb-6">
+                <h3 class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Assigned Classes</h3>
+                <button 
+                  v-if="assignedCourses.length > 1"
+                  @click="showModal = true" 
+                  class="text-[10px] font-black text-indigo-600 uppercase tracking-widest hover:underline"
+                >
+                  View All
+                </button>
+              </div>
+              
               <div class="space-y-3">
-                <div v-for="course in assignedCourses" :key="course.name" class="flex items-center gap-3 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-colors border border-transparent hover:border-indigo-100 dark:hover:border-indigo-800 cursor-default">
+                <div v-for="course in limitedCourses" :key="course.name" class="flex items-center gap-3 p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 transition-colors border border-transparent cursor-default">
                   <div class="w-8 h-8 rounded-lg bg-white dark:bg-slate-900 flex items-center justify-center text-xs font-black text-indigo-600 shadow-sm">
                     {{ course.program?.substring(0, 2) || course.course?.substring(0, 2) || 'CL' }}
                   </div>
@@ -216,7 +191,6 @@
               </div>
             </div>
 
-            <!-- User Roles -->
             <div v-if="userRoles.length > 0" class="bg-white dark:bg-slate-900 rounded-[2.5rem] p-8 border border-slate-200/60 dark:border-slate-800">
               <h3 class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-6">User Roles</h3>
               <div class="flex flex-wrap gap-2">
@@ -229,6 +203,31 @@
 
         </main>
       </template>
+
+      <Teleport to="body">
+        <div v-if="showModal" class="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/60 backdrop-blur-sm" @click.self="showModal = false">
+          <div class="bg-white dark:bg-slate-900 w-full max-w-lg rounded-[2.5rem] p-8 border border-slate-200 dark:border-slate-800 shadow-2xl animate-in">
+            <div class="flex justify-between items-center mb-6">
+              <h3 class="text-[10px] font-black text-slate-400 uppercase tracking-widest">All Assigned Classes</h3>
+              <button @click="showModal = false" class="w-8 h-8 flex items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800 text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 transition-colors">
+                <i class="fas fa-times text-xs"></i>
+              </button>
+            </div>
+            
+            <div class="space-y-3 max-h-[60vh] overflow-y-auto pr-2 no-scrollbar">
+              <div v-for="course in assignedCourses" :key="course.name" class="flex items-center gap-3 p-4 rounded-2xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-800">
+                <div class="w-10 h-10 rounded-xl bg-white dark:bg-slate-900 flex items-center justify-center text-sm font-black text-indigo-600 shadow-sm">
+                  {{ course.program?.substring(0, 2) || course.course?.substring(0, 2) || 'CL' }}
+                </div>
+                <div class="flex-1">
+                  <span class="text-sm font-bold text-slate-700 dark:text-slate-200 uppercase block">{{ course.course }}</span>
+                  <span class="text-xs text-slate-500 dark:text-slate-400">{{ course.program }} • {{ course.academic_term }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </Teleport>
     </div>
   </div>
 </template>
@@ -239,15 +238,16 @@ import { useTeacherDashboard } from '~/composable/useTeacherDashboard'
 
 const { data, fetchTeacherData, error, loading } = useTeacherDashboard()
 
+// Modal toggle state
+const showModal = ref(false)
+
 // Computed properties for data transformation
 const instructor = computed(() => data.value?.instructor || {})
 const user = computed(() => data.value?.user || {})
 
 const teacherProfile = computed(() => {
-  // Merge instructor and user data
   return {
     ...instructor.value,
-    // Override with user data for common fields
     full_name: user.value?.full_name || instructor.value?.instructor_name,
     email: user.value?.email || instructor.value?.instructor_email,
     phone: user.value?.phone,
@@ -260,6 +260,7 @@ const teacherProfile = computed(() => {
     last_login: user.value?.last_login,
     last_active: user.value?.last_active,
     user_type: user.value?.user_type,
+    image: instructor.value?.image // Ensure image is mapped if available
   }
 })
 
@@ -274,6 +275,9 @@ const teacherInitials = computed(() => {
 })
 
 const assignedCourses = computed(() => instructor.value?.instructor_log || [])
+
+// Limit the display to only the first course in the main dashboard view
+const limitedCourses = computed(() => assignedCourses.value.slice(0, 1))
 
 const userRoles = computed(() => user.value?.roles?.map(role => role.role) || [])
 

@@ -179,35 +179,51 @@ def get_student_dashboard_data():
             })
 
     # Fees data
-    raw_fees = frappe.get_all(
-        "Fees",
-        filters={"student": student.name},
-        fields=["name", "program", "academic_year", "due_date",
-                "grand_total", "outstanding_amount", "docstatus", "posting_date",
-                "fee_structure"],
-        order_by="posting_date desc",
-        limit=10,
-        ignore_permissions=True,
-    )
-    for fee in raw_fees:
-        fee["status"] = "Paid" if fee.outstanding_amount == 0 and fee.docstatus == 1 else (
-            "Submitted" if fee.docstatus == 1 else "Draft"
+    fees_data = {"fees": [], "total_outstanding": 0, "currency": "INR"}
+    try:
+        default_currency = frappe.defaults.get_global_default("currency") or "USD"
+        invoices = frappe.db.get_all(
+            "Sales Invoice",
+            filters={"student": student.name, "docstatus": ["!=", 2]},
+            fields=["name", "posting_date", "due_date", "status", "grand_total", "outstanding_amount", "currency", "remarks", "customer_name", "fee_schedule"],
+            order_by="posting_date desc"
         )
-        fee["remarks"] = fee.get("academic_year", "")
-        # Get fee components for breakdown
-        components = frappe.get_all(
-            "Fee Component",
-            filters={"parent": fee.name},
-            fields=["fees_category", "amount"],
-            ignore_permissions=True,
-        )
-        fee["components"] = components
+        
+        total_outstanding = sum(inv.get("outstanding_amount", 0) for inv in invoices)
+        
+        fee_list = []
+        for inv in invoices:
+            fee_structure_name = ""
+            if inv.get("fee_schedule"):
+                fee_structure_name = frappe.db.get_value("Fee Schedule", inv.fee_schedule, "fee_structure") or ""
+            fee_structure = fee_structure_name or inv.get("remarks", "")[:50] if inv.get("remarks") else f"Fee for {inv.customer_name}" if inv.get("customer_name") else "Tuition Fee"
+            
+            fee_list.append({
+                "name": inv.name,
+                "posting_date": inv.posting_date,
+                "due_date": inv.due_date,
+                "status": inv.status,
+                "grand_total": float(inv.grand_total or 0),
+                "outstanding_amount": float(inv.outstanding_amount or 0),
+                "paid_amount": float(inv.grand_total or 0) - float(inv.outstanding_amount or 0),
+                "currency": inv.currency,
+                "fee_structure": fee_structure,
+                "remarks": inv.remarks or ""
+            })
+        
+        fees_data = {
+            "fees": fee_list,
+            "total_outstanding": float(total_outstanding),
+            "currency": invoices[0].currency if invoices else default_currency
+        }
+    except Exception as e:
+        frappe.log_error(f"Error fetching fees in dashboard: {str(e)}")
 
     # Wrap fees for the fees tab (expects dashboardData.fees.fees)
     fees = {
-        "fees": raw_fees,
-        "total": sum(f.get("grand_total", 0) or 0 for f in raw_fees),
-        "outstanding": sum(f.get("outstanding_amount", 0) or 0 for f in raw_fees),
+        "fees": fees_data["fees"],
+        "total": sum(f.get("grand_total", 0) or 0 for f in fees_data["fees"]),
+        "outstanding": fees_data["total_outstanding"],
     }
 
     # Format upcoming exams for frontend (expects: id, title, date, description, day, month)

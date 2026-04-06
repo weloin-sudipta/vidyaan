@@ -132,7 +132,8 @@ def mark_attendance_bulk(course_schedule=None, students=None):
         try:
             existing = frappe.db.get_value(
                 "Student Attendance",
-                {"student": student_id, "date": frappe.utils.today(), "student_group": cs.student_group},
+                # {"student": student_id, "date": frappe.utils.today(), "student_group": cs.student_group},
+                {"student": student_id, "course_schedule": course_schedule},
                 "name"
             )
 

@@ -156,7 +156,7 @@ function loadStudents() {
   students.value = (selectedClass.value.students || []).map(s => ({
     id: s.student,
     name: s.student_name,
-    status: s.status ?? null  // pre-fill if already saved, otherwise null
+    status: s.status ? (s.status.charAt(0).toUpperCase() + s.status.slice(1).toLowerCase()) : null  // normalize to "Present" or "Absent"
   }))
 }
 
@@ -220,6 +220,11 @@ async function saveAttendance() {
         console.warn('Failed attendance:', res.failed)
       }
       addToast('Success', message, 'success')
+
+      // Refetch classes and reload students
+      const data = await fetchclassSchedule()
+      classes.value = data?.classes || []
+      loadStudents()
     } else if (res?.failed?.length) {
       addToast('Error', `Failed to save attendance for ${res.failed.length} student(s).`, 'error')
     } else {

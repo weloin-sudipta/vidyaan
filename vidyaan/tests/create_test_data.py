@@ -177,11 +177,50 @@ def _ensure_holiday_list():
 
 # ─── Creators ─────────────────────────────────────────────────────────────────
 
+def _ensure_transit_warehouse_type():
+    """Ensure the required ERPNext Warehouse Type exists before Company creation."""
+    if not frappe.db.exists("Warehouse Type", "Transit"):
+        frappe.get_doc({
+            "doctype": "Warehouse Type",
+            "name": "Transit",
+            "warehouse_type": "Transit",
+        }).insert(ignore_permissions=True, ignore_if_duplicate=True)
+        frappe.db.commit()
+
+
+def _ensure_default_company():
+    """Ensure the current user has a valid default Company set."""
+    try:
+        frappe.defaults.set_user_default("Company", COMPANY_NAME, user="Administrator")
+    except Exception:
+        pass
+
+    try:
+        frappe.defaults.set_global_default("Company", COMPANY_NAME)
+    except Exception:
+        pass
+
+
+def _ensure_genders():
+    """Ensure basic gender records exist before creating Person records."""
+    for gender in ["Male", "Female"]:
+        if not frappe.db.exists("Gender", gender):
+            frappe.get_doc({
+                "doctype": "Gender",
+                "gender": gender,
+            }).insert(ignore_permissions=True, ignore_if_duplicate=True)
+    frappe.db.commit()
+
+
 def create_company():
     """Create the demo school company."""
     print("Creating Company...")
     if frappe.db.exists("Company", COMPANY_NAME):
-        return frappe.get_doc("Company", COMPANY_NAME)
+        company = frappe.get_doc("Company", COMPANY_NAME)
+        _ensure_default_company()
+        return company
+
+    _ensure_transit_warehouse_type()
 
     company = frappe.get_doc({
         "doctype": "Company",
@@ -193,6 +232,7 @@ def create_company():
     })
     company.insert(ignore_permissions=True)
     frappe.db.commit()
+    _ensure_default_company()
     return company
 
 
@@ -257,6 +297,7 @@ def create_courses():
         doc = _get_or_create("Course", {"course_name": course_name}, {
             "course_name": course_name,
             "course_abbreviation": course_name[:3].upper(),
+            "company": COMPANY_NAME,
         })
         created.append(doc)
     return created
@@ -1612,6 +1653,7 @@ def create_all(fresh=True):
     create_topics_and_articles()
     programs = create_programs()
     rooms = create_rooms()
+    _ensure_genders()
     instructors = create_instructors()
 
     # People

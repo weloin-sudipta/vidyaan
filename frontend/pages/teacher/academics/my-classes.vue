@@ -68,7 +68,7 @@
               Students
             </span>
             <span class="text-lg font-black text-slate-800 dark:text-slate-200">
-              {{ cls.students }}
+              {{ cls.total_students }}
             </span>
           </div>
 
@@ -105,38 +105,82 @@ const loading = ref(true)
 const classes = ref([])
 const selectedProgram = ref('')
 
-onMounted(async () => {
-  const res = await fetchclassSchedule()
+/* ------------------ HELPERS ------------------ */
 
-  if (res?.success) {
-    classes.value = res.classes.map(cls => ({
-      id: cls.name,
-      subject: cls.course,
-      section: cls.student_group,
-      room: cls.room,
-      students: cls.total_students,
-      program: cls.program,
-      instructor: cls.instructor_name,
-      from_time: cls.from_time,
-      to_time: cls.to_time
-    }))
+// Normalize API response
+const getClasses = (res) => {
+  if (!res) return []
+  if (Array.isArray(res.classes)) return res.classes
+  if (res.success && Array.isArray(res.classes)) return res.classes
+  return []
+}
+
+// Format time HH:MM
+const formatTime = (time) => time?.slice(0, 5) || ''
+
+// Transform class object (single source of truth)
+const mapClass = (cls, fallbackInstructor) => {
+  const students = cls.students || []
+
+  return {
+    id: cls.name,
+    subject: cls.course_name || cls.course,
+    section: cls.student_group,
+    room: cls.room,
+
+    //  SAFE STRUCTURE
+    students, // full array
+    total_students: cls.total_students ?? students.length,
+
+    // Attendance ready
+    present_count: students.filter(s => s.status === 'present').length,
+    absent_count: students.filter(s => s.status === 'absent').length,
+
+    program: cls.program,
+    instructor: cls.instructor_name || cls.instructor || fallbackInstructor,
+
+    from_time: formatTime(cls.from_time),
+    to_time: formatTime(cls.to_time),
+    schedule_date: cls.schedule_date
   }
+}
 
-  loading.value = false
+/* ------------------ FETCH ------------------ */
+
+onMounted(async () => {
+  try {
+    loading.value = true
+
+    const res = await fetchclassSchedule()
+    const rawClasses = getClasses(res)
+
+    classes.value = rawClasses.map(cls =>
+      mapClass(cls, res?.instructor)
+    )
+
+    console.log('Optimized classes:', classes.value)
+  } catch (err) {
+    console.error('Error fetching classes:', err)
+    classes.value = []
+  } finally {
+    loading.value = false
+  }
 })
 
-/* ✅ Unique programs */
-const programs = computed(() => {
-  return [...new Set(classes.value.map(c => c.program))]
-})
+/* ------------------ COMPUTED ------------------ */
 
-/* ✅ Filter logic */
-const filteredClasses = computed(() => {
-  if (!selectedProgram.value) return classes.value
-  return classes.value.filter(c => c.program === selectedProgram.value)
-})
+// Unique programs
+const programs = computed(() =>
+  [...new Set(classes.value.map(c => c.program).filter(Boolean))]
+)
+
+// Filter
+const filteredClasses = computed(() =>
+  selectedProgram.value
+    ? classes.value.filter(c => c.program === selectedProgram.value)
+    : classes.value
+)
 </script>
-
 <style scoped>
 .custom-scrollbar::-webkit-scrollbar { width: 5px; height: 5px; }
 .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }

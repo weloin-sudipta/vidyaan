@@ -100,7 +100,7 @@ const props = defineProps({
 const paymentHistory = computed(() => {
   const list = props.fees?.fees || [];
 
-  return list.map((fee) => ({
+  return list.slice(0, 3).map((fee) => ({
     id: fee.name,
     date: fee.posting_date,
     status: fee.status,
@@ -108,7 +108,7 @@ const paymentHistory = computed(() => {
   }));
 });
 
-const totalOutstanding = computed(() => props.fees?.total_outstanding || 0);
+const totalOutstanding = computed(() => props.fees?.outstanding || props.fees?.total_outstanding || 0);
 const currency = computed(() => props.fees?.currency || "INR");
 
 /* STATUS STYLES */

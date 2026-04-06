@@ -2,6 +2,7 @@
   <main class="flex-1 overflow-y-auto p-6 lg:p-10 custom-scrollbar bg-transparent transition-colors duration-300">
 
     <div class="relative bg-white dark:bg-slate-900 rounded-[2.5rem] p-8 lg:p-12 overflow-hidden shadow-sm dark:shadow-none border border-transparent dark:border-slate-800 mb-10 transition-all">
+      
       <div v-if="loading" class="animate-pulse flex flex-col lg:flex-row justify-between items-center gap-8">
         <div class="flex-1 space-y-4">
           <div class="h-4 w-24 bg-slate-200 dark:bg-slate-800 rounded"></div>
@@ -51,13 +52,21 @@
 
     <div class="grid grid-cols-1 xl:grid-cols-12 gap-8">
        <div class="xl:col-span-8 space-y-8">
-          <DailyRoutine v-if="todayClasses && todayClasses.length > 0" :classes="todayClasses.slice(0, 2)" :loading="loading" />
+          <DailyRoutine 
+            v-if="todayClasses && todayClasses.length > 0" 
+            :classes="todayClassesPreview" 
+            :loading="loading" 
+          />
+          <div v-else-if="!loading" class="p-8 bg-white dark:bg-slate-900 rounded-[2.5rem] text-center border border-dashed border-slate-200 dark:border-slate-800">
+            <p class="text-slate-400 font-bold uppercase text-[10px] tracking-widest">No classes scheduled for today</p>
+          </div>
+
           <TeacherDashboardPendingTasks />
        </div>
        
        <div class="xl:col-span-4 space-y-8">
          <CampusNotice v-if="notices && notices.length > 0" :notices="notices" />
-          <AcademicCalendar />
+         <AcademicCalendar />
        </div>
     </div>
 
@@ -68,65 +77,61 @@
 import { ref, computed, onMounted } from 'vue'
 import DailyRoutine from '~/components/dashboard/teacher/DailyRoutine.vue'
 import TeacherDashboardPendingTasks from '~/components/dashboard/teacher/TeacherDashboardPendingTasks.vue'
-import Announcements from '~/components/dashboard/teacher/Announcements.vue'
 import AcademicCalendar from '~/components/dashbaord/academicCalendar.vue'
-import { useTeacherClasses } from '~/composable/useTeacherClasses'
 import CampusNotice from '~/components/dashbaord/campusNotice.vue'
+import { useTeacherClasses } from '~/composable/useTeacherClasses'
 import { useNotices } from '~/composable/useNotices'
 
 const { fetchclassSchedule } = useTeacherClasses()
+const { notices: allNotices, fetchNotices } = useNotices()
 
 // UI States
 const loading = ref(true)
-// const teacherInfo = ref({ name: 'Sudipta Ghosh', department: 'Computer Science' })
 const instructorName = ref('')
 
 // Data Stores
 const todayClasses = ref([])
-const pendingGrading = ref([
-    { id: 1, title: 'JavaScript Fundamentals Quiz', class_name: 'CS-101', submissions: 45 },
-    { id: 2, title: 'UI Design Prototype', class_name: 'CS-204', submissions: 12 },
-    { id: 3, title: 'Database Schema Design', class_name: 'CS-302', submissions: 30 }
-])
-
-const recentNotices = ref([
-    { id: 1, title: 'Mid-Term Exam Syllabus', desc: 'Please upload syllabus.', date: 'Today, 09:00 AM' },
-    { id: 2, title: 'Faculty Meetup', desc: 'Staff room meeting on Friday.', date: 'Yesterday, 04:30 PM' }
-])
-
-const { notices: allNotices, fetchNotices } = useNotices();
-const notices = computed(() => allNotices.value.slice(0, 2));
+const notices = computed(() => allNotices.value.slice(0, 3))
+const todayClassesPreview = computed(() => todayClasses.value.slice(0, 3))
 
 // Calculated Properties
 const totalStudentsCount = computed(() => {
     return todayClasses.value.reduce((acc, curr) => acc + (curr.studentCount || 0), 0)
 })
 
-// Initialization
+// Initialization Logic
 onMounted(async () => {
     try {
         loading.value = true
         const response = await fetchclassSchedule()
         
-        if (response && response.success) {
-          instructorName.value = response.instructor || ''
-            // Mapping your specific JSON data structure
+        // Debugging log to verify incoming data
+        console.log("Class Schedule Data:", response)
+
+        if (response && response.classes) {
+            // Map Instructor Name
+            instructorName.value = response.instructor || 'Educator'
+
+            // Map Class Data correctly based on your JSON structure
             todayClasses.value = response.classes.map(cls => ({
                 id: cls.name,
-                subject: cls.course,
-                title: cls.title,
+                subject: cls.course_name || cls.course, // Use course_name from JSON
+                title: cls.course_name,
+                // Time formatting HH:mm
                 time: `${cls.from_time.split(':').slice(0,2).join(':')} - ${cls.to_time.split(':').slice(0,2).join(':')}`,
-                room: cls.room.split('-').pop(), // Gets the last part of room ID
+                // Room logic: Take last segment of the room ID
+                room: cls.room ? cls.room.split('-').pop() : 'N/A', 
                 section: cls.student_group,
-                studentCount: cls.total_students,
-                color: cls.color || '#F1F5F9'
+                studentCount: cls.total_students || 0,
+                // Classes need a theme color for the UI; providing a default
+                color: '#6366f1' 
             }))
         }
         
-        // Fetch notices for campus notice component
+        // Load campus notices
         await fetchNotices()
     } catch (error) {
-        console.error("Dashboard Load Error:", error)
+        console.error("Dashboard Initialization Error:", error)
     } finally {
         loading.value = false
     }

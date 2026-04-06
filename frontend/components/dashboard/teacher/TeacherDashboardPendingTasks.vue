@@ -41,7 +41,7 @@
             <p class="text-[11px] font-bold text-slate-500 uppercase">All caught up!</p>
         </div>
         <div v-else class="flex flex-col gap-3">
-          <div v-for="item in pendingTasks.attendance_pending.slice(0, 2)" :key="item.schedule_id" class="p-4 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-slate-700/50 hover:border-rose-200 dark:hover:border-rose-500/30 transition-all group">
+          <div v-for="item in pendingTasks.attendance_pending.slice(0, 3)" :key="item.schedule_id" class="p-4 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-slate-700/50 hover:border-rose-200 dark:hover:border-rose-500/30 transition-all group">
              <div class="flex justify-between items-start mb-2">
                 <div>
                    <p class="text-[12px] font-black leading-tight text-slate-800 dark:text-slate-200 group-hover:text-rose-600 dark:group-hover:text-rose-400 transition-colors">{{ item.course_name }}</p>
@@ -80,7 +80,7 @@
             <p class="text-[11px] font-bold text-slate-500 uppercase">Grades Complete</p>
         </div>
         <div v-else class="flex flex-col gap-3">
-            <div v-for="item in pendingTasks.mark_entry_pending.slice(0, 2)" :key="item.assessment_id" class="p-4 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-slate-700/50 hover:border-amber-200 dark:hover:border-amber-500/30 transition-all group">
+            <div v-for="item in pendingTasks.mark_entry_pending.slice(0, 3)" :key="item.assessment_id" class="p-4 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-slate-700/50 hover:border-amber-200 dark:hover:border-amber-500/30 transition-all group">
                <div class="flex justify-between items-start mb-2">
                   <div>
                      <p class="text-[12px] leading-tight font-black text-slate-800 dark:text-slate-200 group-hover:text-amber-600 dark:group-hover:text-amber-400 transition-colors">{{ item.assessment_title }}</p>
@@ -127,7 +127,7 @@
             <p class="text-[11px] font-bold text-slate-500 uppercase">Inbox Zero</p>
         </div>
         <div v-else class="flex flex-col gap-3">
-            <div v-for="item in pendingTasks.review_pending.slice(0, 2)" :key="item.submission_id" class="p-4 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-slate-700/50 hover:border-emerald-200 dark:hover:border-emerald-500/30 transition-all group">
+            <div v-for="item in pendingTasks.review_pending.slice(0, 3)" :key="item.submission_id" class="p-4 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-slate-700/50 hover:border-emerald-200 dark:hover:border-emerald-500/30 transition-all group">
                <div class="flex justify-between items-start mb-2">
                   <div>
                      <p class="text-[12px] leading-tight font-black text-slate-800 dark:text-slate-200 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">{{ item.student_name }}</p>
