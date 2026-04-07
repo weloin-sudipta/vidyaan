@@ -420,6 +420,13 @@ def create_rooms():
 def create_instructors():
     """Create teacher records with course mappings."""
     print("Creating Instructors...")
+
+    # REQUIRED: ERPNext Instructor.autoname() throws if this is unset.
+    # "Full Name" uses instructor_name directly (no Employee link or naming series needed).
+    if not frappe.db.get_single_value("Education Settings", "instructor_created_by"):
+        frappe.db.set_single_value("Education Settings", "instructor_created_by", "Full Name")
+        frappe.db.commit()
+
     created = []
     frappe.flags.in_import = True  # Bypass user creation throttle
 
@@ -442,16 +449,45 @@ def create_instructors():
             })
             user.insert(ignore_permissions=True)
 
-        # Create instructor
-        existing = frappe.db.exists("Instructor", {"instructor_name": full_name})
+        # ── Create / get Employee linked to this user ──────────────────────
+        # Required so _get_instructor_for_user() can resolve User → Employee → Instructor.
+        emp_name = frappe.db.get_value("Employee", {"user_id": email}, "name")
+        if not emp_name:
+            emp_doc = frappe.get_doc({
+                "doctype": "Employee",
+                "first_name": teacher["first"],
+                "last_name": teacher["last"],
+                "employee_name": full_name,
+                "gender": teacher["gender"],
+                "date_of_birth": "1985-01-01",
+                "date_of_joining": "2020-06-01",
+                "status": "Active",
+                "company": COMPANY_NAME,
+                "user_id": email,
+            })
+            emp_doc.insert(ignore_permissions=True)
+            emp_name = emp_doc.name
+            print(f"  + Employee {emp_name} for {full_name}")
+
+        # ── Create / get Instructor linked to that Employee ────────────────
+        existing = (
+            frappe.db.exists("Instructor", {"employee": emp_name})
+            or frappe.db.exists("Instructor", {"instructor_name": full_name})
+        )
         if existing:
             doc = frappe.get_doc("Instructor", existing)
+            # Patch in employee link if missing (handles old test data)
+            if not doc.employee:
+                doc.employee = emp_name
+                doc.save(ignore_permissions=True)
+                print(f"  ~ Linked Instructor {doc.name} → Employee {emp_name}")
         else:
             doc = frappe.get_doc({
                 "doctype": "Instructor",
                 "instructor_name": full_name,
                 "gender": teacher["gender"],
                 "company": COMPANY_NAME,
+                "employee": emp_name,
             })
             doc.insert(ignore_permissions=True)
 
@@ -467,8 +503,8 @@ def create_instructors():
                     })
             try:
                 doc.save(ignore_permissions=True)
-            except Exception:
-                pass
+            except Exception as e:
+                print(f"  ! Failed to save course_mappings for {full_name}: {e}")
 
         created.append(doc)
 
