@@ -1,69 +1,27 @@
+import json
+
 import frappe
 from frappe import _
+from frappe.utils import today, getdate
+
 from vidyaan.api_folder.profile import _get_instructor_for_user
 
 
-@frappe.whitelist()
-def get_my_classes():
-    """Get class schedule for the logged-in instructor.
-
-    Returns today's classes if available, otherwise returns
-    the most recent week's classes so the dashboard is never empty.
-    Also includes total_students, program, instructor_name for the dashboard.
-    """
-    instructor = _get_instructor_for_user()
-    if not instructor:
-        return {"classes": []}
-
-    # Try today first
-    schedules = frappe.get_all(
-        "Course Schedule",
-        filters={
-            "instructor": instructor.name,
-            "schedule_date": frappe.utils.today()
-        },
-        fields=[
-            "name", "student_group", "course", "instructor",
-            "instructor_name", "from_time", "to_time", "room",
-            "schedule_date", "program"
-        ],
-        order_by="from_time asc",
-        ignore_permissions=True,
-    )
-
-    # If no classes today, get the most recent day's classes
-    if not schedules:
-        latest = frappe.get_all(
-            "Course Schedule",
-            filters={"instructor": instructor.name},
-            fields=["schedule_date"],
-            order_by="schedule_date desc",
-            limit=1,
-            ignore_permissions=True,
-        )
-        if latest:
-            schedules = frappe.get_all(
-                "Course Schedule",
-                filters={
-                    "instructor": instructor.name,
-                    "schedule_date": latest[0].schedule_date
-                },
-                fields=[
-                    "name", "student_group", "course", "instructor",
-                    "instructor_name", "from_time", "to_time", "room",
-                    "schedule_date", "program"
-                ],
-                order_by="from_time asc",
-                ignore_permissions=True,
-            )
-
+def _build_class_payload(schedules, instructor, target_date):
+    """Shared serializer for the schedule rows."""
     classes = []
     for s in schedules:
-        course_name = frappe.db.get_value("Course", s.course, "course_name") or s.course
-        group_name = frappe.db.get_value("Student Group", s.student_group, "student_group_name") or s.student_group
-        program = s.program or frappe.db.get_value("Student Group", s.student_group, "program") or ""
+        course_name = (
+            frappe.db.get_value("Course", s.course, "course_name") or s.course
+        )
+        group_name = (
+            frappe.db.get_value("Student Group", s.student_group, "student_group_name")
+            or s.student_group
+        )
+        program = s.program or frappe.db.get_value(
+            "Student Group", s.student_group, "program"
+        ) or ""
 
-        # Get students in this group
         students = frappe.get_all(
             "Student Group Student",
             filters={"parent": s.student_group, "active": 1},
@@ -71,13 +29,19 @@ def get_my_classes():
             ignore_permissions=True,
         )
 
-        # Check attendance status for each student (for today only)
-        schedule_date = str(s.schedule_date) if s.schedule_date else frappe.utils.today()
+        # Attendance status for THIS schedule's date — never mix dates
+        schedule_date = (
+            str(s.schedule_date) if s.schedule_date else target_date
+        )
         for st in students:
             att = frappe.db.get_value(
                 "Student Attendance",
-                {"student": st.student, "date": schedule_date, "student_group": s.student_group},
-                "status"
+                {
+                    "student": st.student,
+                    "date": schedule_date,
+                    "student_group": s.student_group,
+                },
+                "status",
             )
             st["status"] = att.lower() if att else ""
 
@@ -93,24 +57,81 @@ def get_my_classes():
             "from_time": str(s.from_time) if s.from_time else "",
             "to_time": str(s.to_time) if s.to_time else "",
             "room": s.room or "",
-            "schedule_date": str(s.schedule_date) if s.schedule_date else "",
+            "schedule_date": schedule_date,
             "total_students": len(students),
             "students": students,
         })
+    return classes
+
+
+@frappe.whitelist()
+def get_my_classes(date=None):
+    """Get class schedule for the logged-in instructor for the given date.
+
+    Args:
+        date: ISO date (YYYY-MM-DD). Defaults to today. NEVER falls back
+              to a different date — if there are no classes that day, the
+              `classes` list is empty. The response also includes
+              `latest_available_date` so the UI can offer an explicit
+              "view latest" jump instead of a silent date swap.
+    """
+    instructor = _get_instructor_for_user()
+    if not instructor:
+        return {"classes": [], "instructor": None, "date": None, "latest_available_date": None}
+
+    target_date = str(getdate(date or today()))
+
+    schedules = frappe.get_all(
+        "Course Schedule",
+        filters={
+            "instructor": instructor.name,
+            "schedule_date": target_date,
+        },
+        fields=[
+            "name", "student_group", "course", "instructor",
+            "instructor_name", "from_time", "to_time", "room",
+            "schedule_date", "program",
+        ],
+        order_by="from_time asc",
+        ignore_permissions=True,
+    )
+
+    classes = _build_class_payload(schedules, instructor, target_date)
+
+    # Surface the latest available date so the UI can offer it as an opt-in
+    latest_row = frappe.db.sql(
+        """
+        SELECT MAX(schedule_date) FROM `tabCourse Schedule`
+        WHERE instructor = %s AND schedule_date <= %s
+        """,
+        (instructor.name, target_date),
+        as_list=True,
+    )
+    latest_available_date = (
+        str(latest_row[0][0]) if latest_row and latest_row[0][0] else None
+    )
 
     return {
         "classes": classes,
         "instructor": instructor.instructor_name,
+        "date": target_date,
+        "latest_available_date": latest_available_date,
     }
 
 
 @frappe.whitelist()
 def mark_attendance_bulk(course_schedule=None, students=None):
-    """Mark attendance for multiple students at once."""
+    """Mark attendance for multiple students against ONE course schedule.
+
+    The attendance date is derived from the course schedule's own
+    `schedule_date` so the date and the schedule are always consistent.
+    Existing rows are looked up by (student, course_schedule, date) so
+    re-marking the same schedule on a different day creates a new row
+    instead of overwriting the old one.
+    """
     if not course_schedule or not students:
         frappe.throw(_("Course schedule and students are required"))
 
-    import json
     if isinstance(students, str):
         students = json.loads(students)
 
@@ -118,6 +139,7 @@ def mark_attendance_bulk(course_schedule=None, students=None):
         frappe.throw(_("Course Schedule not found"))
 
     cs = frappe.get_doc("Course Schedule", course_schedule)
+    attendance_date = str(cs.schedule_date) if cs.schedule_date else today()
 
     success = []
     failed = []
@@ -125,20 +147,30 @@ def mark_attendance_bulk(course_schedule=None, students=None):
     for st in students:
         student_id = st.get("student")
         status = st.get("status", "Present")
-
         if not student_id:
             continue
 
         try:
             existing = frappe.db.get_value(
                 "Student Attendance",
-                # {"student": student_id, "date": frappe.utils.today(), "student_group": cs.student_group},
-                {"student": student_id, "course_schedule": course_schedule},
-                "name"
+                {
+                    "student": student_id,
+                    "course_schedule": course_schedule,
+                    "date": attendance_date,
+                },
+                "name",
             )
 
             if existing:
-                frappe.db.set_value("Student Attendance", existing, "status", status)
+                # If submitted, we can still set status via db_set without re-validating
+                existing_doc = frappe.get_doc("Student Attendance", existing)
+                if existing_doc.docstatus == 1:
+                    existing_doc.db_set("status", status, update_modified=True)
+                else:
+                    existing_doc.status = status
+                    existing_doc.save(ignore_permissions=True)
+                    if existing_doc.docstatus == 0:
+                        existing_doc.submit()
                 success.append(student_id)
             else:
                 att = frappe.get_doc({
@@ -146,21 +178,25 @@ def mark_attendance_bulk(course_schedule=None, students=None):
                     "student": student_id,
                     "student_group": cs.student_group,
                     "course_schedule": course_schedule,
-                    "date": frappe.utils.today(),
+                    "date": attendance_date,
                     "status": status,
-                    "company": cs.company if hasattr(cs, "company") and cs.company else ""
+                    "company": getattr(cs, "company", "") or "",
                 })
                 att.insert(ignore_permissions=True)
                 att.submit()
                 success.append(student_id)
 
         except Exception as e:
-            frappe.log_error(f"Attendance failed for {student_id}: {e}")
+            frappe.log_error(
+                title=f"mark_attendance_bulk: {student_id}",
+                message=frappe.get_traceback(),
+            )
             failed.append({"student": student_id, "error": str(e)})
 
     return {
         "success": success,
         "failed": failed,
         "total": len(students),
-        "marked": len(success)
+        "marked": len(success),
+        "date": attendance_date,
     }

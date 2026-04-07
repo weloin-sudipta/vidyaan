@@ -1,19 +1,37 @@
 <template>
   <div class="p-6 lg:p-10 max-w-7xl mx-auto custom-scrollbar animate-in fade-in slide-in-from-bottom-4 duration-500">
     <HeroHeader title="Attendance" subtitle="Daily Register" icon="fa fa-users">
-      <div class="flex gap-2">
+      <div class="flex gap-2 items-center flex-wrap">
+        <!-- Date picker -->
+        <div class="relative">
+          <i class="fa fa-calendar absolute left-3 top-1/2 -translate-y-1/2 text-emerald-400 text-xs pointer-events-none"></i>
+          <input
+            v-model="selectedDate"
+            type="date"
+            :max="maxDate"
+            class="pl-8 pr-3 h-10 bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 rounded-xl text-xs font-bold border border-slate-200 dark:border-slate-800 outline-none focus:ring-2 focus:ring-emerald-500"
+          />
+        </div>
+        <button
+          v-if="selectedDate !== todayStr"
+          @click="jumpToToday"
+          class="h-10 px-4 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 rounded-xl text-xs font-black uppercase tracking-widest transition-colors"
+        >
+          Today
+        </button>
         <select
+          v-if="classes.length"
           v-model="selectedClassIndex"
-          class="bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 px-4 py-2 rounded-xl text-xs font-bold border border-slate-200 dark:border-slate-800 outline-none focus:ring-2 focus:ring-emerald-500"
+          class="bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 px-4 h-10 rounded-xl text-xs font-bold border border-slate-200 dark:border-slate-800 outline-none focus:ring-2 focus:ring-emerald-500"
         >
           <option v-for="(cls, index) in classes" :key="cls.name" :value="index">
-            {{ cls.title }} ({{ formatTime(cls.from_time) }} - {{ formatTime(cls.to_time) }})
+            {{ cls.course_name || cls.course }} ({{ formatTime(cls.from_time) }} - {{ formatTime(cls.to_time) }})
           </option>
         </select>
         <button
           @click="saveAttendance"
-          :disabled="saving"
-          class="bg-emerald-600 dark:bg-emerald-500 text-white px-6 py-2 rounded-xl text-xs font-black uppercase tracking-widest hover:bg-emerald-700 dark:hover:bg-emerald-600 transition-colors shadow-lg shadow-emerald-200 dark:shadow-none disabled:opacity-50"
+          :disabled="saving || !selectedClass"
+          class="h-10 bg-emerald-600 dark:bg-emerald-500 text-white px-6 rounded-xl text-xs font-black uppercase tracking-widest hover:bg-emerald-700 dark:hover:bg-emerald-600 transition-colors shadow-lg shadow-emerald-200 dark:shadow-none disabled:opacity-50"
         >
           {{ saving ? 'Saving...' : 'Save Register' }}
         </button>
@@ -24,8 +42,21 @@
       <UiSkeleton height="h-[600px]" class="rounded-[2.5rem]" />
     </div>
 
-    <div v-else-if="!selectedClass" class="mt-8 text-center py-20 text-slate-400 dark:text-slate-600 font-bold">
-      No classes scheduled for today.
+    <div
+      v-else-if="!selectedClass"
+      class="mt-8 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-3xl p-10 text-center"
+    >
+      <i class="fa fa-calendar-times-o text-4xl text-slate-300 dark:text-slate-700 mb-3"></i>
+      <p class="text-sm font-bold text-slate-500 dark:text-slate-400">
+        No classes scheduled for {{ formatHumanDate(selectedDate) }}.
+      </p>
+      <button
+        v-if="latestAvailableDate && latestAvailableDate !== selectedDate"
+        @click="selectedDate = latestAvailableDate"
+        class="mt-4 px-5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-black uppercase tracking-widest transition-colors"
+      >
+        View latest available ({{ formatHumanDate(latestAvailableDate) }})
+      </button>
     </div>
 
     <div v-else class="mt-8 bg-white dark:bg-slate-900 rounded-[2.5rem] border border-slate-100 dark:border-slate-800 shadow-sm p-8">
@@ -128,7 +159,12 @@ import HeroHeader from '~/components/ui/HeroHeader.vue'
 import { useToast } from '~/composable/useToast'
 import { useTeacherClasses } from '~/composable/useTeacherClasses'
 
-const { fetchclassSchedule, saveAttendanceBulk } = useTeacherClasses()
+const {
+  fetchclassSchedule,
+  saveAttendanceBulk,
+  latestAvailableDate,
+  todayISO,
+} = useTeacherClasses()
 const { addToast } = useToast()
 
 const loading = ref(true)
@@ -137,8 +173,21 @@ const classes = ref([])
 const selectedClassIndex = ref(0)
 const students = ref([])
 
+const todayStr = todayISO()
+const selectedDate = ref(todayStr)
+const maxDate = todayStr   // can't take attendance for the future
+
 // Currently selected class
 const selectedClass = computed(() => classes.value[selectedClassIndex.value] ?? null)
+
+const formatHumanDate = (iso) => {
+  if (!iso) return ''
+  return new Date(iso + 'T00:00:00').toLocaleDateString('en-IN', {
+    weekday: 'short', day: '2-digit', month: 'short', year: 'numeric',
+  })
+}
+
+const jumpToToday = () => { selectedDate.value = todayStr }
 
 // Counts
 const presentCount = computed(() => students.value.filter(s => s.status === 'Present').length)
@@ -147,6 +196,22 @@ const unmarkedCount = computed(() => students.value.filter(s => !s.status).lengt
 
 // Rebuild students list when class changes
 watch(selectedClassIndex, () => loadStudents())
+
+// Re-fetch when the date changes
+watch(selectedDate, async (d) => {
+  loading.value = true
+  try {
+    const data = await fetchclassSchedule(d)
+    classes.value = data?.classes || []
+    selectedClassIndex.value = 0
+    loadStudents()
+  } catch (e) {
+    console.error(e)
+    addToast('Error', 'Failed to load classes for that date.', 'error')
+  } finally {
+    loading.value = false
+  }
+})
 
 function loadStudents() {
   if (!selectedClass.value) {
@@ -214,15 +279,15 @@ async function saveAttendance() {
     const res = await saveAttendanceBulk(selectedClass.value.name, students.value)
 
     if (res?.success?.length) {
-      let message = `Attendance saved for ${res.success.length} student(s).`
+      let message = `Attendance saved for ${res.success.length} student(s) on ${formatHumanDate(res.date || selectedDate.value)}.`
       if (res?.failed?.length) {
         message += ` ${res.failed.length} student(s) failed.`
         console.warn('Failed attendance:', res.failed)
       }
       addToast('Success', message, 'success')
 
-      // Refetch classes and reload students
-      const data = await fetchclassSchedule()
+      // Refetch the same date so badges update
+      const data = await fetchclassSchedule(selectedDate.value)
       classes.value = data?.classes || []
       loadStudents()
     } else if (res?.failed?.length) {
@@ -238,10 +303,10 @@ async function saveAttendance() {
   }
 }
 
-// Load classes on mount
+// Load classes on mount (today by default)
 onMounted(async () => {
   try {
-    const data = await fetchclassSchedule()
+    const data = await fetchclassSchedule(selectedDate.value)
     classes.value = data?.classes || []
     loadStudents()
   } catch (e) {
