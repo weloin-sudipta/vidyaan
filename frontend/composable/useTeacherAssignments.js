@@ -1,11 +1,11 @@
 import { ref } from 'vue'
-import { createResource, call } from '~/composable/useFrappeFetch'
+import { call } from '~/composable/useFrappeFetch'
 
 export const useTeacherAssignments = () => {
   const courses = ref([])
-  const templates = ref([])
-  const submissions = ref([])
   const studentGroups = ref([])
+  const assignments = ref([])
+  const currentAssignment = ref(null)
   const loading = ref(false)
   const error = ref(null)
 
@@ -14,7 +14,7 @@ export const useTeacherAssignments = () => {
       const res = await call('vidyaan.api_folder.assignments.get_instructor_courses')
       courses.value = res || []
     } catch (err) {
-      console.error('Failed to fetch courses:', err)
+      error.value = err.message ?? 'Failed to load courses'
     }
   }
 
@@ -23,76 +23,116 @@ export const useTeacherAssignments = () => {
       const res = await call('vidyaan.api_folder.assignments.get_instructor_student_groups', { course })
       studentGroups.value = res || []
     } catch (err) {
-      console.error('Failed to fetch student groups:', err)
+      error.value = err.message ?? 'Failed to load student groups'
     }
   }
 
-  const fetchTemplates = async (course = null) => {
+  const fetchAssignments = async (course = null, status = null) => {
     loading.value = true
+    error.value = null
     try {
-      const res = await call('vidyaan.api_folder.assignments.get_instructor_assignment_templates', { course })
-      templates.value = res || []
+      const params = {}
+      if (course) params.course = course
+      if (status) params.status = status
+      const res = await call('vidyaan.api_folder.assignments.get_instructor_assignments', params)
+      assignments.value = res || []
     } catch (err) {
-      error.value = err.message
+      error.value = err.message ?? 'Failed to load assignments'
     } finally {
       loading.value = false
     }
   }
 
-  const createTemplate = async (templateData) => {
+  const fetchAssignmentDetail = async (name) => {
+    loading.value = true
+    error.value = null
     try {
-      const res = await call('vidyaan.api_folder.assignments.create_assignment_template', { data: templateData })
+      const res = await call('vidyaan.api_folder.assignments.get_assignment_detail', { name })
+      currentAssignment.value = res || null
       return res
     } catch (err) {
+      error.value = err.message ?? 'Failed to load assignment detail'
       return { error: err.message }
+    } finally {
+      loading.value = false
     }
   }
 
-  const publishTemplate = async (templateName) => {
+  const createAssignment = async (payload) => {
     try {
-      const res = await call('vidyaan.api_folder.assignments.publish_assignment_template', { template_name: templateName })
+      const res = await call('vidyaan.api_folder.assignments.create_assignment', { data: payload })
       return res
     } catch (err) {
-      return { error: err.message }
+      return { error: err.message ?? 'Failed to create assignment' }
     }
   }
 
-  const fetchSubmissions = async (templateName) => {
+  const updateAssignment = async (name, payload) => {
     try {
-      const res = await call('vidyaan.api_folder.assignments.get_template_submissions', { template_name: templateName })
-      submissions.value = res || []
+      const res = await call('vidyaan.api_folder.assignments.update_assignment', { name, data: payload })
       return res
     } catch (err) {
-      return []
+      return { error: err.message ?? 'Failed to update assignment' }
     }
   }
 
-  const gradeAssignment = async (assignmentName, score, remarks = '') => {
+  const publishAssignment = async (name) => {
     try {
-      const res = await call('vidyaan.api_folder.assignments.grade_assignment', {
-        assignment_name: assignmentName,
+      const res = await call('vidyaan.api_folder.assignments.publish_assignment', { name })
+      return res
+    } catch (err) {
+      return { error: err.message ?? 'Failed to publish assignment' }
+    }
+  }
+
+  const deleteAssignment = async (name) => {
+    try {
+      const res = await call('vidyaan.api_folder.assignments.delete_assignment', { name })
+      return res
+    } catch (err) {
+      return { error: err.message ?? 'Failed to delete assignment' }
+    }
+  }
+
+  const closeAssignment = async (name) => {
+    try {
+      const res = await call('vidyaan.api_folder.assignments.close_assignment', { name })
+      return res
+    } catch (err) {
+      return { error: err.message ?? 'Failed to close assignment' }
+    }
+  }
+
+  const gradeSubmission = async (assignment, student, score, remarks = '') => {
+    try {
+      const res = await call('vidyaan.api_folder.assignments.grade_submission', {
+        assignment,
+        student,
         score,
-        remarks
+        remarks,
       })
       return res
     } catch (err) {
-      return { error: err.message }
+      return { error: err.message ?? 'Failed to save grade' }
     }
   }
 
   return {
     courses,
-    templates,
-    submissions,
     studentGroups,
+    assignments,
+    currentAssignment,
     loading,
     error,
     fetchCourses,
     fetchStudentGroups,
-    fetchTemplates,
-    createTemplate,
-    publishTemplate,
-    fetchSubmissions,
-    gradeAssignment
+    fetchAssignments,
+    fetchAssignmentDetail,
+    createAssignment,
+    updateAssignment,
+    publishAssignment,
+    deleteAssignment,
+    closeAssignment,
+    gradeSubmission,
   }
 }

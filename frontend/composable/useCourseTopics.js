@@ -11,7 +11,7 @@ export const useCourseTopics = () => {
         error.value = null
         try {
             const resource = createResource({
-                url: 'vidyaan.api_folder.study_materials.get_study_materials',
+                url: 'vidyaan.api_folder.study_materials.get_instructor_courses_with_topics',
             })
             const res = await resource.submit()
             topics.value = res || []

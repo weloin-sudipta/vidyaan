@@ -1,5 +1,5 @@
 import { ref } from 'vue'
-import { createResource } from '~/composable/useFrappeFetch'
+import { call } from '~/composable/useFrappeFetch'
 
 export const useAssignments = () => {
   const assignments = ref([])
@@ -10,35 +10,27 @@ export const useAssignments = () => {
     loading.value = true
     error.value = null
     try {
-      const resource = createResource({
-        url: 'vidyaan.api_folder.assignments.get_assignments',
-      })
-      const res = await resource.submit()
-      console.log(res);
-
+      const res = await call('vidyaan.api_folder.assignments.get_student_assignments')
       assignments.value = res || []
       return res
     } catch (err) {
-      console.error('Failed to load assignments:', err)
-      error.value = err.message || 'Unknown error'
+      error.value = err.message ?? 'Failed to load assignments'
     } finally {
       loading.value = false
     }
   }
 
-  const submitAssignment = async (assignmentName, submissionFile) => {
+  const submitAssignment = async (assignmentName, submissionFile, submissionText = null) => {
     try {
-      const resource = createResource({
-        url: 'vidyaan.api_folder.assignments.submit_assignment',
-      })
-      const res = await resource.submit({
-        assignment_name: assignmentName,
+      const params = {
+        assignment: assignmentName,
         submission_file: submissionFile,
-      })
+      }
+      if (submissionText) params.submission_text = submissionText
+      const res = await call('vidyaan.api_folder.assignments.submit_student_assignment', params)
       return res
     } catch (err) {
-      console.error('Failed to submit assignment:', err)
-      return { error: err.message || 'Unknown error' }
+      return { error: err.message ?? 'Failed to submit assignment' }
     }
   }
 
@@ -55,7 +47,6 @@ export const useAssignments = () => {
       })
       return res.message
     } catch (err) {
-      console.error('Upload failed:', err)
       return { error: err.message }
     }
   }

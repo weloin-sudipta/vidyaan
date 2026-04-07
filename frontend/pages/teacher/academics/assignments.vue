@@ -7,18 +7,17 @@
         <div class="flex flex-wrap items-center gap-3">
           <div class="relative">
             <i class="fa fa-filter absolute left-4 top-1/2 -translate-y-1/2 text-indigo-500 text-xs"></i>
-            <select v-model="selectedCourse" @change="loadTemplates"
+            <select v-model="selectedCourse" @change="loadAssignments"
               class="pl-10 pr-8 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold uppercase tracking-wider focus:ring-2 focus:ring-indigo-500 appearance-none outline-none cursor-pointer transition-all hover:border-indigo-300 dark:hover:border-indigo-500">
               <option value="">All My Courses</option>
-              <option v-for="course in courses" :key="course.name" :value="course.name">{{ course.course_name }}
-              </option>
+              <option v-for="course in courses" :key="course.name" :value="course.name">{{ course.course_name }}</option>
             </select>
-            <i
-              class="fa fa-chevron-down absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-xs"></i>
+            <i class="fa fa-chevron-down absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-xs"></i>
           </div>
 
           <button @click="openCreateModal"
-            class="group bg-gradient-to-r from-indigo-600 to-blue-600 dark:from-indigo-500 dark:to-blue-500 text-white px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest hover:shadow-lg hover:shadow-indigo-300 dark:hover:shadow-indigo-900 transition-all duration-200 flex items-center gap-2 whitespace-nowrap">
+            :disabled="courses.length === 0"
+            class="group bg-gradient-to-r from-indigo-600 to-blue-600 dark:from-indigo-500 dark:to-blue-500 text-white px-6 py-2.5 rounded-xl text-xs font-black uppercase tracking-widest hover:shadow-lg hover:shadow-indigo-300 dark:hover:shadow-indigo-900 transition-all duration-200 flex items-center gap-2 whitespace-nowrap disabled:opacity-40 disabled:cursor-not-allowed">
             <i class="fa fa-plus group-hover:rotate-90 transition-transform"></i>
             <span class="hidden sm:inline">New Assignment</span>
             <span class="sm:hidden">New</span>
@@ -26,75 +25,130 @@
         </div>
       </HeroHeader>
 
+      <!-- No courses warning -->
+      <div v-if="!loading && courses.length === 0"
+        class="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800/40 rounded-2xl p-6 text-center">
+        <i class="fa fa-exclamation-triangle text-amber-500 text-2xl mb-3"></i>
+        <p class="text-sm font-bold text-amber-700 dark:text-amber-400">No courses found. Set up your courses before creating assignments.</p>
+      </div>
+
       <!-- Skeleton Loading -->
       <div v-if="loading" class="grid grid-cols-1 gap-8">
         <UiSkeleton v-for="i in 2" :key="i" height="h-80" class="rounded-[3.5rem]" />
       </div>
 
+      <!-- Error banner -->
+      <div v-else-if="error"
+        class="bg-rose-50 dark:bg-rose-900/20 border border-rose-200 dark:border-rose-800/40 rounded-2xl p-5 text-sm font-bold text-rose-600 dark:text-rose-400 flex items-center gap-3">
+        <i class="fa fa-exclamation-circle"></i>
+        {{ error }}
+      </div>
+
       <div v-else class="grid grid-cols-1 gap-10">
-        <div v-for="template in templates" :key="template.name" :class="[
+
+        <!-- Empty state -->
+        <div v-if="assignments.length === 0 && courses.length > 0"
+          class="flex flex-col items-center justify-center py-24 bg-white dark:bg-slate-900 rounded-3xl border-2 border-dashed border-slate-200 dark:border-slate-800">
+          <i class="fa fa-folder-open-o text-4xl text-slate-200 dark:text-slate-800 mb-4"></i>
+          <p class="text-slate-500 dark:text-slate-400 font-bold tracking-tight">No assignments yet. Create your first one.</p>
+        </div>
+
+        <div v-for="assignment in assignments" :key="assignment.name" :class="[
           'relative bg-white dark:bg-slate-900 rounded-[3.5rem] border border-slate-100 dark:border-slate-800 p-2 shadow-sm hover:shadow-xl transition-all duration-500',
-          expandedCard === template.name ? 'shadow-2xl' : ''
+          expandedCard === assignment.name ? 'shadow-2xl' : ''
         ]">
 
           <div class="p-8 lg:p-12">
             <div class="flex flex-col xl:flex-row justify-between gap-10">
               <div class="flex-1 space-y-6">
+
+                <!-- Tags row -->
                 <div class="flex flex-wrap items-center gap-4">
                   <span
                     class="px-4 py-1.5 bg-indigo-50 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400 rounded-full text-[10px] font-black uppercase tracking-tighter border border-indigo-100 dark:border-indigo-800/50">
-                    {{ template.course_name || template.course }}
+                    {{ assignment.course_name || assignment.course }}
                   </span>
-                  <span
-                    :class="['px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-tighter border', template.status === 'Published' ? 'bg-green-50 text-green-600 border-green-100' : 'bg-amber-50 text-amber-600 border-amber-100']">
-                    {{ template.status }}
+
+                  <!-- Status badge -->
+                  <span :class="statusBadgeClass(assignment.status)"
+                    class="px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-tighter border">
+                    {{ assignment.status }}
                   </span>
-                  <span
-                    class="text-slate-400 text-[10px] font-bold uppercase tracking-widest flex items-center gap-1.5">
-                    <i class="fa fa-calendar-check-o text-indigo-400"></i> Due: {{ formatDate(template.due_date) }}
+
+                  <span class="text-slate-400 text-[10px] font-bold uppercase tracking-widest flex items-center gap-1.5">
+                    <i class="fa fa-calendar-check-o text-indigo-400"></i> Due: {{ formatDate(assignment.due_date) }}
                   </span>
                 </div>
 
                 <div>
-                  <h2 class="text-3xl font-black text-slate-800 dark:text-white mb-4 tracking-tight leading-tight">{{
-                    template.title }}</h2>
+                  <h2 class="text-3xl font-black text-slate-800 dark:text-white mb-4 tracking-tight leading-tight">
+                    {{ assignment.title }}
+                  </h2>
 
-                  <!-- Description with See More functionality -->
                   <div class="text-slate-500 text-sm leading-relaxed max-w-3xl font-medium">
-                    <div v-if="!isDescriptionExpanded(template.name)"
-                      v-html="getShortDescription(template.description)"></div>
-                    <div v-else v-html="template.description"></div>
+                    <div v-if="!isDescriptionExpanded(assignment.name)"
+                      v-html="getShortDescription(assignment.description)"></div>
+                    <div v-else v-html="assignment.description"></div>
 
-                    <button v-if="isDescriptionLong(template.description)" @click="toggleDescription(template.name)"
+                    <button v-if="isDescriptionLong(assignment.description)" @click="toggleDescription(assignment.name)"
                       class="text-indigo-600 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 text-xs font-bold uppercase tracking-wider mt-2 inline-flex items-center gap-1 transition-colors">
-                      {{ isDescriptionExpanded(template.name) ? 'See Less' : 'See More' }}
-                      <i :class="isDescriptionExpanded(template.name) ? 'fa fa-chevron-up' : 'fa fa-chevron-down'"
+                      {{ isDescriptionExpanded(assignment.name) ? 'See Less' : 'See More' }}
+                      <i :class="isDescriptionExpanded(assignment.name) ? 'fa fa-chevron-up' : 'fa fa-chevron-down'"
                         class="text-[10px]"></i>
                     </button>
                   </div>
                 </div>
 
+                <!-- Action buttons -->
                 <div class="flex flex-wrap gap-4 pt-4">
-                  <a v-if="template.assignment_file" :href="template.assignment_file" target="_blank"
+                  <a v-if="assignment.assignment_file" :href="assignment.assignment_file" target="_blank"
                     class="flex items-center gap-3 px-5 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl hover:bg-white dark:hover:bg-slate-700 hover:border-indigo-200 dark:hover:border-indigo-800 shadow-sm hover:shadow-md transition-all group/btn">
                     <div
                       class="w-8 h-8 bg-rose-50 dark:bg-rose-900/30 rounded-lg flex items-center justify-center text-rose-500 group-hover/btn:scale-110 transition-transform">
                       <i class="fa fa-file-pdf-o"></i>
                     </div>
-                    <span
-                      class="text-[10px] font-black uppercase text-slate-600 dark:text-slate-300 tracking-widest">Master
-                      File</span>
+                    <span class="text-[10px] font-black uppercase text-slate-600 dark:text-slate-300 tracking-widest">Master File</span>
                   </a>
 
-                  <button v-if="template.status === 'Draft'" @click="handlePublish(template)"
-                    class="flex items-center gap-3 px-6 py-3 bg-indigo-600 text-white rounded-2xl hover:bg-indigo-700 shadow-lg shadow-indigo-100 transition-all font-black text-[10px] uppercase tracking-widest">
-                    <i class="fa fa-paper-plane"></i> Publish to Students
+                  <!-- Publish — Draft only -->
+                  <button v-if="assignment.status === 'Draft'"
+                    @click="handlePublish(assignment)"
+                    :disabled="publishingName === assignment.name"
+                    class="flex items-center gap-3 px-6 py-3 bg-indigo-600 text-white rounded-2xl hover:bg-indigo-700 shadow-lg shadow-indigo-100 transition-all font-black text-[10px] uppercase tracking-widest disabled:opacity-50">
+                    <i :class="publishingName === assignment.name ? 'fa fa-spinner fa-spin' : 'fa fa-paper-plane'"></i>
+                    {{ publishingName === assignment.name ? 'Publishing...' : 'Publish to Students' }}
                   </button>
 
-                  <button @click="toggleSubmissions(template)"
+                  <!-- View Submissions — Published or Closed -->
+                  <button v-if="['Published', 'Closed'].includes(assignment.status)"
+                    @click="handleViewSubmissions(assignment)"
                     class="flex items-center gap-3 px-6 py-3 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl hover:border-indigo-500 transition-all font-black text-[10px] uppercase tracking-widest text-slate-600 dark:text-slate-300">
-                    <i :class="['fa', expandedTemplate === template.name ? 'fa-chevron-up' : 'fa-list-ul']"></i>
-                    {{ expandedTemplate === template.name ? 'Hide Submissions' : 'Review Submissions' }}
+                    <i class="fa fa-list-ul"></i>
+                    View Submissions
+                  </button>
+
+                  <!-- Close — Published only -->
+                  <button v-if="assignment.status === 'Published'"
+                    @click="handleClose(assignment)"
+                    class="flex items-center gap-3 px-5 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl hover:border-rose-400 dark:hover:border-rose-600 transition-all font-black text-[10px] uppercase tracking-widest text-slate-500 dark:text-slate-400">
+                    <i class="fa fa-lock"></i>
+                    Close
+                  </button>
+
+                  <!-- Edit — Draft only -->
+                  <button v-if="assignment.status === 'Draft'"
+                    @click="openEditModal(assignment)"
+                    class="flex items-center gap-3 px-5 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl hover:border-indigo-400 dark:hover:border-indigo-600 transition-all font-black text-[10px] uppercase tracking-widest text-slate-500 dark:text-slate-400">
+                    <i class="fa fa-pencil"></i>
+                    Edit
+                  </button>
+
+                  <!-- Delete — Draft only -->
+                  <button v-if="assignment.status === 'Draft'"
+                    @click="handleDelete(assignment)"
+                    class="flex items-center gap-3 px-5 py-3 bg-slate-50 dark:bg-slate-800 border border-rose-100 dark:border-rose-900/30 rounded-2xl hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-all font-black text-[10px] uppercase tracking-widest text-rose-400">
+                    <i class="fa fa-trash-o"></i>
+                    Delete
                   </button>
                 </div>
               </div>
@@ -107,277 +161,359 @@
                     <circle cx="48" cy="48" r="40" stroke="currentColor" stroke-width="8" fill="transparent"
                       class="text-slate-200 dark:text-slate-700" />
                     <circle cx="48" cy="48" r="40" stroke="currentColor" stroke-width="8" fill="transparent"
-                      class="text-indigo-500 transition-all duration-1000" :stroke-dasharray="2 * Math.PI * 40"
-                      :stroke-dashoffset="2 * Math.PI * 40 * (template.stats?.total ? (1 - (template.stats.submitted + template.stats.evaluated) / template.stats.total) : 1)" />
+                      class="text-indigo-500 transition-all duration-1000"
+                      :stroke-dasharray="2 * Math.PI * 40"
+                      :stroke-dashoffset="progressOffset(assignment)" />
                   </svg>
                   <div class="absolute inset-0 flex items-center justify-center">
-                    <span class="text-3xl font-black text-indigo-600 dark:text-indigo-400">{{ template.stats?.submitted
-                      + template.stats?.evaluated || 0 }}</span>
+                    <span class="text-3xl font-black text-indigo-600 dark:text-indigo-400">
+                      {{ assignment.submission_count || 0 }}
+                    </span>
                   </div>
                 </div>
-                <p class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">Total: {{
-                  template.stats?.total || 0 }} Submissions</p>
+                <p class="text-[10px] font-black uppercase tracking-[0.2em] text-slate-400">
+                  Total: {{ assignment.submission_count || 0 }} Submissions
+                </p>
                 <div class="mt-4 flex gap-4">
-                  <span class="text-[9px] font-bold text-green-500 uppercase tracking-tighter">{{
-                    template.stats?.evaluated || 0 }} Graded</span>
-                  <span class="text-[9px] font-bold text-amber-500 uppercase tracking-tighter">{{
-                    template.stats?.submitted || 0 }} Pending</span>
+                  <span class="text-[9px] font-bold text-green-500 uppercase tracking-tighter">
+                    {{ assignment.graded_count || 0 }} Graded
+                  </span>
+                  <span class="text-[9px] font-bold text-amber-500 uppercase tracking-tighter">
+                    {{ assignment.pending_count || 0 }} Pending
+                  </span>
                 </div>
               </div>
-            </div>
-
-            <!-- Submissions Table -->
-            <div v-if="expandedTemplate === template.name"
-              class="mt-12 overflow-x-auto custom-scrollbar -mx-2 px-2 animate-in slide-in-from-top-4 duration-500">
-              <div v-if="submissionsLoading" class="py-10 text-center">
-                <i class="fa fa-spinner fa-spin text-indigo-500 text-2xl"></i>
-              </div>
-              <table v-else class="w-full border-separate border-spacing-y-4 min-w-[700px]">
-                <thead>
-                  <tr class="text-[10px] font-black uppercase tracking-widest text-slate-400">
-                    <th class="text-left px-8 py-2">Student</th>
-                    <th class="text-left px-8 py-2">Submission</th>
-                    <th class="text-left px-8 py-2">Status</th>
-                    <th class="text-right px-8 py-2">Grade Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr v-for="sub in submissions" :key="sub.name"
-                    class="bg-slate-50/50 dark:bg-slate-800/30 group/row hover:bg-white dark:hover:bg-slate-800 border border-transparent hover:border-indigo-100 dark:hover:border-indigo-900/50 transition-all rounded-[2rem] shadow-sm hover:shadow-lg">
-                    <td class="px-8 py-5 rounded-l-[2rem]">
-                      <div class="flex items-center gap-4">
-                        <div
-                          class="w-10 h-10 rounded-xl bg-indigo-100 flex items-center justify-center font-black text-xs text-indigo-700 shadow-inner overflow-hidden">
-                          {{ sub.student_name.charAt(0) }}
-                        </div>
-                        <span class="text-xs font-black text-slate-700 dark:text-slate-200">{{ sub.student_name
-                          }}</span>
-                      </div>
-                    </td>
-                    <td class="px-8 py-5">
-                      <a v-if="sub.submission_file" :href="sub.submission_file" target="_blank"
-                        class="flex items-center gap-2 text-indigo-500 dark:text-indigo-400 hover:text-indigo-700 dark:hover:text-indigo-300 transition-colors group/link">
-                        <i class="fa fa-file-text-o group-hover/link:translate-y-[-1px]"></i>
-                        <span class="text-[10px] font-bold tracking-wide">View Work</span>
-                      </a>
-                      <span v-else class="text-[10px] text-slate-400 uppercase font-black">No File</span>
-                    </td>
-                    <td class="px-8 py-5">
-                      <span v-if="sub.status === 'Evaluated'"
-                        class="inline-flex items-center px-4 py-1.5 bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 rounded-xl text-[10px] font-black uppercase gap-2">
-                        <i class="fa fa-check-circle"></i> Scored: {{ sub.evaluated_score }}
-                      </span>
-                      <span v-else-if="sub.status === 'Submitted'"
-                        class="inline-flex items-center px-4 py-1.5 bg-rose-100 dark:bg-rose-900/30 text-rose-600 dark:text-rose-400 rounded-xl text-[10px] font-black uppercase gap-2">
-                        <i class="fa fa-clock-o"></i> Needs Review
-                      </span>
-                      <span v-else
-                        class="inline-flex items-center px-4 py-1.5 bg-slate-100 dark:bg-slate-800 text-slate-400 rounded-xl text-[10px] font-black uppercase gap-2">
-                        {{ sub.status }}
-                      </span>
-                    </td>
-                    <td class="px-8 py-5 rounded-r-[2rem] text-right">
-                      <button @click="openGradingModal(sub)" :disabled="sub.status === 'Active'"
-                        class="bg-slate-900 dark:bg-indigo-600 text-white px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-md disabled:opacity-30 disabled:hover:scale-100 h-10">
-                        {{ sub.status === 'Evaluated' ? 'Update Grade' : 'Grade Work' }}
-                      </button>
-                    </td>
-                  </tr>
-                  <tr v-if="submissions.length === 0">
-                    <td colspan="4"
-                      class="text-center py-10 text-xs font-bold text-slate-400 uppercase tracking-widest">
-                      No students have been assigned yet (Publish first)
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- Modal 1: Create Assignment Template -->
-      <AppModal v-model="showCreateModal" title="Create Assignment" maxWidth="max-w-2xl">
-        <form @submit.prevent="handleCreate" class="space-y-6">
+      <!-- ─── Create / Edit Modal ─── -->
+      <AppModal v-model="showCreateModal"
+        :title="editingAssignment ? 'Edit Assignment' : 'Create Assignment'"
+        maxWidth="max-w-2xl">
+        <form @submit.prevent="handleSave" class="space-y-6">
 
-          <!-- Section 1: Basic Information -->
+          <!-- Inline error -->
+          <div v-if="formError"
+            class="bg-rose-50 dark:bg-rose-900/20 border border-rose-200 dark:border-rose-800/40 rounded-xl p-4 text-sm font-bold text-rose-600 dark:text-rose-400 flex items-start gap-3">
+            <i class="fa fa-exclamation-circle mt-0.5"></i>
+            <span>{{ formError }}</span>
+          </div>
+
+          <!-- Basic Information -->
           <div class="space-y-4">
             <h4
               class="text-xs font-black uppercase tracking-widest text-slate-400 dark:text-slate-500 pb-3 border-b border-slate-100 dark:border-slate-800">
               <i class="fa fa-pencil mr-2 text-indigo-500"></i>Assignment Details
             </h4>
 
-            <!-- Assignment Title -->
             <div>
               <label class="block text-xs font-black uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-2">
                 Title <span class="text-red-500">*</span>
               </label>
-              <input v-model="newTemplate.title" type="text" required
-                class="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-sm font-bold focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all"
+              <input v-model="form.title" type="text" required
+                class="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-sm font-bold focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all dark:text-white"
                 placeholder="e.g. Mid-term Research Project" />
             </div>
 
-            <!-- Course && Due Date Row -->
             <div class="grid grid-cols-2 gap-4">
-              <!-- Course -->
               <div>
-                <label
-                  class="block text-xs font-black uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-2">
+                <label class="block text-xs font-black uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-2">
                   Course <span class="text-red-500">*</span>
                 </label>
-                <select v-model="newTemplate.course" @change="loadGroups" required
-                  class="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-sm font-bold focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all">
+                <select v-model="form.course" @change="loadGroups" required
+                  class="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-sm font-bold focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all dark:text-white">
                   <option value="" disabled>Select Course</option>
                   <option v-for="c in courses" :key="c.name" :value="c.name">{{ c.course_name }}</option>
                 </select>
               </div>
 
-              <!-- Due Date -->
               <div>
-                <label
-                  class="block text-xs font-black uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-2">
+                <label class="block text-xs font-black uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-2">
                   Due Date <span class="text-red-500">*</span>
                 </label>
-                <input v-model="newTemplate.due_date" type="date" required
-                  class="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-sm font-bold focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all" />
+                <input v-model="form.due_date" type="date" required
+                  class="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-sm font-bold focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all dark:text-white" />
+              </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="block text-xs font-black uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-2">
+                  Topic <span class="text-slate-400 text-[10px] font-normal">(optional)</span>
+                </label>
+                <input v-model="form.topic" type="text"
+                  class="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-sm font-bold focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all dark:text-white"
+                  placeholder="e.g. Chapter 3 — Arrays" />
+              </div>
+
+              <div>
+                <label class="block text-xs font-black uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-2">
+                  Max Score <span class="text-red-500">*</span>
+                </label>
+                <input v-model.number="form.max_score" type="number" min="1" required
+                  class="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-sm font-bold focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all dark:text-white"
+                  placeholder="100" />
               </div>
             </div>
           </div>
 
-          <!-- Section 2: Content -->
+          <!-- Content -->
           <div class="space-y-4">
             <h4
               class="text-xs font-black uppercase tracking-widest text-slate-400 dark:text-slate-500 pb-3 border-b border-slate-100 dark:border-slate-800">
               <i class="fa fa-file-text mr-2 text-blue-500"></i>Instructions & Resources
             </h4>
 
-            <!-- Instructions / Description -->
             <div>
               <label class="block text-xs font-black uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-2">
                 Instructions <span class="text-slate-400 text-[10px] font-normal">(optional)</span>
               </label>
-              <textarea v-model="newTemplate.description" rows="4"
-                class="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-sm font-medium focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all resize-none"
+              <textarea v-model="form.description" rows="4"
+                class="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-sm font-medium focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all resize-none dark:text-white"
                 placeholder="Enter detailed assignment instructions and requirements..."></textarea>
             </div>
 
-            <!-- Reference Document -->
+            <!-- File upload -->
             <div>
               <label class="block text-xs font-black uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-2">
                 Reference Document <span class="text-slate-400 text-[10px] font-normal">(optional)</span>
               </label>
-              <input v-model="newTemplate.assignment_file" type="text"
-                class="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-sm font-bold focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all"
-                placeholder="/files/assignment.pdf" />
-              <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Link to reference materials or assignment file
-              </p>
+              <div v-if="!form.assignment_file" class="relative group">
+                <input type="file" @change="onAssignmentFileChange"
+                  class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" />
+                <div
+                  class="border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-xl p-6 text-center group-hover:border-indigo-400 dark:group-hover:border-indigo-600 transition-all">
+                  <i class="fa fa-cloud-upload text-2xl text-slate-300 dark:text-slate-600 mb-2 group-hover:text-indigo-500"></i>
+                  <p class="text-xs font-bold text-slate-500 dark:text-slate-400">
+                    {{ assignmentFileUploading ? 'Uploading...' : (selectedAssignmentFile ? selectedAssignmentFile.name : 'Choose a file') }}
+                  </p>
+                  <p class="text-[10px] text-slate-400 mt-1">PDF, DOCX, ZIP (Max 20MB)</p>
+                </div>
+              </div>
+              <div v-else
+                class="flex items-center justify-between px-4 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl">
+                <div class="flex items-center gap-3">
+                  <i class="fa fa-file-pdf-o text-rose-500"></i>
+                  <span class="text-xs font-bold text-slate-600 dark:text-slate-300 truncate max-w-[200px]">{{ form.assignment_file }}</span>
+                </div>
+                <button @click="form.assignment_file = ''" type="button"
+                  class="text-slate-400 hover:text-rose-500 transition-colors text-sm">
+                  <i class="fa fa-times"></i>
+                </button>
+              </div>
             </div>
           </div>
 
-          <!-- Section 3: Assignment Distribution -->
+          <!-- Distribution -->
           <div class="space-y-4">
             <h4
               class="text-xs font-black uppercase tracking-widest text-slate-400 dark:text-slate-500 pb-3 border-b border-slate-100 dark:border-slate-800">
               <i class="fa fa-share-alt mr-2 text-green-500"></i>Distribution
             </h4>
 
-            <!-- Assign To -->
             <div>
               <label class="block text-xs font-black uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-2">
                 Assign To <span class="text-red-500">*</span>
               </label>
-              <select v-model="newTemplate.assign_to"
-                class="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-sm font-bold focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all">
+              <select v-model="form.assign_to"
+                class="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-sm font-bold focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all dark:text-white">
                 <option value="All Enrolled">All Enrolled Students</option>
-                <option value="Student Group">Selected Student Group</option>
+                <option value="Specific Groups">Specific Groups</option>
               </select>
+              <p v-if="form.course && form.assign_to === 'All Enrolled' && studentGroups.length === 0"
+                class="mt-2 text-[11px] font-bold text-rose-500">
+                No student groups found for this course. Either map yourself to a Student Group as instructor, or switch to "Specific Groups".
+              </p>
+              <p v-else-if="form.course && form.assign_to === 'All Enrolled' && studentGroups.length > 0"
+                class="mt-2 text-[11px] font-bold text-slate-400">
+                Will create the assignment for {{ studentGroups.length }} student group{{ studentGroups.length === 1 ? '' : 's' }}.
+              </p>
             </div>
 
-            <!-- Student Group (Conditional) -->
-            <div v-if="newTemplate.assign_to === 'Student Group'">
+            <!-- Multi-select student groups -->
+            <div v-if="form.assign_to === 'Specific Groups'">
               <label class="block text-xs font-black uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-2">
-                Student Group <span class="text-red-500">*</span>
+                Student Groups <span class="text-red-500">*</span>
               </label>
-              <select v-model="newTemplate.student_group"
-                class="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-sm font-bold focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all">
-                <option value="" disabled>Select Group</option>
-                <option v-for="g in studentGroups" :key="g.name" :value="g.name">{{ g.student_group_name }}</option>
-              </select>
+              <div v-if="studentGroups.length === 0"
+                class="p-4 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs text-slate-400 font-bold">
+                Select a course first to load student groups.
+              </div>
+              <div v-else class="space-y-2 max-h-48 overflow-y-auto pr-1">
+                <label v-for="g in studentGroups" :key="g.name"
+                  class="flex items-center gap-3 px-4 py-3 rounded-xl border cursor-pointer transition-all"
+                  :class="form.student_groups.includes(g.name)
+                    ? 'bg-indigo-50 dark:bg-indigo-900/30 border-indigo-200 dark:border-indigo-800/50'
+                    : 'bg-white dark:bg-slate-800 border-slate-200 dark:border-slate-700 hover:border-indigo-300 dark:hover:border-indigo-700'">
+                  <input type="checkbox" :value="g.name" v-model="form.student_groups"
+                    class="rounded accent-indigo-600" />
+                  <span class="text-sm font-bold text-slate-700 dark:text-slate-200">{{ g.student_group_name }}</span>
+                </label>
+              </div>
+              <p v-if="form.student_groups.length === 0"
+                class="text-[10px] text-rose-500 font-bold mt-2">Select at least one group.</p>
             </div>
           </div>
         </form>
 
-        <!-- Footer Actions -->
         <template #footer>
           <button @click="showCreateModal = false" type="button"
             class="flex-1 px-6 py-3 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 text-sm font-bold hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
             Cancel
           </button>
-          <button @click="handleCreate" :disabled="creating" type="button"
+          <button @click="handleSave"
+            :disabled="saving || assignmentFileUploading
+              || (form.assign_to === 'Specific Groups' && form.student_groups.length === 0)
+              || (form.assign_to === 'All Enrolled' && form.course && studentGroups.length === 0)"
+            type="button"
             class="flex-1 px-6 py-3 rounded-xl bg-indigo-600 dark:bg-indigo-500 text-white text-sm font-bold hover:bg-indigo-700 dark:hover:bg-indigo-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
-            <i v-if="creating" class="fa fa-spinner fa-spin"></i>
-            {{ creating ? 'Creating...' : 'Create Template' }}
+            <i v-if="saving" class="fa fa-spinner fa-spin"></i>
+            {{ saving ? (editingAssignment ? 'Saving...' : 'Creating...') : (editingAssignment ? 'Save Changes' : 'Create Assignment') }}
           </button>
         </template>
       </AppModal>
 
-      <!-- Modal 2: Grading Modal -->
+      <!-- ─── Submissions Modal ─── -->
+      <AppModal v-model="showSubmissionsModal" title="Submissions" maxWidth="max-w-4xl">
+        <div v-if="currentAssignment">
+          <!-- Assignment summary -->
+          <div class="mb-6 flex flex-wrap gap-3 items-center">
+            <span class="text-base font-black text-slate-800 dark:text-white">{{ currentAssignment.title }}</span>
+            <span :class="statusBadgeClass(currentAssignment.status)"
+              class="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-tighter border">
+              {{ currentAssignment.status }}
+            </span>
+            <span class="text-xs text-slate-400 font-bold">Max: {{ currentAssignment.max_score }} pts</span>
+          </div>
+
+          <div v-if="detailLoading" class="py-12 flex justify-center">
+            <i class="fa fa-spinner fa-spin text-indigo-500 text-2xl"></i>
+          </div>
+
+          <div v-else-if="currentAssignment.submissions && currentAssignment.submissions.length === 0"
+            class="py-12 text-center text-xs font-bold text-slate-400 uppercase tracking-widest">
+            No submissions yet.
+          </div>
+
+          <div v-else class="overflow-x-auto -mx-2 px-2">
+            <table class="w-full border-separate border-spacing-y-3 min-w-[640px]">
+              <thead>
+                <tr class="text-[10px] font-black uppercase tracking-widest text-slate-400">
+                  <th class="text-left px-6 py-2">Student</th>
+                  <th class="text-left px-6 py-2">Submitted</th>
+                  <th class="text-left px-6 py-2">File</th>
+                  <th class="text-left px-6 py-2">Status</th>
+                  <th class="text-right px-6 py-2">Grade</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="sub in currentAssignment.submissions" :key="sub.student"
+                  class="bg-slate-50/50 dark:bg-slate-800/30 hover:bg-white dark:hover:bg-slate-800 border border-transparent hover:border-indigo-100 dark:hover:border-indigo-900/50 transition-all rounded-2xl shadow-sm">
+                  <td class="px-6 py-4 rounded-l-2xl">
+                    <div class="flex items-center gap-3">
+                      <div
+                        class="w-9 h-9 rounded-xl bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center font-black text-xs text-indigo-700 dark:text-indigo-400">
+                        {{ (sub.student_name || sub.student).charAt(0) }}
+                      </div>
+                      <span class="text-xs font-black text-slate-700 dark:text-slate-200">{{ sub.student_name || sub.student }}</span>
+                    </div>
+                  </td>
+                  <td class="px-6 py-4 text-[10px] text-slate-400 font-bold">
+                    {{ sub.submitted_on ? formatDate(sub.submitted_on) : '—' }}
+                  </td>
+                  <td class="px-6 py-4">
+                    <a v-if="sub.submission_file" :href="sub.submission_file" target="_blank"
+                      class="flex items-center gap-1.5 text-indigo-500 dark:text-indigo-400 hover:text-indigo-700 text-[10px] font-bold">
+                      <i class="fa fa-file-text-o"></i> View Work
+                    </a>
+                    <span v-else class="text-[10px] text-slate-400 font-black uppercase">No File</span>
+                  </td>
+                  <td class="px-6 py-4">
+                    <span v-if="sub.status === 'Graded'"
+                      class="inline-flex items-center px-3 py-1 bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 rounded-xl text-[10px] font-black uppercase gap-1.5">
+                      <i class="fa fa-check-circle"></i> {{ sub.score }} pts
+                    </span>
+                    <span v-else-if="sub.status === 'Submitted'"
+                      class="inline-flex items-center px-3 py-1 bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 rounded-xl text-[10px] font-black uppercase gap-1.5">
+                      <i class="fa fa-clock-o"></i> Needs Review
+                    </span>
+                    <span v-else
+                      class="inline-flex items-center px-3 py-1 bg-slate-100 dark:bg-slate-800 text-slate-400 rounded-xl text-[10px] font-black uppercase">
+                      {{ sub.status || 'Pending' }}
+                    </span>
+                  </td>
+                  <td class="px-6 py-4 rounded-r-2xl text-right">
+                    <button v-if="sub.submitted_on" @click="openGradingModal(sub)"
+                      class="bg-slate-900 dark:bg-indigo-600 text-white px-5 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-md">
+                      {{ sub.status === 'Graded' ? 'Update Grade' : 'Grade Work' }}
+                    </button>
+                    <span v-else class="text-[10px] text-slate-300 dark:text-slate-600 font-bold uppercase">Not submitted</span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <template #footer>
+          <button @click="showSubmissionsModal = false"
+            class="w-full px-6 py-3 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 text-sm font-bold hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
+            Close
+          </button>
+        </template>
+      </AppModal>
+
+      <!-- ─── Grading Modal ─── -->
       <AppModal v-model="showGradeModal" title="Grade Student Work" maxWidth="max-w-lg">
         <div class="space-y-6" v-if="gradingSubmission">
 
-          <!-- Student Info Card -->
+          <!-- Student Info -->
           <div
             class="flex items-center gap-4 bg-gradient-to-r from-indigo-50 to-blue-50 dark:from-indigo-900/20 dark:to-blue-900/20 p-5 rounded-2xl border border-indigo-200 dark:border-indigo-900/30">
             <div
               class="w-14 h-14 rounded-xl bg-gradient-to-br from-indigo-600 to-blue-600 flex items-center justify-center text-white font-black text-xl shadow-lg">
-              {{ gradingSubmission.student_name.charAt(0) }}
+              {{ (gradingSubmission.student_name || gradingSubmission.student).charAt(0) }}
             </div>
             <div>
-              <h4 class="font-black text-slate-900 dark:text-white text-base">{{ gradingSubmission.student_name }}</h4>
-              <p class="text-xs text-slate-600 dark:text-slate-400 mt-0.5">
-                <i class="fa fa-file-o mr-1 text-indigo-500"></i>
-                <span class="font-bold">Submission ID:</span> {{ gradingSubmission.name }}
+              <h4 class="font-black text-slate-900 dark:text-white text-base">{{ gradingSubmission.student_name || gradingSubmission.student }}</h4>
+              <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5 font-medium">
+                Max score: <span class="font-black text-indigo-500">{{ currentAssignment?.max_score || 100 }} pts</span>
               </p>
             </div>
           </div>
 
-          <!-- Scoring Section -->
+          <!-- Score -->
           <div class="space-y-4">
             <h4
               class="text-xs font-black uppercase tracking-widest text-slate-400 dark:text-slate-500 pb-3 border-b border-slate-100 dark:border-slate-800">
               <i class="fa fa-star mr-2 text-yellow-500"></i>Score Evaluation
             </h4>
 
-            <!-- Score Input with Visual Feedback -->
             <div>
               <div class="flex items-center justify-between mb-3">
-                <label class="text-xs font-black uppercase tracking-wider text-slate-600 dark:text-slate-400">Score
-                  (0-100)</label>
+                <label class="text-xs font-black uppercase tracking-wider text-slate-600 dark:text-slate-400">
+                  Score (0–{{ currentAssignment?.max_score || 100 }})
+                </label>
                 <div class="text-right">
-                  <span class="text-3xl font-black text-indigo-600 dark:text-indigo-400">{{ gradeInput || '0' }}</span>
-                  <span class="text-xs text-slate-500 dark:text-slate-400 ml-2">/ 100</span>
+                  <span class="text-3xl font-black text-indigo-600 dark:text-indigo-400">{{ gradeInput }}</span>
+                  <span class="text-xs text-slate-500 dark:text-slate-400 ml-2">/ {{ currentAssignment?.max_score || 100 }}</span>
                 </div>
               </div>
 
-              <input v-model="gradeInput" type="number" min="0" max="100"
+              <input v-model.number="gradeInput" type="number" min="0" :max="currentAssignment?.max_score || 100"
+                @input="clampScore"
                 class="w-full bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 rounded-xl px-6 py-4 text-2xl font-black text-indigo-600 dark:text-indigo-400 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all text-center shadow-sm hover:border-indigo-300 dark:hover:border-indigo-600" />
 
-              <!-- Score Guide -->
-              <div class="mt-4 grid grid-cols-4 gap-2 text-[10px] font-bold text-center">
-                <div class="p-2 rounded-lg bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400">0-40<br>Poor
-                </div>
-                <div class="p-2 rounded-lg bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400">
-                  41-70<br>Average</div>
-                <div class="p-2 rounded-lg bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400">
-                  71-85<br>Good
-                </div>
-                <div class="p-2 rounded-lg bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400">
-                  86-100<br>Excellent</div>
-              </div>
+              <p v-if="gradeInput < 0 || gradeInput > (currentAssignment?.max_score || 100)"
+                class="text-xs text-rose-500 font-bold mt-2">
+                Score must be between 0 and {{ currentAssignment?.max_score || 100 }}.
+              </p>
             </div>
           </div>
 
-          <!-- Feedback Section -->
+          <!-- Remarks -->
           <div class="space-y-4">
             <h4
               class="text-xs font-black uppercase tracking-widest text-slate-400 dark:text-slate-500 pb-3 border-b border-slate-100 dark:border-slate-800">
@@ -389,22 +525,19 @@
                 Teacher Remarks <span class="text-slate-400 text-[10px] font-normal">(optional)</span>
               </label>
               <textarea v-model="remarksInput" rows="4"
-                class="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-sm font-medium focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all resize-none placeholder-slate-400 dark:placeholder-slate-500"
+                class="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-sm font-medium focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all resize-none dark:text-white placeholder-slate-400 dark:placeholder-slate-500"
                 placeholder="Provide constructive feedback for the student..."></textarea>
-              <p class="text-xs text-slate-500 dark:text-slate-400 mt-2">Be specific and helpful to improve future
-                submissions
-              </p>
             </div>
           </div>
         </div>
 
-        <!-- Footer Actions -->
         <template #footer>
           <button @click="showGradeModal = false"
             class="flex-1 px-6 py-3 rounded-xl border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-300 text-sm font-bold hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors">
             Cancel
           </button>
-          <button @click="handleGrade" :disabled="grading"
+          <button @click="handleGrade"
+            :disabled="grading || gradeInput < 0 || gradeInput > (currentAssignment?.max_score || 100)"
             class="flex-1 px-6 py-3 rounded-xl bg-gradient-to-r from-green-600 to-emerald-600 dark:from-green-500 dark:to-emerald-500 text-white text-sm font-bold hover:shadow-lg hover:shadow-green-300 dark:hover:shadow-green-900 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2">
             <i v-if="grading" class="fa fa-spinner fa-spin"></i>
             <i v-else class="fa fa-check-circle"></i>
@@ -418,118 +551,307 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, reactive, onMounted } from 'vue'
 import { useTeacherAssignments } from '~/composable/useTeacherAssignments'
 import AppModal from '~/components/ui/AppModal.vue'
 import HeroHeader from '~/components/ui/HeroHeader.vue'
 import UiSkeleton from '~/components/ui/UiSkeleton.vue'
+import { call } from '~/composable/useFrappeFetch'
 
 const {
-  courses, templates, submissions, studentGroups, loading,
-  fetchCourses, fetchStudentGroups, fetchTemplates,
-  createTemplate, publishTemplate, fetchSubmissions, gradeAssignment
+  courses,
+  studentGroups,
+  assignments,
+  currentAssignment,
+  loading,
+  error,
+  fetchCourses,
+  fetchStudentGroups,
+  fetchAssignments,
+  fetchAssignmentDetail,
+  createAssignment,
+  updateAssignment,
+  publishAssignment,
+  deleteAssignment,
+  closeAssignment,
+  gradeSubmission,
 } = useTeacherAssignments()
 
 const selectedCourse = ref('')
-const expandedTemplate = ref(null)
-const submissionsLoading = ref(false)
 const expandedCard = ref(null)
 const expandedDescription = ref({})
 
-// Modals
+// Modal state
 const showCreateModal = ref(false)
+const showSubmissionsModal = ref(false)
 const showGradeModal = ref(false)
-const creating = ref(false)
-const grading = ref(false)
 
-const newTemplate = ref({
-  title: '', course: '', due_date: '', assign_to: 'All Enrolled',
-  student_group: '', description: '', assignment_file: ''
+// Operation loading flags
+const saving = ref(false)
+const grading = ref(false)
+const detailLoading = ref(false)
+const publishingName = ref(null)
+const assignmentFileUploading = ref(false)
+const selectedAssignmentFile = ref(null)
+
+// Edit tracking
+const editingAssignment = ref(null)
+
+// Form
+const formError = ref(null)
+const form = ref({
+  title: '',
+  course: '',
+  topic: '',
+  due_date: '',
+  max_score: 100,
+  assign_to: 'All Enrolled',
+  student_groups: [],
+  description: '',
+  assignment_file: '',
 })
 
+// Grading
 const gradingSubmission = ref(null)
 const gradeInput = ref(0)
 const remarksInput = ref('')
 
 onMounted(async () => {
   await fetchCourses()
-  await loadTemplates()
+  await loadAssignments()
 })
 
-const loadTemplates = async () => {
-  await fetchTemplates(selectedCourse.value)
+const loadAssignments = async () => {
+  await fetchAssignments(selectedCourse.value || null)
 }
 
 const loadGroups = async () => {
-  if (newTemplate.value.course) {
-    await fetchStudentGroups(newTemplate.value.course)
+  if (form.value.course) {
+    await fetchStudentGroups(form.value.course)
+    form.value.student_groups = []
   }
 }
 
-const openCreateModal = () => {
-  newTemplate.value = {
-    title: '', course: '', due_date: '', assign_to: 'All Enrolled',
-    student_group: '', description: '', assignment_file: ''
+// ─── Create / Edit ────────────────────────────────────────────────────────
+
+const resetForm = () => {
+  form.value = {
+    title: '',
+    course: '',
+    topic: '',
+    due_date: '',
+    max_score: 100,
+    assign_to: 'All Enrolled',
+    student_groups: [],
+    description: '',
+    assignment_file: '',
   }
+  formError.value = null
+  editingAssignment.value = null
+  selectedAssignmentFile.value = null
+}
+
+const openCreateModal = async () => {
+  resetForm()
+  showCreateModal.value = true
+  // Reset cached student groups so a stale list doesn't bleed into the new modal
+  studentGroups.value = []
+}
+
+const openEditModal = async (assignment) => {
+  resetForm()
+  editingAssignment.value = assignment.name
+
+  // Pre-fill from the list item (full detail has target_groups)
+  form.value.title = assignment.title
+  form.value.course = assignment.course
+  form.value.topic = assignment.topic || ''
+  form.value.due_date = assignment.due_date
+  form.value.max_score = assignment.max_score
+  form.value.assign_to = assignment.assign_to || 'All Enrolled'
+  form.value.description = assignment.description || ''
+  form.value.assignment_file = assignment.assignment_file || ''
+  form.value.student_groups = (assignment.target_groups || []).map(g => g.student_group)
+
+  if (form.value.course) {
+    await fetchStudentGroups(form.value.course)
+  }
+
   showCreateModal.value = true
 }
 
-const handleCreate = async () => {
-  if (!newTemplate.value.title || !newTemplate.value.course || !newTemplate.value.due_date) {
-    return alert('Please fill in title, course and due date')
+const onAssignmentFileChange = async (e) => {
+  const file = e.target.files[0]
+  if (!file) return
+  selectedAssignmentFile.value = file
+  assignmentFileUploading.value = true
+
+  const formData = new FormData()
+  formData.append('file', file)
+  formData.append('is_private', 0)
+
+  try {
+    const res = await $fetch('/api/method/upload_file', {
+      method: 'POST',
+      body: formData,
+      credentials: 'include',
+    })
+    form.value.assignment_file = res.message?.file_url || ''
+  } catch (err) {
+    formError.value = 'File upload failed: ' + (err.message || 'Unknown error')
+  } finally {
+    assignmentFileUploading.value = false
   }
-  creating.value = true
-  const res = await createTemplate(newTemplate.value)
-  creating.value = false
+}
+
+const handleSave = async () => {
+  formError.value = null
+
+  if (!form.value.title || !form.value.course || !form.value.due_date || !form.value.max_score) {
+    formError.value = 'Please fill in title, course, due date and max score.'
+    return
+  }
+
+  if (form.value.assign_to === 'Specific Groups' && form.value.student_groups.length === 0) {
+    formError.value = 'Select at least one student group.'
+    return
+  }
+
+  const payload = {
+    title: form.value.title,
+    course: form.value.course,
+    topic: form.value.topic,
+    due_date: form.value.due_date,
+    max_score: form.value.max_score,
+    assign_to: form.value.assign_to,
+    student_groups: form.value.assign_to === 'All Enrolled' ? [] : form.value.student_groups,
+    description: form.value.description,
+    assignment_file: form.value.assignment_file,
+  }
+
+  saving.value = true
+  let res
+
+  if (editingAssignment.value) {
+    res = await updateAssignment(editingAssignment.value, payload)
+  } else {
+    res = await createAssignment(payload)
+  }
+
+  saving.value = false
+
   if (res?.error) {
-    alert(res.error)
+    formError.value = res.error
   } else {
     showCreateModal.value = false
-    await loadTemplates()
+    await loadAssignments()
   }
 }
 
-const handlePublish = async (template) => {
-  if (!confirm(`Publish "${template.title}" to students? This will create assignment records immediately.`)) return
+// ─── Publish ──────────────────────────────────────────────────────────────
 
-  const res = await publishTemplate(template.name)
+const handlePublish = async (assignment) => {
+  if (!confirm(`Publish "${assignment.title}" to students? This will create assignment records immediately.`)) return
+
+  publishingName.value = assignment.name
+  const res = await publishAssignment(assignment.name)
+  publishingName.value = null
+
   if (res?.error) {
     alert(res.error)
   } else {
-    alert(res.message || 'Published successfully')
-    await loadTemplates()
+    await loadAssignments()
   }
 }
 
-const toggleSubmissions = async (template) => {
-  if (expandedTemplate.value === template.name) {
-    expandedTemplate.value = null
+// ─── Close ────────────────────────────────────────────────────────────────
+
+const handleClose = async (assignment) => {
+  if (!confirm(`Close "${assignment.title}"? Students will no longer be able to submit.`)) return
+
+  const res = await closeAssignment(assignment.name)
+  if (res?.error) {
+    alert(res.error)
   } else {
-    expandedTemplate.value = template.name
-    submissionsLoading.value = true
-    await fetchSubmissions(template.name)
-    submissionsLoading.value = false
+    await loadAssignments()
   }
 }
+
+// ─── Delete ───────────────────────────────────────────────────────────────
+
+const handleDelete = async (assignment) => {
+  if (!confirm(`Delete "${assignment.title}"? This action cannot be undone.`)) return
+
+  const res = await deleteAssignment(assignment.name)
+  if (res?.error) {
+    alert(res.error)
+  } else {
+    await loadAssignments()
+  }
+}
+
+// ─── Submissions ──────────────────────────────────────────────────────────
+
+const handleViewSubmissions = async (assignment) => {
+  showSubmissionsModal.value = true
+  detailLoading.value = true
+  await fetchAssignmentDetail(assignment.name)
+  detailLoading.value = false
+}
+
+// ─── Grading ──────────────────────────────────────────────────────────────
 
 const openGradingModal = (sub) => {
   gradingSubmission.value = sub
-  gradeInput.value = sub.evaluated_score || 0
+  gradeInput.value = sub.score ?? 0
   remarksInput.value = sub.remarks || ''
   showGradeModal.value = true
 }
 
+const clampScore = () => {
+  const max = currentAssignment.value?.max_score || 100
+  if (gradeInput.value < 0) gradeInput.value = 0
+  if (gradeInput.value > max) gradeInput.value = max
+}
+
 const handleGrade = async () => {
+  const max = currentAssignment.value?.max_score || 100
+  if (gradeInput.value < 0 || gradeInput.value > max) return
+
   grading.value = true
-  const res = await gradeAssignment(gradingSubmission.value.name, gradeInput.value, remarksInput.value)
+  const res = await gradeSubmission(
+    currentAssignment.value.name,
+    gradingSubmission.value.student,
+    gradeInput.value,
+    remarksInput.value
+  )
   grading.value = false
 
   if (res?.error) {
     alert(res.error)
   } else {
     showGradeModal.value = false
-    await fetchSubmissions(expandedTemplate.value)
-    await loadTemplates() // Update stats
+    // Refresh detail in the background
+    await fetchAssignmentDetail(currentAssignment.value.name)
+    await loadAssignments()
+  }
+}
+
+// ─── Helpers ──────────────────────────────────────────────────────────────
+
+const progressOffset = (assignment) => {
+  const total = assignment.submission_count || 0
+  const done = (assignment.graded_count || 0) + (assignment.pending_count || 0)
+  if (total === 0) return 2 * Math.PI * 40
+  return 2 * Math.PI * 40 * (1 - done / total)
+}
+
+const statusBadgeClass = (status) => {
+  switch (status) {
+    case 'Published': return 'bg-green-50 text-green-600 border-green-100 dark:bg-green-900/30 dark:text-green-400 dark:border-green-800/40'
+    case 'Draft':     return 'bg-amber-50 text-amber-600 border-amber-100 dark:bg-amber-900/30 dark:text-amber-400 dark:border-amber-800/40'
+    case 'Closed':    return 'bg-slate-100 text-slate-500 border-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700'
+    default:          return 'bg-slate-100 text-slate-500 border-slate-200 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700'
   }
 }
 
@@ -538,7 +860,6 @@ const formatDate = (dateStr) => {
   return new Date(dateStr).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
 }
 
-// Helper functions for description management
 const stripHtmlTags = (html) => {
   if (!html) return ''
   const temp = document.createElement('div')
@@ -548,27 +869,20 @@ const stripHtmlTags = (html) => {
 
 const isDescriptionLong = (description) => {
   if (!description) return false
-  const plainText = stripHtmlTags(description)
-  return plainText.length > 150
+  return stripHtmlTags(description).length > 150
 }
 
 const getShortDescription = (description) => {
   if (!description) return ''
-  const plainText = stripHtmlTags(description)
-  if (plainText.length <= 150) return description
-  const truncated = plainText.substring(0, 150) + '...'
-  return truncated
+  const plain = stripHtmlTags(description)
+  if (plain.length <= 150) return description
+  return plain.substring(0, 150) + '...'
 }
 
-const isDescriptionExpanded = (templateName) => {
-  return expandedDescription.value[templateName] || false
-}
+const isDescriptionExpanded = (name) => expandedDescription.value[name] || false
 
-const toggleDescription = (templateName) => {
-  expandedDescription.value = {
-    ...expandedDescription.value,
-    [templateName]: !expandedDescription.value[templateName]
-  }
+const toggleDescription = (name) => {
+  expandedDescription.value = { ...expandedDescription.value, [name]: !expandedDescription.value[name] }
 }
 </script>
 
@@ -577,16 +891,13 @@ const toggleDescription = (templateName) => {
   width: 5px;
   height: 5px;
 }
-
 .custom-scrollbar::-webkit-scrollbar-track {
   background: transparent;
 }
-
 .custom-scrollbar::-webkit-scrollbar-thumb {
   background: #e2e8f0;
   border-radius: 99px;
 }
-
 .dark .custom-scrollbar::-webkit-scrollbar-thumb {
   background: #334155;
 }

@@ -121,6 +121,57 @@ def _format_file_size(size):
 
 
 @frappe.whitelist()
+def get_instructor_courses_with_topics():
+    """Return the instructor's courses, each with its nested topics list.
+
+    Used by the frontend Study Material / Assignment modal so that selecting
+    a course can populate the Topic dropdown without an extra round-trip.
+    """
+    instructor = _get_instructor_for_user()
+    if not instructor:
+        return []
+
+    # Instructor's mapped courses (deduped, preserves order)
+    mappings = frappe.get_all(
+        "Instructor Course Mapping",
+        filters={"parent": instructor.name, "parenttype": "Instructor"},
+        fields=["course", "course_name"],
+    )
+
+    seen = set()
+    result = []
+    for m in mappings:
+        if not m.course or m.course in seen:
+            continue
+        seen.add(m.course)
+
+        if not frappe.db.exists("Course", m.course):
+            continue
+
+        course_doc = frappe.get_doc("Course", m.course)
+
+        topics = []
+        for ct in (course_doc.topics or []):
+            if not ct.topic:
+                continue
+            topic_name = frappe.db.get_value("Topic", ct.topic, "topic_name")
+            if topic_name is None:
+                continue
+            topics.append({
+                "name": ct.topic,
+                "topic_name": topic_name or ct.topic,
+            })
+
+        result.append({
+            "name": course_doc.name,
+            "course_name": course_doc.course_name or course_doc.name,
+            "topics": topics,
+        })
+
+    return result
+
+
+@frappe.whitelist()
 def get_materials_by_teacher():
     """Get study materials created by the logged-in instructor."""
     instructor = _get_instructor_for_user()
