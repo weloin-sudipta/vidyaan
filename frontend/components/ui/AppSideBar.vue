@@ -198,7 +198,7 @@ const updateNavItems = () => {
       { header: 'Main Menu' },
       { name: 'Dashboard', icon: 'fa fa-th-large', route: '/' },
       { name: 'Notice & News', icon: 'fa fa-bullhorn', route: '/notices' },
-      { name: 'Events', icon: 'fa fa-calendar-alt', route: '/events' },
+     // { name: 'Events', icon: 'fa fa-calendar-alt', route: '/events' },
 
       { header: 'Academic Life' },
       {
@@ -233,7 +233,7 @@ const updateNavItems = () => {
       { header: 'Main Menu' },
       { name: 'Dashboard', icon: 'fa fa-th-large', route: '/' },
       { name: 'Notice & News', icon: 'fa fa-bullhorn', route: '/notices' },
-      { name: 'Events', icon: 'fa fa-calendar', route: '/events' },
+     // { name: 'Events', icon: 'fa fa-calendar', route: '/events' },
 
       { header: 'Academic Life' },
       {

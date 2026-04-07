@@ -106,7 +106,7 @@
             <!-- Table Head -->
             <div
               class="grid border-b border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50"
-              style="grid-template-columns: 2.5fr 1fr 1fr 2fr"
+              style="grid-template-columns: 2.2fr 1fr 0.9fr 1.7fr 1.1fr"
             >
               <div class="px-6 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400">Student</div>
               <div class="px-4 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400 text-center border-l border-slate-100 dark:border-slate-800">
@@ -114,6 +114,7 @@
               </div>
               <div class="px-4 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400 text-center border-l border-slate-100 dark:border-slate-800">Grade</div>
               <div class="px-4 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400 border-l border-slate-100 dark:border-slate-800">Remarks</div>
+              <div class="px-4 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400 text-center border-l border-slate-100 dark:border-slate-800">Action</div>
             </div>
 
             <!-- Table Rows -->
@@ -121,7 +122,7 @@
               v-for="(student, i) in students"
               :key="student.student"
               class="grid border-b border-slate-50 dark:border-slate-800/50 last:border-0 hover:bg-slate-50/50 dark:hover:bg-slate-800/20 transition-colors"
-              style="grid-template-columns: 2.5fr 1fr 1fr 2fr"
+              style="grid-template-columns: 2.2fr 1fr 0.9fr 1.7fr 1.1fr"
             >
               <!-- Student name + ID -->
               <div class="px-6 py-4 flex items-center gap-3">
@@ -135,11 +136,15 @@
                   <p class="text-sm font-black text-slate-800 dark:text-slate-100 truncate">{{ student.student_name }}</p>
                   <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest truncate">{{ student.student }}</p>
                 </div>
-                <!-- Already graded badge -->
+                <!-- Status badge -->
                 <span
-                  v-if="student.result_id"
-                  class="ml-auto flex-shrink-0 text-[8px] font-black uppercase tracking-widest bg-indigo-50 dark:bg-indigo-900/30 text-indigo-500 border border-indigo-100 dark:border-indigo-800 px-2 py-0.5 rounded-full"
-                >Graded</span>
+                  v-if="student.docstatus === 1"
+                  class="ml-auto flex-shrink-0 text-[8px] font-black uppercase tracking-widest bg-emerald-50 dark:bg-emerald-900/30 text-emerald-600 border border-emerald-200 dark:border-emerald-800 px-2 py-0.5 rounded-full"
+                >Submitted</span>
+                <span
+                  v-else-if="student.docstatus === 0"
+                  class="ml-auto flex-shrink-0 text-[8px] font-black uppercase tracking-widest bg-amber-50 dark:bg-amber-900/30 text-amber-600 border border-amber-200 dark:border-amber-800 px-2 py-0.5 rounded-full"
+                >Draft</span>
               </div>
 
               <!-- Score input -->
@@ -180,6 +185,27 @@
                   placeholder="Add remarks…"
                 />
               </div>
+
+              <!-- Per-row save button -->
+              <div class="px-3 py-4 flex items-center justify-center border-l border-slate-100 dark:border-slate-800 gap-1">
+                <button
+                  @click="handleSaveOne(student, false)"
+                  :disabled="savingStudent === student.student || student.score === '' || student.score === null"
+                  title="Save as draft"
+                  class="h-8 px-2 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 disabled:opacity-30 disabled:cursor-not-allowed text-slate-600 dark:text-slate-300 rounded-lg text-[10px] font-black uppercase tracking-wider transition-colors flex items-center gap-1"
+                >
+                  <i :class="savingStudent === student.student ? 'fa fa-spinner fa-spin' : 'fa fa-save'"></i>
+                </button>
+                <button
+                  @click="handleSaveOne(student, true)"
+                  :disabled="savingStudent === student.student || student.score === '' || student.score === null"
+                  :title="student.docstatus === 1 ? 'Re-submit (cancel + amend)' : 'Submit final'"
+                  class="h-8 px-3 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-30 disabled:cursor-not-allowed text-white rounded-lg text-[10px] font-black uppercase tracking-wider transition-colors flex items-center gap-1 shadow-sm"
+                >
+                  <i :class="savingStudent === student.student ? 'fa fa-spinner fa-spin' : 'fa fa-paper-plane'"></i>
+                  {{ student.docstatus === 1 ? 'Re-Submit' : 'Submit' }}
+                </button>
+              </div>
             </div>
 
             <!-- Empty state -->
@@ -195,23 +221,36 @@
             v-if="students.length > 0"
             class="flex flex-col sm:flex-row items-center justify-between gap-4 bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-2xl px-6 py-4 shadow-sm"
           >
-            <div class="flex items-center gap-6 text-xs font-bold text-slate-500">
+            <div class="flex items-center gap-6 text-xs font-bold text-slate-500 flex-wrap">
               <span>
                 <span class="text-indigo-600 dark:text-indigo-400 font-black text-base">{{ gradedCount }}</span>
                 / {{ students.length }} marked
               </span>
-              <span v-if="alreadySavedCount > 0" class="text-emerald-600 dark:text-emerald-400">
-                <i class="fa fa-check-circle mr-1"></i>{{ alreadySavedCount }} already in Frappe
+              <span v-if="submittedCount > 0" class="text-emerald-600 dark:text-emerald-400">
+                <i class="fa fa-check-circle mr-1"></i>{{ submittedCount }} submitted
+              </span>
+              <span v-if="draftCount > 0" class="text-amber-600 dark:text-amber-400">
+                <i class="fa fa-clock-o mr-1"></i>{{ draftCount }} drafts
               </span>
             </div>
-            <button
-              @click="handleSave"
-              :disabled="saving || students.length === 0"
-              class="w-full sm:w-auto h-10 px-8 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-40 text-white rounded-xl text-xs font-black uppercase tracking-widest transition-colors shadow-lg shadow-emerald-100 dark:shadow-none flex items-center justify-center gap-2"
-            >
-              <i :class="saving ? 'fa fa-spinner fa-spin' : 'fa fa-paper-plane'"></i>
-              {{ saving ? 'Submitting…' : 'Submit All Results' }}
-            </button>
+            <div class="flex items-center gap-2">
+              <button
+                @click="handleSaveAll(false)"
+                :disabled="saving || students.length === 0"
+                class="h-10 px-5 bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 disabled:opacity-40 text-slate-700 dark:text-slate-200 rounded-xl text-xs font-black uppercase tracking-widest transition-colors flex items-center justify-center gap-2"
+              >
+                <i :class="saving ? 'fa fa-spinner fa-spin' : 'fa fa-save'"></i>
+                Save as Draft
+              </button>
+              <button
+                @click="handleSaveAll(true)"
+                :disabled="saving || students.length === 0"
+                class="h-10 px-6 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-40 text-white rounded-xl text-xs font-black uppercase tracking-widest transition-colors shadow-lg shadow-emerald-100 dark:shadow-none flex items-center justify-center gap-2"
+              >
+                <i :class="saving ? 'fa fa-spinner fa-spin' : 'fa fa-paper-plane'"></i>
+                {{ saving ? 'Submitting…' : 'Submit All' }}
+              </button>
+            </div>
           </div>
 
         </template>
@@ -236,9 +275,11 @@ const {
   students,
   loading: studentsLoading,
   saving,
+  savingStudent,
   error: gradingError,
   fetchExamStudents,
   submitExamResults,
+  saveSingleResult,
 } = useGrading()
 
 // ── Local state ─────────────────────────────────────────────────────────────
@@ -257,13 +298,43 @@ watch(selectedExam, async (examName) => {
   await fetchExamStudents(examName)
 })
 
-// ── Submit all results ──────────────────────────────────────────────────────
-const handleSave = async () => {
+// ── Submit all results (bulk) ───────────────────────────────────────────────
+const handleSaveAll = async (submit = true) => {
   try {
-    await submitExamResults(selectedExam.value)
-    showToast('All results submitted to Frappe!', 'success')
-  } catch {
-    showToast('Failed to submit results. Please try again.', 'error')
+    const res = await submitExamResults(selectedExam.value, { submit })
+    if (res?.errors?.length) {
+      showToast(
+        `Saved ${res.saved_count}, but ${res.errors.length} failed: ${res.errors[0].error}`,
+        'error',
+      )
+    } else {
+      showToast(
+        submit
+          ? `All ${res?.saved_count ?? ''} results submitted!`
+          : `Saved ${res?.saved_count ?? ''} as draft`,
+        'success',
+      )
+    }
+  } catch (e) {
+    showToast(e?.message || 'Failed to save results.', 'error')
+  }
+}
+
+// ── Save / submit a single student row ─────────────────────────────────────
+const handleSaveOne = async (student, submit = true) => {
+  try {
+    const res = await saveSingleResult(selectedExam.value, student, { submit })
+    if (res?.success) {
+      const action =
+        res.result?.status === 'amended' ? 'Amended & re-submitted'
+        : submit ? 'Submitted'
+        : 'Saved as draft'
+      showToast(`${student.student_name}: ${action}`, 'success')
+    } else {
+      showToast(`${student.student_name}: ${res?.error || 'Failed'}`, 'error')
+    }
+  } catch (e) {
+    showToast(e?.message || 'Failed to save', 'error')
   }
 }
 
@@ -276,8 +347,11 @@ const showToast = (msg, type = 'success') => {
 const gradedCount = computed(() =>
   students.value.filter(s => s.score !== '' && s.score !== null && s.score !== undefined).length
 )
-const alreadySavedCount = computed(() =>
-  students.value.filter(s => s.result_id).length
+const submittedCount = computed(() =>
+  students.value.filter(s => s.docstatus === 1).length
+)
+const draftCount = computed(() =>
+  students.value.filter(s => s.docstatus === 0).length
 )
 
 // ── Plan info cards ──────────────────────────────────────────────────────────
