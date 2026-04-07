@@ -36,6 +36,42 @@
         </div>
 
         <div>
+          <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 block">Attendance Based On *</label>
+          <select v-model="form.attendance_based_on" class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-sm font-bold text-slate-700 dark:text-slate-200 outline-none focus:ring-4 focus:ring-indigo-500/10 transition-colors">
+            <option value="Student Group">Student Group</option>
+            <option value="Course Schedule">Course Schedule</option>
+          </select>
+        </div>
+
+        <div v-if="form.attendance_based_on === 'Student Group'">
+          <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 block">Student Group *</label>
+          <select v-model="form.student_group" @change="onStudentGroupChange"
+            class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-sm font-bold text-slate-700 dark:text-slate-200 outline-none focus:ring-4 focus:ring-indigo-500/10 transition-colors">
+            <option value="" disabled>Select your student group...</option>
+            <option v-for="group in leaveOptions.student_groups" :key="group.value" :value="group.value">{{ group.label }}</option>
+          </select>
+          <p v-if="form.student_group" class="text-xs text-indigo-600 dark:text-indigo-400 mt-2">
+            Applying for leave from: <strong>{{ form.student_group }}</strong>
+          </p>
+        </div>
+
+        <div v-if="form.attendance_based_on === 'Course Schedule'">
+          <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 block">Course Schedule *</label>
+          <select v-model="form.course_schedule"
+            class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-sm font-bold text-slate-700 dark:text-slate-200 outline-none focus:ring-4 focus:ring-indigo-500/10 transition-colors">
+            <option value="" disabled>
+              {{ loadingSchedules ? 'Loading schedules...' : 'Select a course schedule...' }}
+            </option>
+            <option v-for="schedule in filteredCourseSchedules" :key="schedule.value" :value="schedule.value">
+              {{ schedule.label }}
+            </option>
+          </select>
+          <p v-if="form.from_date && form.to_date && !loadingSchedules && filteredCourseSchedules.length === 0" class="text-xs text-amber-600 dark:text-amber-400 mt-2">
+            No course schedules found in the selected date range
+          </p>
+        </div>
+
+        <div>
           <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 block">Reason</label>
           <textarea v-model="form.reason" rows="3" placeholder="Reason for leave..."
             class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-sm font-bold text-slate-700 dark:text-slate-200 outline-none focus:ring-4 focus:ring-indigo-500/10 resize-none transition-colors"></textarea>
@@ -57,17 +93,90 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { call } from '~/composable/useFrappeFetch'
 import { useToast } from '~/composable/useToast'
 
 const emit = defineEmits(['close', 'submitted'])
 const { addToast } = useToast()
 const submitting = ref(false)
+const loadingSchedules = ref(false)
 
-const form = ref({ from_date: '', to_date: '', reason: '' })
+const leaveOptions = ref({ student_groups: [], course_schedules: [] })
+const filteredCourseSchedules = ref([])
 
-const isValid = computed(() => form.value.from_date && form.value.to_date && form.value.from_date <= form.value.to_date)
+const form = ref({ 
+  from_date: '', 
+  to_date: '', 
+  reason: '',
+  attendance_based_on: 'Student Group',
+  student_group: '',
+  course_schedule: ''
+})
+
+onMounted(async () => {
+  try {
+    const res = await call('vidyaan.api_folder.applications.get_leave_options')
+    if (res) leaveOptions.value = res
+    // Auto-select first group if only one available
+    if (res && res.student_groups && res.student_groups.length === 1) {
+      form.value.student_group = res.student_groups[0].value
+    }
+  } catch (err) {
+    console.error('Failed to load leave options', err)
+  }
+})
+
+// Watch for date changes to filter course schedules
+watch(
+  () => ({ from_date: form.value.from_date, to_date: form.value.to_date }),
+  async () => {
+    if (form.value.attendance_based_on === 'Course Schedule' && form.value.from_date && form.value.to_date) {
+      await loadFilteredSchedules()
+    }
+  }
+)
+
+// Handle student group selection - just for UI feedback
+const onStudentGroupChange = () => {
+  // Clear course schedule selection if group changes
+  form.value.course_schedule = ''
+  filteredCourseSchedules.value = []
+  
+  // If switching to Course Schedule, reload filtered schedules
+  if (form.value.attendance_based_on === 'Course Schedule' && form.value.from_date && form.value.to_date && form.value.student_group) {
+    loadFilteredSchedules()
+  }
+}
+
+// Load course schedules filtered by date range
+const loadFilteredSchedules = async () => {
+  if (!form.value.student_group || !form.value.from_date || !form.value.to_date) {
+    filteredCourseSchedules.value = []
+    return
+  }
+  
+  loadingSchedules.value = true
+  try {
+    const res = await call('vidyaan.api_folder.applications.get_filtered_course_schedules', {
+      student_group: form.value.student_group,
+      from_date: form.value.from_date,
+      to_date: form.value.to_date
+    })
+    if (res) filteredCourseSchedules.value = res
+  } catch (err) {
+    console.error('Failed to load filtered schedules', err)
+  } finally {
+    loadingSchedules.value = false
+  }
+}
+
+const isValid = computed(() => {
+  if (!form.value.from_date || !form.value.to_date || form.value.from_date > form.value.to_date) return false
+  if (form.value.attendance_based_on === 'Course Schedule' && !form.value.course_schedule) return false
+  if (form.value.attendance_based_on === 'Student Group' && leaveOptions.value.student_groups.length && !form.value.student_group) return false
+  return true
+})
 
 const leaveDays = computed(() => {
   if (!form.value.from_date || !form.value.to_date) return 0
@@ -82,6 +191,9 @@ const submit = async () => {
       from_date: form.value.from_date,
       to_date: form.value.to_date,
       reason: form.value.reason || undefined,
+      attendance_based_on: form.value.attendance_based_on,
+      student_group: form.value.attendance_based_on === 'Student Group' ? (form.value.student_group || undefined) : undefined,
+      course_schedule: form.value.attendance_based_on === 'Course Schedule' ? (form.value.course_schedule || undefined) : undefined
     })
     addToast('Leave application submitted!', 'success')
     emit('submitted')

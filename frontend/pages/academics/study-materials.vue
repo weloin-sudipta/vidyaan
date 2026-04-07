@@ -73,9 +73,9 @@
 
           <div class="flex-1 text-center md:text-left">
             <div class="flex flex-col md:flex-row md:items-center gap-2 mb-1">
-              <h3 class="text-base font-black text-slate-800 dark:text-slate-200 tracking-tight">
+              <button @click="openMaterialDetails(file)" class="text-left text-base font-black text-slate-800 dark:text-slate-200 tracking-tight hover:text-indigo-600 dark:hover:text-indigo-400 hover:underline transition-colors focus:outline-none">
                 {{ file.title }}
-              </h3>
+              </button>
 
               <span
                 class="px-2 py-0.5 bg-slate-50 dark:bg-slate-800/50 text-slate-400 text-[9px] font-black uppercase rounded border border-slate-100 dark:border-slate-700/50"
@@ -138,6 +138,13 @@
 
       </div>
 
+      <!-- Material Details Modal -->
+      <MaterialDetailsModal
+        :is-open="detailsModalOpen"
+        :material="selectedMaterial"
+        :readonly="true"
+        @close="closeMaterialDetails"
+      />
     </div>
   </div>
 </template>
@@ -145,6 +152,7 @@
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue'
 import HeroHeader from '~/components/ui/HeroHeader.vue'
+import MaterialDetailsModal from '~/components/MaterialDetailsModal.vue'
 import { useStudyMaterials } from '~/composable/useStudyMaterials'
 
 const config = useRuntimeConfig()
@@ -160,6 +168,19 @@ const activeCategory = ref('All Files')
 const searchQuery = ref('')
 const selectedCourse = ref('')
 const selectedTopic = ref('')
+
+const detailsModalOpen = ref(false)
+const selectedMaterial = ref(null)
+
+const openMaterialDetails = (material) => {
+  selectedMaterial.value = material
+  detailsModalOpen.value = true
+}
+
+const closeMaterialDetails = () => {
+  detailsModalOpen.value = false
+  selectedMaterial.value = null
+}
 
 // ── Categories ────────────────────────────────────────
 const categories = [

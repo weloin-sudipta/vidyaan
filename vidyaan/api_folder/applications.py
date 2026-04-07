@@ -268,7 +268,8 @@ def submit_noc(noc_type, purpose, effective_date=None, destination=None):
 	})
 	doc.insert(ignore_permissions=True)
 	try:
-		doc.submit()
+		if not get_workflow_name("Student NOC"):
+			doc.submit()
 	except Exception:
 		pass  # Submit may fail if workflow requires approval
 	return {"success": True, "name": doc.name}
@@ -290,20 +291,110 @@ def submit_request(subject, description, category="General", priority="Medium"):
 	})
 	doc.insert(ignore_permissions=True)
 	try:
-		doc.submit()
+		if not get_workflow_name("Student Request"):
+			doc.submit()
 	except Exception:
 		pass  # Submit may fail if workflow requires approval
 	return {"success": True, "name": doc.name}
 
 
 @frappe.whitelist()
-def submit_leave(from_date, to_date, reason=None, student_group=None):
+def get_leave_options():
+	"""Fetch available student groups and course schedules for the student to select when applying for leave."""
+	student = _get_student_for_user()
+	if not student:
+		return {"student_groups": [], "course_schedules": []}
+		
+	# Fetch active student groups
+	groups = frappe.get_all(
+		"Student Group Student",
+		filters={"student": student, "active": 1},
+		pluck="parent"
+	)
+	
+	schedules = []
+	if groups:
+		schedules = frappe.get_all(
+			"Course Schedule",
+			filters={"student_group": ["in", groups]},
+			fields=["name", "course", "schedule_date"]
+		)
+		
+	return {
+		"student_groups": [{"label": g, "value": g} for g in groups],
+		"course_schedules": [{"label": f"{s.name} ({s.course} on {s.schedule_date})", "value": s.name} for s in schedules]
+	}
+
+
+@frappe.whitelist()
+def get_students_in_group(student_group):
+	"""Fetch all active students in a specific student group."""
+	student = _get_student_for_user()
+	if not student:
+		frappe.throw("You are not registered as a student.")
+	
+	# Security: Verify the student is in this group
+	is_in_group = frappe.db.exists(
+		"Student Group Student",
+		{"parent": student_group, "student": student, "active": 1}
+	)
+	if not is_in_group:
+		frappe.throw("You are not a member of this student group.")
+	
+	students = frappe.get_all(
+		"Student Group Student",
+		filters={"parent": student_group, "active": 1},
+		fields=["student", "student_name"],
+		order_by="student_name"
+	)
+	
+	return [{"label": s.student_name, "value": s.student} for s in students]
+
+
+@frappe.whitelist()
+def get_filtered_course_schedules(student_group, from_date, to_date):
+	"""Fetch course schedules for a student group filtered by date range."""
+	student = _get_student_for_user()
+	if not student:
+		frappe.throw("You are not registered as a student.")
+	
+	# Security: Verify the student is in this group
+	is_in_group = frappe.db.exists(
+		"Student Group Student",
+		{"parent": student_group, "student": student, "active": 1}
+	)
+	if not is_in_group:
+		frappe.throw("You are not a member of this student group.")
+	
+	from frappe.utils import getdate
+	from_d = getdate(from_date)
+	to_d = getdate(to_date)
+	
+	schedules = frappe.get_all(
+		"Course Schedule",
+		filters={
+			"student_group": student_group,
+			"schedule_date": ["between", [from_d, to_d]]
+		},
+		fields=["name", "course", "schedule_date", "from_time", "to_time"],
+		order_by="schedule_date"
+	)
+	
+	return [
+		{
+			"label": f"{s.course} on {s.schedule_date} ({s.from_time} - {s.to_time})",
+			"value": s.name
+		} for s in schedules
+	]
+
+@frappe.whitelist()
+def submit_leave(from_date, to_date, reason=None, attendance_based_on="Student Group", student_group=None, course_schedule=None):
 	student = _get_student_for_user()
 	if not student:
 		frappe.throw("You are not registered as a student.")
 
-	# Auto-resolve student group if not provided
-	if not student_group:
+	# Auto-resolve student group if "Student Group" is selected but no group is provided
+	if attendance_based_on == "Student Group" and not student_group:
 		groups = frappe.get_all(
 			"Student Group Student",
 			filters={"student": student, "active": 1},
@@ -311,6 +402,10 @@ def submit_leave(from_date, to_date, reason=None, student_group=None):
 			limit=1
 		)
 		student_group = groups[0] if groups else None
+		
+	# Check for required fields based on attendance setup
+	if attendance_based_on == "Course Schedule" and not course_schedule:
+		frappe.throw("Course Schedule is required when attendance is based on Course Schedule")
 
 	doc = frappe.get_doc({
 		"doctype": "Student Leave Application",
@@ -318,12 +413,126 @@ def submit_leave(from_date, to_date, reason=None, student_group=None):
 		"from_date": from_date,
 		"to_date": to_date,
 		"reason": reason or "",
-		"attendance_based_on": "Student Group" if student_group else "",
-		"student_group": student_group,
+		"attendance_based_on": attendance_based_on,
+		"student_group": student_group if attendance_based_on == "Student Group" else None,
+		"course_schedule": course_schedule if attendance_based_on == "Course Schedule" else None,
 	})
 	doc.insert(ignore_permissions=True)
+	
 	try:
-		doc.submit()
-	except Exception:
+		if get_workflow_name("Student Leave Application"):
+			from frappe.model.workflow import apply_workflow
+			apply_workflow(doc, "Submit")
+		else:
+			doc.submit()
+	except Exception as e:
+		frappe.log_error(title="Submit Leave Error", message=str(e))
 		pass  # Submit may fail if workflow or validation prevents it
 	return {"success": True, "name": doc.name}
+
+# ─── Teacher APIs ─────────────────────────────────────────────────────────────
+
+@frappe.whitelist()
+def get_teacher_pending_leaves():
+	"""Fetch all leave applications pending teacher approval for the current instructor."""
+	from vidyaan.api_folder.profile import _get_instructor_for_user
+	instructor = _get_instructor_for_user()
+	if not instructor:
+		frappe.throw("You are not registered as an Instructor.")
+		
+	# In a real system, you would filter by the instructor's associated modules/classes.
+	# Here we fetch all "Pending Teacher Approval" applications as requested.
+	leaves = frappe.get_all(
+		"Student Leave Application",
+		filters={"workflow_state": "Pending Teacher Approval", "docstatus": 0},
+		fields=["name", "student", "student_name", "from_date", "to_date", "reason", "total_leave_days", "attendance_based_on", "student_group", "course_schedule", "creation"],
+		order_by="creation desc",
+		ignore_permissions=True
+	)
+	
+	# Enhance with student info and student group details
+	enhanced_leaves = []
+	for leave in leaves:
+		# Get student group students info
+		sg_info = ""
+		if leave.attendance_based_on == "Student Group" and leave.student_group:
+			sg_info = leave.student_group
+		elif leave.course_schedule:
+			# Get course schedule info (student_group, course)
+			cs = frappe.db.get_value("Course Schedule", leave.course_schedule, ["student_group", "course"])
+			if cs:
+				sg_info = f"{cs[0]} ({cs[1]})"
+		
+		enhanced_leaves.append({
+			"name": leave.name,
+			"student": leave.student,
+			"student_name": leave.student_name,
+			"from_date": str(leave.from_date),
+			"to_date": str(leave.to_date),
+			"date_range": f"{leave.from_date} to {leave.to_date}",
+			"reason": leave.reason,
+			"total_leave_days": leave.total_leave_days,
+			"attendance_based_on": leave.attendance_based_on,
+			"student_group": leave.student_group,
+			"course_schedule": leave.course_schedule,
+			"group_info": sg_info,
+			"creation": str(leave.creation)
+		})
+	
+	return enhanced_leaves
+
+
+@frappe.whitelist()
+def get_teacher_leave_statistics():
+	"""Get leave approval statistics for teacher dashboard."""
+	from vidyaan.api_folder.profile import _get_instructor_for_user
+	instructor = _get_instructor_for_user()
+	if not instructor:
+		frappe.throw("You are not registered as an Instructor.")
+	
+	total_pending = frappe.db.count(
+		"Student Leave Application",
+		filters={"workflow_state": "Pending Teacher Approval", "docstatus": 0}
+	)
+	
+	total_approved = frappe.db.count(
+		"Student Leave Application",
+		filters={"workflow_state": ["in", ["Pending Admin Approval", "Approved"]], "docstatus": 1}
+	)
+	
+	total_rejected = frappe.db.count(
+		"Student Leave Application",
+		filters={"workflow_state": "Rejected"}
+	)
+	
+	return {
+		"pending": total_pending,
+		"approved": total_approved,
+		"rejected": total_rejected,
+		"total": total_pending + total_approved + total_rejected
+	}
+
+@frappe.whitelist()
+def review_leave_application(name, action):
+	"""Teacher action to approve or reject a pending leave application."""
+	from vidyaan.api_folder.profile import _get_instructor_for_user
+	if not _get_instructor_for_user():
+		frappe.throw("You must be an instructor to perform this action")
+		
+	if action not in ["Approve", "Reject"]:
+		frappe.throw("Invalid action. Must be Approve or Reject")
+		
+	doc = frappe.get_doc("Student Leave Application", name)
+	if doc.workflow_state != "Pending Teacher Approval":
+		frappe.throw("Application is not in a pending state")
+		
+	# Change workflow state depending on transition configuration
+	if action == "Approve":
+		doc.workflow_state = "Pending Admin Approval"
+	else:
+		doc.workflow_state = "Rejected"
+		
+	# Simulate workflow transition via code
+	doc.save(ignore_permissions=True)
+	
+	return {"success": True, "state": doc.workflow_state}

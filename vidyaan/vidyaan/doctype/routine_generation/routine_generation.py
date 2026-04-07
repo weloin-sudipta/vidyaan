@@ -348,7 +348,7 @@ class RoutineGeneration(Document):
             for d in days:
                 for p in periods:
                     idx = solver.Value(schedule[(sg, d, p)])
-                    teacher, course, _ = pair_index[idx]
+                    teacher, course, program = pair_index[idx]
                     self.append("routine_slots", {
                         "student_group": sg,
                         "program": prog,

@@ -224,6 +224,7 @@ const updateNavItems = () => {
           { name: 'Performance', route: '/teacher/grading/performance' },
         ]
       },
+      { name: 'Applications', icon: 'fa fa-file-pen', route: '/teacher/applications' },
       { name: 'Students', icon: 'fa fa-users', route: '/teacher/students' },
       { name: 'My Profile', icon: 'fa fa-user-circle', route: '/teacher/profile' },
     ]

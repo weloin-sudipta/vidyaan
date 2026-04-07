@@ -38,7 +38,7 @@ import json
 
 COMPANY_NAME = "Vidyaan Demo School"
 COMPANY_ABBR = "VDS"
-ACADEMIC_YEAR = "2025-2026"
+ACADEMIC_YEAR = "2026-2027"
 TERM_1 = "First Term"
 TERM_2 = "Second Term"
 
@@ -161,8 +161,8 @@ def _ensure_holiday_list():
         hl = frappe.get_doc({
             "doctype": "Holiday List",
             "holiday_list_name": hl_name,
-            "from_date": "2025-04-01",
-            "to_date": "2026-03-31",
+            "from_date": "2026-04-01",
+            "to_date": "2027-03-31",
             "weekly_off": "Sunday",
         })
         hl.insert(ignore_permissions=True)
@@ -237,12 +237,12 @@ def create_company():
 
 
 def create_academic_year():
-    """Create academic year 2025-2026."""
+    """Create academic year 2026-2027."""
     print("Creating Academic Year...")
     return _get_or_create("Academic Year", {"academic_year_name": ACADEMIC_YEAR}, {
         "academic_year_name": ACADEMIC_YEAR,
-        "year_start_date": "2025-04-01",
-        "year_end_date": "2026-03-31",
+        "year_start_date": "2026-04-01",
+        "year_end_date": "2027-03-31",
     })
 
 
@@ -252,14 +252,14 @@ def create_academic_terms():
     t1 = _get_or_create("Academic Term", {"term_name": TERM_1, "academic_year": ACADEMIC_YEAR}, {
         "term_name": TERM_1,
         "academic_year": ACADEMIC_YEAR,
-        "term_start_date": "2025-04-01",
-        "term_end_date": "2025-09-30",
+        "term_start_date": "2026-04-01",
+        "term_end_date": "2026-09-30",
     })
     t2 = _get_or_create("Academic Term", {"term_name": TERM_2, "academic_year": ACADEMIC_YEAR}, {
         "term_name": TERM_2,
         "academic_year": ACADEMIC_YEAR,
-        "term_start_date": "2025-10-01",
-        "term_end_date": "2026-03-31",
+        "term_start_date": "2026-10-01",
+        "term_end_date": "2027-03-31",
     })
     return t1, t2
 
@@ -585,8 +585,8 @@ def create_students():
                     "student_email_id": email,
                     "user": email,
                     "gender": gender,
-                    "date_of_birth": f"{2025 - 6 - prog_idx}-{random.randint(1,12):02d}-{random.randint(1,28):02d}",
-                    "joining_date": "2025-04-01",
+                    "date_of_birth": f"{2026 - 6 - prog_idx}-{random.randint(1,12):02d}-{random.randint(1,28):02d}",
+                    "joining_date": "2026-04-01",
                     "company": COMPANY_NAME,
                     "enabled": 1,
                     "blood_group": random.choice(["A+", "A-", "B+", "B-", "O+", "O-", "AB+", "AB-"]),
@@ -729,7 +729,7 @@ def create_program_enrollments(students):
                     "program": program,
                     "academic_year": ACADEMIC_YEAR,
                     "academic_term": f"{TERM_1} ({ACADEMIC_YEAR})" if frappe.db.exists("Academic Term", f"{TERM_1} ({ACADEMIC_YEAR})") else None,
-                    "enrollment_date": "2025-04-01",
+                    "enrollment_date": "2026-04-01",
                     "company": COMPANY_NAME,
                 })
                 doc.insert(ignore_permissions=True)
@@ -740,14 +740,43 @@ def create_program_enrollments(students):
     frappe.db.commit()
 
 
-def create_course_schedules(instructors, student_groups, rooms):
-    """Create timetable entries (Course Schedule) for one week per group."""
+def create_course_schedules(instructors=None, student_groups=None, rooms=None):
+    """Create timetable entries (Course Schedule) for one week per group.
+
+    If called without arguments, load existing instructors, student groups,
+    and rooms from the current company.
+    """
     print("Creating Course Schedules...")
     count = 0
 
+    if instructors is None:
+        instructors = frappe.get_all(
+            "Instructor",
+            filters={"company": COMPANY_NAME, "status": "Active"},
+            fields=["name"]
+        )
+    if student_groups is None:
+        student_groups = frappe.get_all(
+            "Student Group",
+            filters={"company": COMPANY_NAME, "disabled": 0},
+            fields=["name", "program"]
+        )
+    if rooms is None:
+        rooms = frappe.get_all(
+            "Room",
+            fields=["name"]
+        )
+
+    if not instructors:
+        frappe.throw(_("No active instructors found for course schedule creation."))
+    if not student_groups:
+        frappe.throw(_("No student groups found for course schedule creation."))
+    if not rooms:
+        frappe.throw(_("No rooms found for course schedule creation."))
+
     for grp_idx, group in enumerate(student_groups):
         # Each group gets its own week to avoid instructor/room conflicts
-        base_date = getdate(add_days("2025-04-07", grp_idx * 7))  # Stagger by week
+        base_date = getdate(add_days("2026-04-28", grp_idx * 7))  # Stagger by week
         room_base = grp_idx % len(rooms)
 
         for day_idx, day in enumerate(DAYS):
@@ -1090,7 +1119,7 @@ def create_publications():
         {
             "title": "Annual Sports Day Announcement",
             "type": "Notice",
-            "content": "<p>We are pleased to announce that the Annual Sports Day will be held on <b>May 15, 2025</b>. All students are expected to participate. Parents are cordially invited to attend.</p><p>Events include: 100m race, long jump, relay race, tug of war, and more!</p>",
+            "content": "<p>We are pleased to announce that the Annual Sports Day will be held on <b>May 15, 2026</b>. All students are expected to participate. Parents are cordially invited to attend.</p><p>Events include: 100m race, long jump, relay race, tug of war, and more!</p>",
             "target_type": "Global",
             "approval_type": "By Role",
             "approver_role": "System Manager",
@@ -1099,7 +1128,7 @@ def create_publications():
         {
             "title": "Parent-Teacher Meeting Schedule",
             "type": "Notice",
-            "content": "<p>The Parent-Teacher Meeting for all classes will be held on <b>April 20, 2025</b> from 10 AM to 1 PM. Parents are requested to meet the class teachers to discuss student progress.</p>",
+            "content": "<p>The Parent-Teacher Meeting for all classes will be held on <b>April 20, 2026</b> from 10 AM to 1 PM. Parents are requested to meet the class teachers to discuss student progress.</p>",
             "target_type": "Global",
             "approval_type": "By Role",
             "approver_role": "System Manager",
@@ -1125,7 +1154,7 @@ def create_publications():
         {
             "title": "Holiday Notice - Republic Day",
             "type": "Notice",
-            "content": "<p>The school will remain closed on <b>January 26, 2026</b> on account of Republic Day. Classes will resume on January 27, 2026.</p>",
+            "content": "<p>The school will remain closed on <b>January 26, 2027</b> on account of Republic Day. Classes will resume on January 27, 2027.</p>",
             "target_type": "Global",
             "approval_type": "By Role",
             "approver_role": "System Manager",
@@ -1854,6 +1883,9 @@ def delete_all():
     # Delete topics and articles
     _delete_all_docs("Article", {"company": COMPANY_NAME})
     _delete_all_docs("Topic", {"company": COMPANY_NAME})
+    _delete_all_docs("Academic Term", {"academic_year": ACADEMIC_YEAR})
+    _delete_all_docs("Academic Year", {"academic_year_name": ACADEMIC_YEAR})
+    _delete_all_docs("Holiday List", {"holiday_list_name": f"School Holidays {ACADEMIC_YEAR}"})
 
     # Delete User Permissions for test users
     test_perms = frappe.get_all("User Permission", filters={

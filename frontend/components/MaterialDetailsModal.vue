@@ -126,11 +126,11 @@
 
         <!-- Footer with Action Buttons -->
         <template #footer>
-            <button @click="$emit('edit', material)"
+            <button v-if="!readonly" @click="$emit('edit', material)"
                 class="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-xl text-sm font-black uppercase tracking-widest transition-colors flex items-center justify-center gap-2">
                 <i class="fa fa-edit"></i> Edit
             </button>
-            <button @click="$emit('delete', material)"
+            <button v-if="!readonly" @click="$emit('delete', material)"
                 class="flex-1 bg-red-600 hover:bg-red-700 text-white px-6 py-2 rounded-xl text-sm font-black uppercase tracking-widest transition-colors flex items-center justify-center gap-2">
                 <i class="fa fa-trash"></i> Delete
             </button>
@@ -153,6 +153,10 @@ defineProps({
     material: {
         type: Object,
         default: null
+    },
+    readonly: {
+        type: Boolean,
+        default: false
     }
 })
 
