@@ -1,33 +1,3 @@
-// import { createResource } from "./useFrappeFetch"
-
-// export const useTeacherExams = () => {
-//   const exams = ref([])
-//   const loading = ref(false)
-//   const error = ref(null)
-
-//   const fetchTeacherExams = async (month, year) => {
-//     loading.value = true
-//     error.value = null
-//     try {
-//       const resource = createResource({
-//         url: 'maxedu.api_folder.teacher-greading.get_my_exams',
-//       })
-//       const res = await resource.submit();
-//       exams.value = res || []
-//       console.log(res);
-
-//       return res
-//     } catch (err) {
-//       console.error('Failed to load exams:', err)
-//       error.value = err.message || 'Unknown error'
-//     } finally {
-//       loading.value = false
-//     }
-//   }
-
-//   return { exams, loading, error, fetchTeacherExams }
-// }
-
 import { ref, type Ref } from 'vue'
 import { createResource } from './useFrappeFetch'
 
