@@ -263,8 +263,8 @@
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue'
 import HeroHeader from '~/components/ui/HeroHeader.vue'
-import { useTeacherExams } from '~/composable/useTeacherExams'
-import { useGrading }      from '~/composable/useGreading'   // ← your exact path
+import { useTeacherExams } from '~/composables/teacher/useTeacherExams'
+import { useGrading }      from '~/composables/teacher/useGrading'
 
 // ── Exam dropdown ───────────────────────────────────────────────────────────
 const { exams, loading, fetchTeacherExams } = useTeacherExams()

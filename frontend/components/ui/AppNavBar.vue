@@ -117,7 +117,7 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
-import { useUserProfile } from '~/composable/useUserProfile'
+import { useUserProfile } from '~/composables/student/useUserProfile'
 
 const colorMode = useColorMode()
 const { profileData, userRole, loadProfile } = useUserProfile()

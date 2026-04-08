@@ -96,8 +96,8 @@
 
 <script setup>
 import { ref, onMounted } from "vue";
-import { useBooks } from "~/composable/useLibraryBooks";
-import { useBookRequest } from "~/composable/useBookRequest";
+import { useBooks } from "~/composables/library/useLibraryBooks";
+import { useBookRequest } from "~/composables/library/useBookRequest";
 
 const { recommendations: apiRecommendations, fetchRecommendations, loading } = useBooks();
 const { requestBook } = useBookRequest();

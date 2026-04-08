@@ -47,7 +47,7 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue';
-import { useLibraryAdmin } from '~/composable/useLibraryAdmin';
+import { useLibraryAdmin } from '~/composables/library/useLibraryAdmin';
 import Inventory from './inventory.vue';
 import Issuance from './issuance.vue';
 import Requests from './requests.vue';

@@ -139,7 +139,7 @@
 <script setup>
 import { onMounted } from 'vue';
 import HeroHeader from '~/components/ui/HeroHeader.vue';
-import { useTimetable } from '~/composable/useTimetable';
+import { useTimetable } from '~/composables/academics/useTimetable';
 
 const config = useRuntimeConfig();
 useSeoMeta({

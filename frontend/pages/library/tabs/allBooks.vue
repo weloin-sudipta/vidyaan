@@ -182,7 +182,7 @@
 
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue';
-import { useBooks } from '~/composable/useLibraryBooks';
+import { useBooks } from '~/composables/library/useLibraryBooks';
 
 const { allBooks, fetchAllBooks, data, fetchData, bookRequest, isBookRequested, toggleBookRequest } = useBooks();
 

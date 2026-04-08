@@ -22,7 +22,7 @@
 </template>
 
 <script setup>
-import { useToast } from '~/composable/useToast';
+import { useToast } from '~/composables/ui/useToast';
 const { toasts, removeToast } = useToast();
 </script>
 

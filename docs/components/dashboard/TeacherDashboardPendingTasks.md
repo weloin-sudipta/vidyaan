@@ -4,7 +4,7 @@
 Dashboard widget component displaying pending tasks for teachers with quick actions and priority indicators.
 
 ## Location
-`frontend/components/dashboard/TeacherDashboardPendingTasks.vue`
+`frontend/components/dashboard/teacher/TeacherDashboardPendingTasks.vue`
 
 ## Props
 

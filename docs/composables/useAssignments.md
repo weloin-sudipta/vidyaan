@@ -7,7 +7,7 @@ Student-side composable for fetching and submitting assignments.
 > `docs/fixes/2026-04-07-student-assignments.md`.
 
 ## Location
-`frontend/composable/useAssignments.ts` (TypeScript, fully typed, no `any`).
+`frontend/composables/academics/useAssignments.ts` (TypeScript, fully typed, no `any`).
 
 ## Public API
 
@@ -87,7 +87,7 @@ Both subsets are filtered by `Assignment.status == "Published"`. The
 ```vue
 <script setup lang="ts">
 import { onMounted } from 'vue'
-import { useAssignments } from '~/composable/useAssignments'
+import { useAssignments } from '~/composables/academics/useAssignments'
 
 const { assignments, loading, error, fetchAssignments,
         submitAssignment, uploadFile } = useAssignments()

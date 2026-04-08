@@ -44,7 +44,7 @@
 <script setup>
 import { onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { useNotices } from '~/composable/useNotices'
+import { useNotices } from '~/composables/academics/useNotices'
 
 const route = useRoute()
 const router = useRouter()

@@ -194,13 +194,6 @@
         maxWidth="max-w-2xl">
         <form @submit.prevent="handleSave" class="space-y-6">
 
-          <!-- Inline error -->
-          <div v-if="formError"
-            class="bg-rose-50 dark:bg-rose-900/20 border border-rose-200 dark:border-rose-800/40 rounded-xl p-4 text-sm font-bold text-rose-600 dark:text-rose-400 flex items-start gap-3">
-            <i class="fa fa-exclamation-circle mt-0.5"></i>
-            <span>{{ formError }}</span>
-          </div>
-
           <!-- Basic Information -->
           <div class="space-y-4">
             <h4
@@ -546,17 +539,23 @@
         </template>
       </AppModal>
 
+
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue'
-import { useTeacherAssignments } from '~/composable/useTeacherAssignments'
+import { ref, onMounted } from 'vue'
+import { useTeacherAssignments } from '~/composables/teacher/useTeacherAssignments'
+import { useToast } from '~/composables/ui/useToast'
+import { useConfirm } from '~/composables/ui/useConfirm'
 import AppModal from '~/components/ui/AppModal.vue'
 import HeroHeader from '~/components/ui/HeroHeader.vue'
 import UiSkeleton from '~/components/ui/UiSkeleton.vue'
-import { call } from '~/composable/useFrappeFetch'
+import { call } from '~/composables/api/useFrappeFetch'
+
+const { addToast } = useToast()
+const { confirm, setLoading: setConfirmLoading } = useConfirm()
 
 const {
   courses,
@@ -598,7 +597,6 @@ const selectedAssignmentFile = ref(null)
 const editingAssignment = ref(null)
 
 // Form
-const formError = ref(null)
 const form = ref({
   title: '',
   course: '',
@@ -646,7 +644,6 @@ const resetForm = () => {
     description: '',
     assignment_file: '',
   }
-  formError.value = null
   editingAssignment.value = null
   selectedAssignmentFile.value = null
 }
@@ -698,22 +695,33 @@ const onAssignmentFileChange = async (e) => {
     })
     form.value.assignment_file = res.message?.file_url || ''
   } catch (err) {
-    formError.value = 'File upload failed: ' + (err.message || 'Unknown error')
+    addToast('File upload failed: ' + (err.message || 'Unknown error'), 'error')
   } finally {
     assignmentFileUploading.value = false
   }
 }
 
 const handleSave = async () => {
-  formError.value = null
-
   if (!form.value.title || !form.value.course || !form.value.due_date || !form.value.max_score) {
-    formError.value = 'Please fill in title, course, due date and max score.'
+    addToast('Please fill in title, course, due date and max score.', 'warning')
     return
   }
 
+  // Past-date guard: backend (Assignment._validate_due_date) rejects past
+  // dates only when CREATING. For edits we leave the due date alone.
+  if (!editingAssignment.value) {
+    const today = new Date()
+    today.setHours(0, 0, 0, 0)
+    const picked = new Date(form.value.due_date)
+    picked.setHours(0, 0, 0, 0)
+    if (picked < today) {
+      addToast('Due date cannot be in the past. Pick today or a future date.', 'warning')
+      return
+    }
+  }
+
   if (form.value.assign_to === 'Specific Groups' && form.value.student_groups.length === 0) {
-    formError.value = 'Select at least one student group.'
+    addToast('Select at least one student group.', 'warning')
     return
   }
 
@@ -741,8 +749,12 @@ const handleSave = async () => {
   saving.value = false
 
   if (res?.error) {
-    formError.value = res.error
+    addToast(res.error, 'error')
   } else {
+    addToast(
+      editingAssignment.value ? 'Assignment updated.' : 'Assignment created.',
+      'success'
+    )
     showCreateModal.value = false
     await loadAssignments()
   }
@@ -751,15 +763,26 @@ const handleSave = async () => {
 // ─── Publish ──────────────────────────────────────────────────────────────
 
 const handlePublish = async (assignment) => {
-  if (!confirm(`Publish "${assignment.title}" to students? This will create assignment records immediately.`)) return
-
+  const ok = await confirm({
+    title: 'Publish Assignment',
+    message: `Publish "${assignment.title}" to students now? Submission rows will be generated for every active member of the target groups.`,
+    hint: 'This action makes the assignment visible to students immediately.',
+    variant: 'publish',
+    confirmText: 'Publish Now',
+    cancelText: 'Not Yet',
+    loadingText: 'Publishing…',
+    confirmIcon: 'fa-paper-plane',
+  })
+  if (!ok) return
+  setConfirmLoading(true)
   publishingName.value = assignment.name
   const res = await publishAssignment(assignment.name)
   publishingName.value = null
-
+  setConfirmLoading(false)
   if (res?.error) {
-    alert(res.error)
+    addToast(res.error, 'error')
   } else {
+    addToast(`Published "${assignment.title}".`, 'success')
     await loadAssignments()
   }
 }
@@ -767,12 +790,24 @@ const handlePublish = async (assignment) => {
 // ─── Close ────────────────────────────────────────────────────────────────
 
 const handleClose = async (assignment) => {
-  if (!confirm(`Close "${assignment.title}"? Students will no longer be able to submit.`)) return
-
+  const ok = await confirm({
+    title: 'Close Assignment',
+    message: `Close "${assignment.title}"? Students will no longer be able to submit, but existing submissions and grades will be preserved.`,
+    hint: 'You can still view and grade pending submissions.',
+    variant: 'warning',
+    confirmText: 'Close Assignment',
+    cancelText: 'Keep Open',
+    loadingText: 'Closing…',
+    confirmIcon: 'fa-lock',
+  })
+  if (!ok) return
+  setConfirmLoading(true)
   const res = await closeAssignment(assignment.name)
+  setConfirmLoading(false)
   if (res?.error) {
-    alert(res.error)
+    addToast(res.error, 'error')
   } else {
+    addToast(`Closed "${assignment.title}".`, 'success')
     await loadAssignments()
   }
 }
@@ -780,12 +815,24 @@ const handleClose = async (assignment) => {
 // ─── Delete ───────────────────────────────────────────────────────────────
 
 const handleDelete = async (assignment) => {
-  if (!confirm(`Delete "${assignment.title}"? This action cannot be undone.`)) return
-
+  const ok = await confirm({
+    title: 'Delete Assignment',
+    message: `Delete "${assignment.title}" permanently? This cannot be undone.`,
+    hint: 'Graded submissions will block deletion. Close the assignment instead.',
+    variant: 'danger',
+    confirmText: 'Delete Forever',
+    cancelText: 'Keep It',
+    loadingText: 'Deleting…',
+    confirmIcon: 'fa-trash',
+  })
+  if (!ok) return
+  setConfirmLoading(true)
   const res = await deleteAssignment(assignment.name)
+  setConfirmLoading(false)
   if (res?.error) {
-    alert(res.error)
+    addToast(res.error, 'error')
   } else {
+    addToast(`Deleted "${assignment.title}".`, 'success')
     await loadAssignments()
   }
 }
@@ -828,8 +875,9 @@ const handleGrade = async () => {
   grading.value = false
 
   if (res?.error) {
-    alert(res.error)
+    addToast(res.error, 'error')
   } else {
+    addToast('Grade saved.', 'success')
     showGradeModal.value = false
     // Refresh detail in the background
     await fetchAssignmentDetail(currentAssignment.value.name)

@@ -217,7 +217,7 @@
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { useNotices } from '~/composable/useNotices'
+import { useNotices } from '~/composables/academics/useNotices'
 
 const router = useRouter()
 const loading = ref(true)

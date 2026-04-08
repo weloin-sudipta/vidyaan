@@ -21,15 +21,24 @@ tech_stack:
 - Publication System: Publication doctype with approval workflow
 - Dashboard & Workspace: Vidyaan Dashboard workspace
 - Student/Teacher Frontend Portal: Nuxt 4 app with role-based pages
+  - composables/ (plural, 29 files, 7 subfolders: api, auth, academics, library, student, teacher, ui)
+  - layouts/auth.vue (was authLayout.vue)
+  - middleware/ all TypeScript (.ts)
+  - dashboard/index.vue (role-aware, replaces student/teacher/admin.vue)
+  - academics/attendance.vue (unified, role-aware)
+  - profile/index.vue (role-aware, replaces teacher/profile.vue)
+  - components/ui/: 16 primitives including UiButton, UiInput, UiSelect, UiTextarea, UiAvatar, UiBadge, UiEmptyState, UiSearchFilterBar, ConfirmDialog
+  - components/dashboard/student/: 11 widgets (PascalCase), components/dashboard/teacher/: 5 widgets
+  - useConfirm() global composable + ConfirmDialog mounted in app.vue
+  - useGrading (was useGreading), useStudentDashboard (was userDashboard)
 - Library Management: Book, Book Category, Book Copy, Book Issue, Book Request, Book Tag, Library, Library Member doctypes
 
 ## In Progress
 # Currently being built
 
-- Frontend migration from MaxEdu to Vidyaan branding
-- Admin dashboard frontend
+- Complete Vidyaan branding (remaining UI text references to MaxEdu)
+- Institute Admin dashboard frontend
 - Routine generation UI
-- Attendance UI
 - Fee management integration
 
 ## Backlog

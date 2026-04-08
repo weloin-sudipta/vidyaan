@@ -123,7 +123,40 @@ bench install-app vidyaan
 
 ---
 
-## 🚀 6. Future Roadmap
+## 🌐 6. Frontend Structure (Nuxt 4 Portal)
+
+```
+frontend/
+├── composables/               # 29 composables in 7 subfolders (api/, auth/, academics/,
+│                              #   library/, student/, teacher/, ui/)
+├── components/
+│   ├── ui/                   # 16 UI primitives + ConfirmDialog
+│   ├── dashboard/student/    # 11 student dashboard widgets (PascalCase filenames)
+│   └── dashboard/teacher/   # 5 teacher dashboard widgets
+├── pages/
+│   ├── dashboard/index.vue  # Role-aware unified dashboard (student/teacher/admin)
+│   ├── academics/attendance.vue  # Unified attendance page (role-aware)
+│   └── profile/index.vue    # Role-aware profile
+├── layouts/
+│   ├── default.vue          # Authenticated app shell
+│   └── auth.vue             # Login layout (was authLayout.vue)
+└── middleware/
+    ├── auth.global.ts        # Session guard (was .js)
+    └── role-based.global.ts  # RBAC guard (was .js)
+```
+
+**Key structural changes (2026-04-08 refactor):**
+- `composable/` (singular) → `composables/` (plural) for Nuxt 4 auto-imports
+- Composables reorganised into 7 topic subfolders instead of flat directory
+- Dashboards merged: `/dashboard/student.vue` + `/dashboard/teacher.vue` + `/dashboard/admin.vue` → single `/dashboard/index.vue` with role switching
+- Attendance unified: student `/attendance.vue` + teacher `/teacher/academics/attendance.vue` → `/academics/attendance.vue`
+- Profile unified: `/teacher/profile.vue` dropped; `/profile/index.vue` is role-aware
+- `useGreading` renamed → `useGrading`; `userDashboard` renamed → `useStudentDashboard`
+- `components/dashbaord/` typo fixed → `components/dashboard/student/` with PascalCase filenames
+
+---
+
+## 🚀 7. Future Roadmap
 
 - [ ] Inter-school material sharing (`is_global_material` flag)
 - [ ] Instructor dashboard (attendance, schedule view)  

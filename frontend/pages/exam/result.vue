@@ -183,7 +183,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import HeroHeader from '~/components/ui/HeroHeader.vue'
-import { useExamResults } from '~/composable/useExaminations'
+import { useExamResults } from '~/composables/academics/useExaminations'
 
 const results = ref([])
 const showModal = ref(false)
