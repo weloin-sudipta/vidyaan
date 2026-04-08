@@ -1,251 +1,137 @@
 # useAssignments
 
-## Purpose
-Assignment management composable handling CRUD operations for student assignments, submissions, and grading workflows.
+Student-side composable for fetching and submitting assignments.
+
+> Last verified: 2026-04-07 — matches current source. See also the
+> instructor counterpart `useTeacherAssignments` and the fix log
+> `docs/fixes/2026-04-07-student-assignments.md`.
 
 ## Location
-`frontend/composable/useAssignments.js`
+`frontend/composable/useAssignments.ts` (TypeScript, fully typed, no `any`).
 
-## State Management
+## Public API
 
-### Reactive State
-```javascript
-const assignments = ref([])      // List of assignments
-const currentAssignment = ref(null)  // Selected assignment
-const submissions = ref([])     // Assignment submissions
-const loading = ref(false)      // Loading state
-const submitting = ref(false)   // Submission state
-```
+```ts
+interface UseAssignmentsReturn {
+  assignments: Ref<StudentAssignment[]>
+  loading:     Ref<boolean>
+  error:       Ref<string | null>
 
-### Assignment Data Structure
-```javascript
-interface Assignment {
-  name: string           // Assignment ID
-  title: string          // Assignment title
-  description: string    // Detailed description
-  subject: string        // Subject name
-  class: string          // Class/Grade
-  section: string        // Class section
-  teacher: string        // Assigned teacher
-  due_date: string       // Due date (YYYY-MM-DD)
-  total_marks: number    // Maximum marks
-  attachment: string     // File attachment URL
-  status: 'Draft' | 'Published' | 'Closed'
-  created_on: string     // Creation timestamp
-  modified_on: string    // Last modified
+  fetchAssignments: () => Promise<StudentAssignment[] | undefined>
+  submitAssignment: (
+    assignmentName: string,
+    submissionFile: string,
+    submissionText?: string | null,
+  ) => Promise<SubmitAssignmentReturn>
+  uploadFile: (file: File) => Promise<UploadFileReturn>
 }
 ```
 
-### Submission Data Structure
-```javascript
-interface Submission {
-  name: string           // Submission ID
-  assignment: string     // Assignment ID
-  student: string        // Student ID
-  submitted_on: string   // Submission timestamp
-  file_url: string       // Submitted file URL
-  remarks: string        // Student remarks
-  marks_obtained: number // Awarded marks
-  teacher_remarks: string // Teacher feedback
-  status: 'Submitted' | 'Graded' | 'Late'
+## Data shapes
+
+```ts
+interface StudentAssignmentSubmission {
+  name?: string
+  status?: 'Pending' | 'Submitted' | 'Late' | 'Graded'
+  submission_file?: string
+  submission_text?: string
+  submitted_on?: string
+  score?: number
+  feedback?: string
+}
+
+interface StudentAssignment {
+  name: string
+  title: string
+  course_name?: string
+  topic?: string
+  due_date?: string         // ISO date
+  max_score?: number
+  description?: string
+  assignment_file?: string
+  status?: 'Published'      // server-side filter — students never see Draft/Closed
+  my_submission?: StudentAssignmentSubmission | null
+  is_overdue?: boolean
+}
+
+type SubmitAssignmentReturn = SubmitAssignmentResult | { error: string } | undefined
+type UploadFileReturn       = { file_url: string; file_name?: string } | { error: string }
+```
+
+## Backend endpoints
+
+| Composable method | Frappe whitelist method |
+|---|---|
+| `fetchAssignments()` | `vidyaan.api_folder.assignments.get_student_assignments` |
+| `submitAssignment()` | `vidyaan.api_folder.assignments.submit_student_assignment` |
+| `uploadFile()`       | `upload_file` (Frappe core, multipart) |
+
+`get_student_assignments` returns the **union** of:
+1. Assignments with an existing `Assignment Submission` row for the student.
+2. Assignments whose `target_groups` reference a `Student Group` the student
+   is currently a member of.
+
+Both subsets are filtered by `Assignment.status == "Published"`. The
+`my_submission` field is `{status: "Pending", ...}` when no row exists yet
+(the row will be auto-created on first submit).
+
+`submit_student_assignment` will:
+- **Throw** if neither `submission_file` nor `submission_text` is supplied.
+- **Throw** if the assignment is not currently `Published`.
+- **Auto-heal** by appending a fresh submission row when the student is in a
+  target group but has no row yet.
+- Mark `status = "Late"` when `due_date < today()`, otherwise `"Submitted"`.
+
+## Usage
+
+```vue
+<script setup lang="ts">
+import { onMounted } from 'vue'
+import { useAssignments } from '~/composable/useAssignments'
+
+const { assignments, loading, error, fetchAssignments,
+        submitAssignment, uploadFile } = useAssignments()
+
+onMounted(fetchAssignments)
+
+async function handleSubmit(assignmentName: string, file: File) {
+  const uploaded = await uploadFile(file)
+  if ('error' in uploaded) return alert(uploaded.error)
+  if (!uploaded.file_url)  return alert('No file URL returned.')
+
+  const res = await submitAssignment(assignmentName, uploaded.file_url)
+  if (!res || 'error' in res) return alert((res as any)?.error ?? 'Failed')
+  await fetchAssignments()
+}
+</script>
+```
+
+## Status derivation in the page layer
+
+`pages/academics/assignments.vue` derives a display status with this rule:
+
+```ts
+function resolvedStatus(task) {
+  if (task.my_submission?.status) return task.my_submission.status
+  if (task.is_overdue) return 'Overdue'
+  return task.status || 'Active'
 }
 ```
 
-## API Methods
+Tabs are: `Active`, `Submitted`, `Overdue`, `Graded`.
 
-### fetchAssignments(filters)
-Retrieves assignments list with optional filters.
+## Edge cases handled
 
-**Parameters:**
-```javascript
-{
-  student_id?: string    // For student view
-  teacher_id?: string    // For teacher view
-  subject?: string       // Filter by subject
-  status?: string        // Filter by status
-  class?: string         // Filter by class
-}
-```
-
-**Returns:** Promise<Assignment[]>
-
-### getAssignment(id)
-Retrieves single assignment details.
-
-**Parameters:**
-```javascript
-string  // Assignment ID
-```
-
-**Returns:** Promise<Assignment>
-
-### createAssignment(data)
-Creates new assignment (Teacher only).
-
-**Parameters:**
-```javascript
-Omit<Assignment, 'name' | 'created_on' | 'modified_on'>
-```
-
-**Returns:** Promise<Assignment>
-
-### updateAssignment(id, data)
-Updates existing assignment.
-
-**Parameters:**
-```javascript
-string, Partial<Assignment>
-```
-
-**Returns:** Promise<Assignment>
-
-### submitAssignment(assignmentId, data)
-Submits assignment for student.
-
-**Parameters:**
-```javascript
-string, {
-  file_url: string
-  remarks?: string
-}
-```
-
-**Returns:** Promise<Submission>
-
-### gradeSubmission(submissionId, data)
-Grades student submission (Teacher only).
-
-**Parameters:**
-```javascript
-string, {
-  marks_obtained: number
-  teacher_remarks?: string
-}
-```
-
-**Returns:** Promise<Submission>
-
-### getSubmissions(assignmentId)
-Retrieves all submissions for assignment.
-
-**Parameters:**
-```javascript
-string  // Assignment ID
-```
-
-**Returns:** Promise<Submission[]>
-
-## Usage Examples
-
-### Student Assignment List
-```javascript
-const { assignments, loading } = useAssignments()
-
-// Fetch student's assignments
-onMounted(async () => {
-  await fetchAssignments({ student_id: user.value.name })
-})
-
-// Template
-<div v-for="assignment in assignments" :key="assignment.name">
-  <h3>{{ assignment.title }}</h3>
-  <p>Due: {{ assignment.due_date }}</p>
-  <p>Marks: {{ assignment.total_marks }}</p>
-</div>
-```
-
-### Teacher Assignment Creation
-```javascript
-const { createAssignment } = useAssignments()
-
-const handleCreate = async (form) => {
-  try {
-    await createAssignment({
-      title: form.title,
-      description: form.description,
-      subject: form.subject,
-      class: form.class,
-      due_date: form.dueDate,
-      total_marks: form.marks
-    })
-    showToast('Assignment created!')
-  } catch (err) {
-    showError('Creation failed')
-  }
-}
-```
-
-### Assignment Submission
-```javascript
-const { submitAssignment, submitting } = useAssignments()
-
-const handleSubmit = async (file) => {
-  try {
-    await submitAssignment(currentAssignment.value.name, {
-      file_url: file.url,
-      remarks: 'Completed on time'
-    })
-    showToast('Assignment submitted!')
-  } catch (err) {
-    showError('Submission failed')
-  }
-}
-```
-
-### Grading Interface
-```javascript
-const { gradeSubmission } = useAssignments()
-
-const handleGrade = async (submissionId, marks, feedback) => {
-  try {
-    await gradeSubmission(submissionId, {
-      marks_obtained: marks,
-      teacher_remarks: feedback
-    })
-    showToast('Graded successfully!')
-  } catch (err) {
-    showError('Grading failed')
-  }
-}
-```
-
-## Features
-
-### Role-Based Access
-- Student: View assigned, submit work
-- Teacher: Create, update, grade assignments
-- Admin: Full access to all assignments
-
-### File Management
-- Assignment attachment uploads
-- Submission file uploads
-- File URL generation and storage
-
-### Status Management
-- Assignment lifecycle (Draft → Published → Closed)
-- Submission status tracking
-- Late submission handling
-
-### Grading Workflow
-- Marks assignment
-- Teacher feedback
-- Grade history tracking
+- Student joined the target group AFTER publication → still visible.
+- Submission with no file selected → inline error before any network call.
+- Upload returns malformed shape (no `file_url`) → inline error, no submit.
+- Backend called with empty payload → 417 with explicit error message.
+- Late submissions → tagged `Late`, still scored.
 
 ## Dependencies
-- useFrappeFetch for API communication
-- useAuth for role-based permissions
-- File upload utilities
+- `useFrappeFetch` — `call<T>()` and `callMultipart<T>()`.
 
-## Business Rules
-- Due date validation
-- Late submission penalties
-- Maximum marks constraints
-- File size/type restrictions
-- Teacher-student relationship validation
-
-## Error Cases
-- Permission denied
-- File upload failures
-- Validation errors
-- Network timeouts
-- Concurrent modification conflicts
+## Related docs
+- `docs/fixes/2026-04-07-student-assignments.md` — visibility & submit fix log
+- `docs/composables/useFrappeFetch.md` — RPC primitive layer
+- `docs/workflows/assignment-workflow.md` — high-level workflow

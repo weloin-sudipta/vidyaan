@@ -128,6 +128,9 @@
           class="flex flex-col items-center justify-center py-24 bg-white dark:bg-slate-900 rounded-3xl border-2 border-dashed border-slate-200 dark:border-slate-800">
           <i class="fas fa-folder-open text-4xl text-slate-200 dark:text-slate-800 mb-4"></i>
           <p class="text-slate-500 dark:text-slate-400 font-bold tracking-tight">Nothing to show in {{ activeTab }}</p>
+          <p v-if="assignments.length === 0" class="text-xs text-slate-400 dark:text-slate-500 mt-2 max-w-sm text-center">
+            If you expect to see an assignment, ask your teacher to publish it from the teacher portal.
+          </p>
         </div>
       </div>
     </div>
@@ -269,22 +272,32 @@ const openDetails = (task) => {
 const onFileChange = (e) => { selectedFile.value = e.target.files[0] }
 
 const performSubmit = async () => {
+  if (!selectedFile.value) {
+    submitError.value = 'Please choose a file before submitting.'
+    return
+  }
   submitting.value = true
   submitError.value = null
   try {
     const uploaded = await uploadFile(selectedFile.value)
-    if (uploaded?.error) {
-      submitError.value = uploaded.error
+    if (!uploaded || 'error' in uploaded) {
+      submitError.value = (uploaded && 'error' in uploaded && uploaded.error) || 'Upload failed.'
+      return
+    }
+    if (!uploaded.file_url) {
+      submitError.value = 'Upload succeeded but no file URL was returned. Please retry.'
       return
     }
     const res = await submitAssignment(activeTask.value.name, uploaded.file_url)
-    if (res?.error) {
-      submitError.value = res.error
+    if (!res || 'error' in res) {
+      submitError.value = (res && 'error' in res && res.error) || 'Submission failed.'
       return
     }
     showSubmitModal.value = false
     selectedFile.value = null
-    fetchAssignments()
+    await fetchAssignments()
+  } catch (err) {
+    submitError.value = err?.message || 'Unexpected error during submission.'
   } finally {
     submitting.value = false
   }

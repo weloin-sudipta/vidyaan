@@ -434,15 +434,40 @@ def grade_submission(assignment=None, student=None, score=None, remarks=""):
 
 # ─── Student: submit / view ─────────────────────────────────────────────
 
+def _student_in_target_groups(doc, student_name):
+    """Return the student_group name if the student belongs to any of the
+    assignment's target groups, else None."""
+    target_sgs = [tg.student_group for tg in (doc.target_groups or []) if tg.student_group]
+    if not target_sgs:
+        return None
+    row = frappe.db.get_value(
+        "Student Group Student",
+        {"parent": ["in", target_sgs], "student": student_name},
+        ["parent"],
+    )
+    return row  # parent name (= student group), or None
+
+
 @frappe.whitelist()
 def submit_student_assignment(assignment=None, submission_file=None, submission_text=None):
     """Record a student's submission on a Published assignment.
 
-    Late submissions are allowed but marked with status "Late".
+    Behavior:
+    - Late submissions allowed, marked with status "Late".
+    - Either submission_file or submission_text MUST be provided.
+    - If the student has no submission row yet but IS a member of a target
+      group (e.g. they joined the group after publish), the row is auto-created.
+
     Returns: {success}
     """
     if not assignment:
         frappe.throw(_("Assignment name is required."))
+
+    # Hard guard: require at least one payload
+    submission_file = (submission_file or "").strip() if isinstance(submission_file, str) else submission_file
+    submission_text = (submission_text or "").strip() if isinstance(submission_text, str) else submission_text
+    if not submission_file and not submission_text:
+        frappe.throw(_("Submission must include a file or text. Nothing was uploaded."))
 
     student = _require_student()
     doc = frappe.get_doc("Assignment", assignment)
@@ -461,8 +486,16 @@ def submit_student_assignment(assignment=None, submission_file=None, submission_
             target_row = row
             break
 
+    # Auto-heal: student joined a target group AFTER the assignment was published
     if not target_row:
-        frappe.throw(_("You are not enrolled in this assignment."))
+        membership_sg = _student_in_target_groups(doc, student.name)
+        if not membership_sg:
+            frappe.throw(_("You are not enrolled in this assignment."))
+        target_row = doc.append("submissions", {
+            "student": student.name,
+            "student_group": membership_sg,
+            "status": "Pending",
+        })
 
     # Determine if late
     is_late = doc.due_date and getdate(doc.due_date) < getdate(today())
@@ -481,14 +514,20 @@ def submit_student_assignment(assignment=None, submission_file=None, submission_
 
 @frappe.whitelist()
 def get_student_assignments():
-    """Get all Published assignments that the current student appears in.
+    """Get all Published assignments that the current student should see.
 
-    Returns a list with the student's own submission details embedded.
-    Replaces the legacy get_assignments endpoint.
+    A student "should see" an assignment when EITHER:
+      a) they already have an Assignment Submission row on it, OR
+      b) they are a member of one of the assignment's target student groups
+         (handles students who joined the group AFTER publication, and
+         instructors who never re-published).
+
+    Returns a list with the student's own submission details embedded
+    (placeholder my_submission with status "Pending" if no row exists yet).
     """
     student = _require_student()
 
-    # Find all submission rows for this student across all assignments
+    # ── 1. Direct submission rows ────────────────────────────────────────
     sub_rows = frappe.get_all(
         "Assignment Submission",
         filters={
@@ -500,17 +539,35 @@ def get_student_assignments():
             "score", "remarks", "graded_on", "status",
         ],
     )
-
-    if not sub_rows:
-        return []
-
-    assignment_names = list({r.parent for r in sub_rows})
     sub_by_assignment = {r.parent: r for r in sub_rows}
+    direct_names = set(sub_by_assignment.keys())
+
+    # ── 2. Group-membership fallback ─────────────────────────────────────
+    student_groups = frappe.get_all(
+        "Student Group Student",
+        filters={"student": student.name},
+        pluck="parent",
+    )
+    membership_names: set[str] = set()
+    if student_groups:
+        tg_assignment_names = frappe.get_all(
+            "Assignment Target Group",
+            filters={
+                "student_group": ["in", student_groups],
+                "parenttype": "Assignment",
+            },
+            pluck="parent",
+        )
+        membership_names = set(tg_assignment_names)
+
+    candidate_names = list(direct_names | membership_names)
+    if not candidate_names:
+        return []
 
     assignments = frappe.get_all(
         "Assignment",
         filters={
-            "name": ["in", assignment_names],
+            "name": ["in", candidate_names],
             "status": "Published",
         },
         fields=[
