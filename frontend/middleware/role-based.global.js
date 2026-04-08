@@ -25,10 +25,10 @@ export default defineNuxtRouteMiddleware(async (to, from) => {
   // Rules definition
   const roleAccess = {
     teacher: {
-      allowedPrefixes: ['/teacher', '/teacher/'],
+      allowedPrefixes: ['/teacher', '/profile', '/notices', '/events'],
     },
     instructor: {
-      allowedPrefixes: ['/teacher', '/teacher/'],
+      allowedPrefixes: ['/teacher', '/profile', '/notices', '/events'],
     },
     student: {
       allowedPrefixes: ['/academics', '/attendance', '/exam', '/applications', '/library', '/faculty', '/profile'],

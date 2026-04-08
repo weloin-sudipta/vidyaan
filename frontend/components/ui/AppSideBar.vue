@@ -226,7 +226,7 @@ const updateNavItems = () => {
       },
       { name: 'Applications', icon: 'fa fa-file-pen', route: '/teacher/applications' },
       { name: 'Students', icon: 'fa fa-users', route: '/teacher/students' },
-      { name: 'My Profile', icon: 'fa fa-user-circle', route: '/teacher/profile' },
+      { name: 'My Profile', icon: 'fa fa-user-circle', route: '/profile' },
     ]
   } else {
     // Student / other roles
@@ -248,7 +248,7 @@ const updateNavItems = () => {
           { name: 'Assignments', route: '/academics/assignments' },
         ]
       },
-      { name: 'Attendance', icon: 'fa fa-calendar-check-o', route: '/attendance' },
+      { name: 'Attendance', icon: 'fa fa-calendar-check-o', route: '/academics/attendance' },
       {
         name: 'Examination',
         icon: 'fa fa-file-text-o',
