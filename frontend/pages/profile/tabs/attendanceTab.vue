@@ -65,7 +65,7 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue';
-import { useAttendanceSummary } from '~/composable/useAttendance'
+import { useAttendanceSummary } from '~/composables/useAttendance'
 
 const { summary, loading, fetchSummary } = useAttendanceSummary()
 

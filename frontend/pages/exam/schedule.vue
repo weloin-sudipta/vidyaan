@@ -197,9 +197,9 @@
 <script setup>
 import { ref, computed, onMounted } from "vue";
 import HeroHeader from "~/components/ui/HeroHeader.vue";
-import { useExams } from "~/composable/useExaminations";
-import { usePdf } from "~/composable/usePdf";
-import { useToast } from "~/composable/useToast";
+import { useExams } from "~/composables/useExaminations";
+import { usePdf } from "~/composables/usePdf";
+import { useToast } from "~/composables/useToast";
 
 const { addToast } = useToast();
 const { generateAdmitCard, loading: pdfLoading, error: pdfError } = usePdf();

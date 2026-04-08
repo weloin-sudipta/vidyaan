@@ -223,7 +223,7 @@
 import { ref, computed, onMounted } from 'vue'
 import HeroHeader from '~/components/ui/HeroHeader.vue'
 import AppModal from '~/components/ui/AppModal.vue'
-import { useAssignments } from '~/composable/useAssignments'
+import { useAssignments } from '~/composables/useAssignments'
 
 const { assignments, loading, error, fetchAssignments, submitAssignment, uploadFile } = useAssignments()
 

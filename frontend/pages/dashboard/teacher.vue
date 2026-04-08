@@ -79,8 +79,8 @@ import DailyRoutine from '~/components/dashboard/teacher/DailyRoutine.vue'
 import TeacherDashboardPendingTasks from '~/components/dashboard/teacher/TeacherDashboardPendingTasks.vue'
 import AcademicCalendar from '~/components/dashbaord/academicCalendar.vue'
 import CampusNotice from '~/components/dashbaord/campusNotice.vue'
-import { useTeacherClasses } from '~/composable/useTeacherClasses'
-import { useNotices } from '~/composable/useNotices'
+import { useTeacherClasses } from '~/composables/useTeacherClasses'
+import { useNotices } from '~/composables/useNotices'
 
 const { fetchclassSchedule } = useTeacherClasses()
 const { notices: allNotices, fetchNotices } = useNotices()

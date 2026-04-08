@@ -105,7 +105,7 @@
 
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue';
-import { useAttendance } from '~/composable/useAttendance'
+import { useAttendance } from '~/composables/useAttendance'
 
 const config = useRuntimeConfig()
 useSeoMeta({

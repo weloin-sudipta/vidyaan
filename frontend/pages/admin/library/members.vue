@@ -108,7 +108,7 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue';
-import { useLibraryAdmin } from '~/composable/useLibraryAdmin';
+import { useLibraryAdmin } from '~/composables/useLibraryAdmin';
 
 const { members, loading, fetchMembers } = useLibraryAdmin();
 

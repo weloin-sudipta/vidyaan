@@ -107,9 +107,9 @@ definePageMeta({
     layout: 'authLayout'
 })
 
-import {login} from '~/composable/useAuth'
+import {login} from '~/composables/useAuth'
 import { useRouter } from 'vue-router'
-import { useToast } from '~/composable/useToast'
+import { useToast } from '~/composables/useToast'
 
 const router = useRouter()
 const { addToast } = useToast()

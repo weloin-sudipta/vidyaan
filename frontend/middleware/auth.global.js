@@ -1,4 +1,4 @@
-import { useUserProfile } from '~/composable/useUserProfile'
+import { useUserProfile } from '~/composables/useUserProfile'
 
 export default defineNuxtRouteMiddleware(async (to, from) => {
   // Skip auth check during SSR — $fetch cannot use the Nitro proxy on the server.

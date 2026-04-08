@@ -1,4 +1,4 @@
-import { call } from '~/composable/useFrappeFetch'
+import { call } from '~/composables/useFrappeFetch'
 
 export interface Student {
   name: string

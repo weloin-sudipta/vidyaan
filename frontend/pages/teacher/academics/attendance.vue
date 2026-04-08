@@ -156,8 +156,8 @@
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue'
 import HeroHeader from '~/components/ui/HeroHeader.vue'
-import { useToast } from '~/composable/useToast'
-import { useTeacherClasses } from '~/composable/useTeacherClasses'
+import { useToast } from '~/composables/useToast'
+import { useTeacherClasses } from '~/composables/useTeacherClasses'
 
 const {
   fetchclassSchedule,

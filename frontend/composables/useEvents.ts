@@ -1,5 +1,5 @@
 import { ref, computed, type Ref, type ComputedRef } from 'vue'
-import { createResource } from '~/composable/useFrappeFetch'
+import { createResource } from '~/composables/useFrappeFetch'
 
 // ─── Raw event from backend ───────────────────────────────────────────────
 export interface RawEvent {

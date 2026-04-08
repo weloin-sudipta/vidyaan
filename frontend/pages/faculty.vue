@@ -133,7 +133,7 @@
 <script setup>
 import { ref, computed, onMounted } from "vue";
 import HeroHeader from "~/components/ui/HeroHeader.vue";
-import { useFacultyMember } from "~/composable/useFacultyMember";
+import { useFacultyMember } from "~/composables/useFacultyMember";
 
 const { members, fetchMember } = useFacultyMember();
 

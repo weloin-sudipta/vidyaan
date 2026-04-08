@@ -1,5 +1,5 @@
 import { ref, type Ref } from 'vue'
-import { call } from '~/composable/useFrappeFetch'
+import { call } from '~/composables/useFrappeFetch'
 import type { FrappeFetchError } from './types/api'
 
 /**

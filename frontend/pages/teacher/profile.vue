@@ -234,7 +234,7 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
-import { useTeacherDashboard } from '~/composable/useTeacherDashboard'
+import { useTeacherDashboard } from '~/composables/useTeacherDashboard'
 
 const { data, fetchTeacherData, error, loading } = useTeacherDashboard()
 

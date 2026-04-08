@@ -1,5 +1,5 @@
 import { ref, type Ref } from 'vue'
-import { createResource, callMultipart, type FrappeParams } from '~/composable/useFrappeFetch'
+import { createResource, callMultipart, type FrappeParams } from '~/composables/useFrappeFetch'
 
 // ─── Local shapes ─────────────────────────────────────────────────────────
 export interface StudyMaterial {

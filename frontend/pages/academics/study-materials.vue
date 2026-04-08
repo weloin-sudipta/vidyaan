@@ -153,7 +153,7 @@
 import { ref, computed, onMounted, watch } from 'vue'
 import HeroHeader from '~/components/ui/HeroHeader.vue'
 import MaterialDetailsModal from '~/components/MaterialDetailsModal.vue'
-import { useStudyMaterials } from '~/composable/useStudyMaterials'
+import { useStudyMaterials } from '~/composables/useStudyMaterials'
 
 const config = useRuntimeConfig()
 

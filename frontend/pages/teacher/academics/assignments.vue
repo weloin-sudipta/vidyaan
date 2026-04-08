@@ -561,13 +561,13 @@
 
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
-import { useTeacherAssignments } from '~/composable/useTeacherAssignments'
-import { useToast } from '~/composable/useToast'
+import { useTeacherAssignments } from '~/composables/useTeacherAssignments'
+import { useToast } from '~/composables/useToast'
 import AppModal from '~/components/ui/AppModal.vue'
 import ConfirmDialog from '~/components/ui/ConfirmDialog.vue'
 import HeroHeader from '~/components/ui/HeroHeader.vue'
 import UiSkeleton from '~/components/ui/UiSkeleton.vue'
-import { call } from '~/composable/useFrappeFetch'
+import { call } from '~/composables/useFrappeFetch'
 
 const { addToast } = useToast()
 

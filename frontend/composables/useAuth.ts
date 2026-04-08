@@ -1,7 +1,7 @@
 import { useRouter, useRoute } from '#imports'
-import { auth } from '~/composable/useFrappeFetch'
+import { auth } from '~/composables/useFrappeFetch'
 import { useUserProfile } from './useUserProfile'
-import type { LoginResponse, LogoutResponse } from '~/composable/types/api'
+import type { LoginResponse, LogoutResponse } from '~/composables/types/api'
 
 export const logout = async (): Promise<void> => {
   const { clearProfile } = useUserProfile()

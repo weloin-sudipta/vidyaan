@@ -1,5 +1,5 @@
 import { ref, type Ref } from 'vue'
-import { call } from '~/composable/useFrappeFetch'
+import { call } from '~/composables/useFrappeFetch'
 
 // ─── Local shapes ─────────────────────────────────────────────────────────
 export interface Course {

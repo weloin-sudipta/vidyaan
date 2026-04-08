@@ -153,7 +153,7 @@
 <script setup>
 import { onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { useTeacherDashboard } from '~/composable/useTeacherDashboard'
+import { useTeacherDashboard } from '~/composables/useTeacherDashboard'
 
 const router = useRouter()
 const { pendingTasks, loadingTasks, tasksError, fetchPendingTasks } = useTeacherDashboard()

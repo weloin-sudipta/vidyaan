@@ -1,5 +1,5 @@
 import { ref, type Ref } from 'vue'
-import { call, callMultipart } from '~/composable/useFrappeFetch'
+import { call, callMultipart } from '~/composables/useFrappeFetch'
 
 // ─── Student-side assignment shapes ───────────────────────────────────────
 export interface StudentAssignmentSubmission {

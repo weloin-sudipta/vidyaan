@@ -1,7 +1,7 @@
 import { useState } from '#imports'
-import { createResource } from '~/composable/useFrappeFetch'
+import { createResource } from '~/composables/useFrappeFetch'
 import type { Ref } from 'vue'
-import type { UserInfo } from '~/composable/types/api'
+import type { UserInfo } from '~/composables/types/api'
 
 export interface UserProfileState {
   firstName: string

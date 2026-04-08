@@ -41,7 +41,7 @@ import StudentDashboard from '~/pages/dashboard/student.vue'
 import TeacherDashboard from '~/pages/dashboard/teacher.vue'
 
 // Composable
-import { useUserProfile } from '~/composable/useUserProfile'
+import { useUserProfile } from '~/composables/useUserProfile'
 
 const { userRole, loadProfile } = useUserProfile()
 

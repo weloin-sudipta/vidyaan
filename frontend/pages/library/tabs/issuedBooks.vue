@@ -201,9 +201,9 @@
 
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue';
-import { useBooks } from '~/composable/useLibraryBooks';
-import { createResource } from '~/composable/useFrappeFetch';
-import { useToast } from '~/composable/useToast';
+import { useBooks } from '~/composables/useLibraryBooks';
+import { createResource } from '~/composables/useFrappeFetch';
+import { useToast } from '~/composables/useToast';
 
 const { addToast } = useToast();
 

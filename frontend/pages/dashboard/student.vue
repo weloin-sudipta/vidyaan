@@ -209,7 +209,7 @@
 import { ref, computed, onMounted } from "vue";
 import walkingStudent from "~/assets/images/student-walking-nobg.gif";
 import CurrentProgram from "~/components/dashbaord/currentProgram.vue";
-import { useStudentDashboard } from "~/composable/userDashboard";
+import { useStudentDashboard } from "~/composables/userDashboard";
 import Assignment from "~/components/dashbaord/assignment.vue";
 import UpcomingExams from "~/components/dashbaord/upcomingExams.vue";
 import TodayClass from "~/components/dashbaord/todayClass.vue";
@@ -220,9 +220,9 @@ import Attendance from "~/components/dashbaord/attendance.vue";
 import BookRecommendetion from "~/components/dashbaord/bookRecommendetion.vue";
 import CampusNotice from "~/components/dashbaord/campusNotice.vue";
 import Event from "~/components/dashbaord/event.vue";
-import { useAssignments } from "~/composable/useAssignments";
-import { useTimetable } from "~/composable/useTimetable";
-import { useNotices } from "~/composable/useNotices";
+import { useAssignments } from "~/composables/useAssignments";
+import { useTimetable } from "~/composables/useTimetable";
+import { useNotices } from "~/composables/useNotices";
 
 const { dashboardData, loading, error, loadDashboard } = useStudentDashboard();
 const { assignments: allAssignments, fetchAssignments } = useAssignments();

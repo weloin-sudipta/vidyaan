@@ -265,8 +265,8 @@ import HeroHeader from '~/components/ui/HeroHeader.vue'
 import StudyMaterialModal from '~/components/StudyMaterialModal.vue'
 import MaterialDetailsModal from '~/components/MaterialDetailsModal.vue'
 import TopicMaterialsModal from '~/components/TopicMaterialsModal.vue'
-import { useCourseTopics } from '~/composable/useCourseTopics'
-import { useStudyMaterials } from '~/composable/useStudyMaterials'
+import { useCourseTopics } from '~/composables/useCourseTopics'
+import { useStudyMaterials } from '~/composables/useStudyMaterials'
 
 const { fetchCourseTopics } = useCourseTopics()
 const { materials, teacherMaterials, fetchMaterials, fetchMaterialsByTeacher, deleteMaterial: deleteMaterialAPI, loading: materialsLoading } = useStudyMaterials()

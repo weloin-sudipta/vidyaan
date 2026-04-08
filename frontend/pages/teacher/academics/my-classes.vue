@@ -97,7 +97,7 @@
 import { ref, onMounted, computed } from 'vue'
 import HeroHeader from '~/components/ui/HeroHeader.vue'
 import UiSkeleton from '~/components/ui/UiSkeleton.vue'
-import { useTeacherClasses } from '~/composable/useTeacherClasses'
+import { useTeacherClasses } from '~/composables/useTeacherClasses'
 
 const { fetchclassSchedule } = useTeacherClasses()
 

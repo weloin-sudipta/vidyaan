@@ -1,5 +1,5 @@
 import { ref, type Ref } from 'vue'
-import { createResource } from '~/composable/useFrappeFetch'
+import { createResource } from '~/composables/useFrappeFetch'
 
 // ─── Exam shapes ───────────────────────────────────────────────────────────
 export interface ExamRecord {

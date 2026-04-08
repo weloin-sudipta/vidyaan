@@ -3,8 +3,8 @@ import { ref, computed, onMounted } from 'vue'
 import feesTab from './tabs/feesTab.vue'
 import examTab from './tabs/examTab.vue'
 import attendanceTab from './tabs/attendanceTab.vue'
-import { useProfile, updateProfile } from '~/composable/useProfile'
-import { useAttendanceSummary } from '~/composable/useAttendance'
+import { useProfile, updateProfile } from '~/composables/useProfile'
+import { useAttendanceSummary } from '~/composables/useAttendance'
 const config = useRuntimeConfig()
 useSeoMeta({
     title: config.public.appName + " | Academics - Profile"

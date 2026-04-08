@@ -1,6 +1,6 @@
 // composables/useTimetable.ts
 import { ref, computed, onMounted, type Ref, type ComputedRef } from 'vue'
-import { call } from '~/composable/useFrappeFetch'
+import { call } from '~/composables/useFrappeFetch'
 import { renderTimetableHtml } from '~/utils/pdf-templates/timetable'
 import type { PdfGenerationResult } from './types/api'
 

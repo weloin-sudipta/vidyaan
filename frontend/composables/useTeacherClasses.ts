@@ -1,5 +1,5 @@
 import { ref, type Ref } from 'vue'
-import { createResource } from '~/composable/useFrappeFetch'
+import { createResource } from '~/composables/useFrappeFetch'
 
 // Local YYYY-MM-DD (avoid UTC drift)
 const todayISO = (): string => {

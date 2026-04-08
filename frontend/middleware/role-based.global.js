@@ -1,5 +1,5 @@
-import { useUserProfile } from '~/composable/useUserProfile'
-import { useToast } from '~/composable/useToast'
+import { useUserProfile } from '~/composables/useUserProfile'
+import { useToast } from '~/composables/useToast'
 
 export default defineNuxtRouteMiddleware(async (to, from) => {
   // Skip during SSR — profile is only loaded on the client

@@ -1,5 +1,5 @@
 import { ref, type Ref } from 'vue'
-import { createResource } from '~/composable/useFrappeFetch'
+import { createResource } from '~/composables/useFrappeFetch'
 
 // ─── Attendance map ─────────────────────────────────────────────────────────
 // `get_attendance` returns a calendar map.  We treat it as a generic
