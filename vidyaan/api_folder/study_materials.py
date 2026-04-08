@@ -197,6 +197,7 @@ def get_materials_by_teacher():
         )
         topic_name = topic_links[0] if topic_links else ""
         article["topic"] = topic_name
+        article["topic_name"] = frappe.db.get_value("Topic", topic_name, "topic_name") if topic_name else ""
 
         if topic_name:
             course_links = frappe.get_all(
@@ -204,9 +205,35 @@ def get_materials_by_teacher():
                 pluck="parent", limit=1
             )
             article["course"] = course_links[0] if course_links else ""
+            article["course_name"] = frappe.db.get_value("Course", article["course"], "course_name") if article["course"] else ""
         else:
             article["course"] = ""
+            article["course_name"] = ""
+
         article["upload_date"] = str(article.creation)[:10] if article.creation else ""
+
+        # Get file attachments
+        attachments = frappe.get_all(
+            "File",
+            filters={"attached_to_doctype": "Article", "attached_to_name": article.name},
+            fields=["file_url", "file_name", "file_size"],
+            limit=5
+        )
+        article["attachments"] = attachments
+        if attachments:
+            article["file"] = attachments[0].get("file_url", "")
+            article["file_name"] = attachments[0].get("file_name", "")
+            article["file_type"] = _get_file_type(attachments[0].get("file_name", ""))
+            article["file_size"] = _format_file_size(attachments[0].get("file_size", 0))
+        else:
+            article["file"] = None
+            article["file_name"] = None
+            article["file_type"] = None
+            article["file_size"] = None
+
+        # Category from content or default
+        article["category"] = "Lecture Notes"
+        article["description"] = article.get("content", "")
 
     return {"success": True, "materials": articles}
 

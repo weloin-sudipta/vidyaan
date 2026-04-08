@@ -40,7 +40,7 @@
                 </p>
               </div>
 
-              <div>
+              <!-- <div>
                 <button
                   @click.stop="downloadHallTicket(type)"
                   :disabled="pdfLoading"
@@ -49,7 +49,7 @@
                   <i :class="pdfLoading ? 'fa fa-spinner fa-spin' : 'fa fa-download'"></i>
                   {{ pdfLoading ? 'Generating…' : 'Hall Ticket' }}
                 </button>
-              </div>
+              </div> -->
 
             </div>
 
