@@ -134,8 +134,8 @@
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { logout } from '~/composables/useAuth'
-import { useUserProfile } from '~/composables/useUserProfile'
+import { logout } from '~/composables/auth/useAuth'
+import { useUserProfile } from '~/composables/student/useUserProfile'
 
 const { userRole, loadProfile } = useUserProfile() 
 const route = useRoute()

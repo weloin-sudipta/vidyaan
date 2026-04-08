@@ -176,8 +176,8 @@
 
 <script setup>
 import { ref, onMounted, computed } from 'vue'
-import { call } from '~/composables/useFrappeFetch'
-import { useToast } from '~/composables/useToast'
+import { call } from '~/composables/api/useFrappeFetch'
+import { useToast } from '~/composables/ui/useToast'
 
 const { addToast } = useToast()
 

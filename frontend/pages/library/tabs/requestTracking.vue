@@ -101,8 +101,8 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
-import { useBooks } from '~/composables/useLibraryBooks'
-import { useToast } from '~/composables/useToast'
+import { useBooks } from '~/composables/library/useLibraryBooks'
+import { useToast } from '~/composables/ui/useToast'
 
 const { addToast } = useToast()
 const { requestedBook, fetchRequestedBook, cancelRequest } = useBooks();

@@ -121,8 +121,8 @@
 <script setup>
 import { ref, watch, onMounted } from 'vue'
 import AppModal from '@/components/ui/AppModal.vue'
-import { call } from '~/composables/useFrappeFetch'
-import { useToast } from '~/composables/useToast'
+import { call } from '~/composables/api/useFrappeFetch'
+import { useToast } from '~/composables/ui/useToast'
 
 const { addToast } = useToast()
 

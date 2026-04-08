@@ -64,8 +64,8 @@
 
 <script setup>
 import { ref, computed } from 'vue'
-import { call } from '~/composables/useFrappeFetch'
-import { useToast } from '~/composables/useToast'
+import { call } from '~/composables/api/useFrappeFetch'
+import { useToast } from '~/composables/ui/useToast'
 
 const emit = defineEmits(['close', 'submitted'])
 const { addToast } = useToast()

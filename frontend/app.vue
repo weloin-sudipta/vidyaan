@@ -23,7 +23,7 @@
 <script setup lang="ts">
 import ToastContainer from '~/components/ToastContainer.vue'
 import ConfirmDialog from '~/components/ui/ConfirmDialog.vue'
-import { useConfirm } from '~/composables/useConfirm'
+import { useConfirm } from '~/composables/ui/useConfirm'
 
 const { open, loading, opts, _accept, _cancel } = useConfirm()
 </script>

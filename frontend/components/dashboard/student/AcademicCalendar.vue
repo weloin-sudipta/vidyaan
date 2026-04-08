@@ -90,10 +90,10 @@
 
 <script setup>
 import { ref, computed, onMounted, watch } from "vue"
-import { useExamination } from '~/composables/useExaminations'
-import { useEvents } from '~/composables/useEvents'
-import { useHolidays } from '~/composables/useHolidays'
-import { useAssignments } from '~/composables/useAssignments'
+import { useExamination } from '~/composables/academics/useExaminations'
+import { useEvents } from '~/composables/academics/useEvents'
+import { useHolidays } from '~/composables/academics/useHolidays'
+import { useAssignments } from '~/composables/academics/useAssignments'
 
 // Composables
 const { fetchExams, exams } = useExamination()

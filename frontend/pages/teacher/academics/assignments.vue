@@ -546,13 +546,13 @@
 
 <script setup>
 import { ref, onMounted } from 'vue'
-import { useTeacherAssignments } from '~/composables/useTeacherAssignments'
-import { useToast } from '~/composables/useToast'
-import { useConfirm } from '~/composables/useConfirm'
+import { useTeacherAssignments } from '~/composables/teacher/useTeacherAssignments'
+import { useToast } from '~/composables/ui/useToast'
+import { useConfirm } from '~/composables/ui/useConfirm'
 import AppModal from '~/components/ui/AppModal.vue'
 import HeroHeader from '~/components/ui/HeroHeader.vue'
 import UiSkeleton from '~/components/ui/UiSkeleton.vue'
-import { call } from '~/composables/useFrappeFetch'
+import { call } from '~/composables/api/useFrappeFetch'
 
 const { addToast } = useToast()
 const { confirm, setLoading: setConfirmLoading } = useConfirm()

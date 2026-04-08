@@ -122,7 +122,7 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue';
-import { useLibraryAdmin } from '~/composables/useLibraryAdmin';
+import { useLibraryAdmin } from '~/composables/library/useLibraryAdmin';
 
 const { inventory, loading, fetchInventory } = useLibraryAdmin();
 

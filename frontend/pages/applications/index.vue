@@ -155,7 +155,7 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
-import { call } from '~/composables/useFrappeFetch'
+import { call } from '~/composables/api/useFrappeFetch'
 import TypeSelector from './TypeSelector.vue'
 import NocModal from './NocModal.vue'
 import RequestModal from './RequestModal.vue'

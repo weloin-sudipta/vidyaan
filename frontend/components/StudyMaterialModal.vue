@@ -170,7 +170,7 @@
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue'
 import AppModal from '~/components/ui/AppModal.vue'
-import { useStudyMaterials } from '~/composables/useStudyMaterials'
+import { useStudyMaterials } from '~/composables/academics/useStudyMaterials'
 
 const props = defineProps({
   isOpen: {

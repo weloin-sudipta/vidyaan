@@ -183,8 +183,8 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue';
-import { useStudentDashboard } from "~/composables/useStudentDashboard";
-import { useToast } from '~/composables/useToast';
+import { useStudentDashboard } from "~/composables/student/useStudentDashboard";
+import { useToast } from '~/composables/ui/useToast';
 
 const { dashboardData, loading, error, loadDashboard } = useStudentDashboard();
 const { addToast } = useToast();

@@ -7,7 +7,7 @@
 
 <script setup lang="ts">
 import { shallowRef, onMounted, defineAsyncComponent } from 'vue'
-import { useUserProfile } from '~/composables/useUserProfile'
+import { useUserProfile } from '~/composables/student/useUserProfile'
 
 definePageMeta({ middleware: 'auth' })
 

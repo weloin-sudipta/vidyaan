@@ -103,7 +103,7 @@
 
 <script setup>
 import { ref, onMounted } from 'vue';
-import { useLibraryAdmin } from '~/composables/useLibraryAdmin';
+import { useLibraryAdmin } from '~/composables/library/useLibraryAdmin';
 
 const { requests, loading, fetchRequests, approveRequest, rejectRequest, issueFromRequest } = useLibraryAdmin();
 const activeFilter = ref('all');

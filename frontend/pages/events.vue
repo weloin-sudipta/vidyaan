@@ -281,7 +281,7 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
-import { useEvents } from '~/composables/useEvents'
+import { useEvents } from '~/composables/academics/useEvents'
 
 const {
   events,

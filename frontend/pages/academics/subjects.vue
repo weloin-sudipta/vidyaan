@@ -85,7 +85,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import HeroHeader from '~/components/ui/HeroHeader.vue'
-import { createResource } from '~/composables/useFrappeFetch'
+import { createResource } from '~/composables/api/useFrappeFetch'
 
 const config = useRuntimeConfig()
 

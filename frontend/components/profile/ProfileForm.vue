@@ -146,8 +146,8 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
-import { useProfileLoader, updateProfile } from '~/composables/useProfile'
-import { useToast } from '~/composables/useToast'
+import { useProfileLoader, updateProfile } from '~/composables/student/useProfile'
+import { useToast } from '~/composables/ui/useToast'
 
 const { addToast } = useToast()
 

@@ -97,7 +97,7 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue';
-import { useExamResults } from '~/composables/useExaminations';
+import { useExamResults } from '~/composables/academics/useExaminations';
 
 const rawData = ref([]);
 const loading = ref(true);

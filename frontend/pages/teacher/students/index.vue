@@ -216,7 +216,7 @@
 import { ref, computed, onMounted } from 'vue'
 import HeroHeader from '~/components/ui/HeroHeader.vue'
 import UiSkeleton from '~/components/ui/UiSkeleton.vue'
-import { fetchStudents } from '~/composables/useStudent'
+import { fetchStudents } from '~/composables/student/useStudent'
 
 // ── state ──────────────────────────────────────────────────────────────────
 const loading = ref(true)
