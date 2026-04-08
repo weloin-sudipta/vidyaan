@@ -62,6 +62,19 @@
                 </div>
             </div>
 
+            <!-- No File Message -->
+            <div v-else class="bg-yellow-50 dark:bg-yellow-900/20 p-6 rounded-xl border border-yellow-200 dark:border-yellow-900/30">
+                <div class="flex items-center gap-3">
+                    <div class="w-12 h-12 bg-yellow-100 dark:bg-yellow-900/30 rounded-lg flex items-center justify-center">
+                        <i class="fa fa-exclamation-triangle text-yellow-600 dark:text-yellow-400 text-lg"></i>
+                    </div>
+                    <div>
+                        <p class="text-sm font-black text-yellow-800 dark:text-yellow-200">No File Attached</p>
+                        <p class="text-xs text-yellow-600 dark:text-yellow-400">This study material contains only text content.</p>
+                    </div>
+                </div>
+            </div>
+
             <!-- Description Section -->
             <div v-if="material?.description">
                 <p class="text-xs font-black uppercase tracking-widest text-slate-500 dark:text-slate-400 mb-3">
@@ -103,24 +116,38 @@
                     <p class="text-xs font-black uppercase tracking-widest text-slate-500 dark:text-slate-400 mb-2">
                         Category</p>
                     <div class="bg-slate-100 dark:bg-slate-800 px-3 py-2 rounded-lg">
-                        <span class="text-xs font-bold text-slate-700 dark:text-slate-300">{{ material.category || '-'
-                            }}</span>
+                        <span class="text-xs font-bold text-slate-700 dark:text-slate-300">{{ material.category || 'Lecture Notes' }}</span>
                     </div>
                 </div>
                 <div>
                     <p class="text-xs font-black uppercase tracking-widest text-slate-500 dark:text-slate-400 mb-2">
                         Upload Date</p>
                     <div class="bg-slate-100 dark:bg-slate-800 px-3 py-2 rounded-lg">
-                        <span class="text-xs font-bold text-slate-700 dark:text-slate-300">{{ material.upload_date ||
-                            '-' }}</span>
+                        <span class="text-xs font-bold text-slate-700 dark:text-slate-300">{{ material.upload_date || '-' }}</span>
+                    </div>
+                </div>
+                <div v-if="material.course_name">
+                    <p class="text-xs font-black uppercase tracking-widest text-slate-500 dark:text-slate-400 mb-2">
+                        Course</p>
+                    <div class="bg-slate-100 dark:bg-slate-800 px-3 py-2 rounded-lg">
+                        <span class="text-xs font-bold text-slate-700 dark:text-slate-300">{{ material.course_name }}</span>
+                    </div>
+                </div>
+                <div v-if="material.topic_name">
+                    <p class="text-xs font-black uppercase tracking-widest text-slate-500 dark:text-slate-400 mb-2">
+                        Topic</p>
+                    <div class="bg-slate-100 dark:bg-slate-800 px-3 py-2 rounded-lg">
+                        <span class="text-xs font-bold text-slate-700 dark:text-slate-300">{{ material.topic_name }}</span>
                     </div>
                 </div>
             </div>
 
-            <!-- Course and Category Info -->
-            <div class="text-xs text-slate-500 dark:text-slate-400">
-                <p><strong>Course:</strong> {{ material?.course }}</p>
-                <p><strong>Category:</strong> {{ material?.category }}</p>
+            <!-- Author Information -->
+            <div v-if="material.author">
+                <p class="text-xs font-black uppercase tracking-widest text-slate-500 dark:text-slate-400 mb-3">Author</p>
+                <div class="bg-slate-50 dark:bg-slate-800/50 p-4 rounded-xl border border-slate-200 dark:border-slate-700">
+                    <p class="text-sm font-bold text-slate-800 dark:text-slate-200">{{ material.author }}</p>
+                </div>
             </div>
         </div>
 

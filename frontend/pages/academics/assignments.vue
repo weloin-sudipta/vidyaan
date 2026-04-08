@@ -240,7 +240,12 @@ onMounted(() => fetchAssignments())
 
 // Derive a display status from the new shape
 const resolvedStatus = (task) => {
-  if (task.my_submission?.status) return task.my_submission.status
+  const submissionStatus = task.my_submission?.status
+  if (submissionStatus) {
+    if (submissionStatus === 'Pending') return 'Active'
+    if (submissionStatus === 'Late') return 'Submitted'
+    return submissionStatus
+  }
   if (task.is_overdue) return 'Overdue'
   return task.status || 'Active'
 }
