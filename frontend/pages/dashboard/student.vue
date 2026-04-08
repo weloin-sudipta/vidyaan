@@ -209,7 +209,7 @@
 import { ref, computed, onMounted } from "vue";
 import walkingStudent from "~/assets/images/student-walking-nobg.gif";
 import CurrentProgram from "~/components/dashboard/student/CurrentProgram.vue";
-import { useStudentDashboard } from "~/composables/userDashboard";
+import { useStudentDashboard } from "~/composables/useStudentDashboard";
 import Assignment from "~/components/dashboard/student/Assignment.vue";
 import UpcomingExams from "~/components/dashboard/student/UpcomingExams.vue";
 import TodayClass from "~/components/dashboard/student/TodayClass.vue";
