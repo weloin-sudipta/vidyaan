@@ -539,75 +539,23 @@
         </template>
       </AppModal>
 
-      <!-- Confirm Dialog (publish / close / delete) -->
-      <ConfirmDialog
-        v-model="confirmState.open"
-        :title="confirmState.title"
-        :message="confirmState.message"
-        :hint="confirmState.hint"
-        :variant="confirmState.variant"
-        :confirm-text="confirmState.confirmText"
-        :cancel-text="confirmState.cancelText"
-        :loading-text="confirmState.loadingText"
-        :confirm-icon="confirmState.confirmIcon"
-        :loading="confirmState.loading"
-        @confirm="confirmState.onConfirm && confirmState.onConfirm()"
-        @cancel="resetConfirm"
-      />
 
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useTeacherAssignments } from '~/composables/useTeacherAssignments'
 import { useToast } from '~/composables/useToast'
+import { useConfirm } from '~/composables/useConfirm'
 import AppModal from '~/components/ui/AppModal.vue'
-import ConfirmDialog from '~/components/ui/ConfirmDialog.vue'
 import HeroHeader from '~/components/ui/HeroHeader.vue'
 import UiSkeleton from '~/components/ui/UiSkeleton.vue'
 import { call } from '~/composables/useFrappeFetch'
 
 const { addToast } = useToast()
-
-// ─── Confirm dialog state ─────────────────────────────────────────────────
-const confirmState = reactive({
-  open: false,
-  title: '',
-  message: '',
-  hint: '',
-  variant: 'info',
-  confirmText: 'Confirm',
-  cancelText: 'Cancel',
-  loadingText: 'Working…',
-  confirmIcon: '',
-  loading: false,
-  onConfirm: null,
-})
-
-const resetConfirm = () => {
-  confirmState.open = false
-  confirmState.loading = false
-  confirmState.onConfirm = null
-}
-
-const openConfirm = (config) => {
-  Object.assign(confirmState, {
-    open: true,
-    title: 'Are you sure?',
-    message: '',
-    hint: '',
-    variant: 'info',
-    confirmText: 'Confirm',
-    cancelText: 'Cancel',
-    loadingText: 'Working…',
-    confirmIcon: '',
-    loading: false,
-    onConfirm: null,
-    ...config,
-  })
-}
+const { confirm, setLoading: setConfirmLoading } = useConfirm()
 
 const {
   courses,
@@ -814,8 +762,8 @@ const handleSave = async () => {
 
 // ─── Publish ──────────────────────────────────────────────────────────────
 
-const handlePublish = (assignment) => {
-  openConfirm({
+const handlePublish = async (assignment) => {
+  const ok = await confirm({
     title: 'Publish Assignment',
     message: `Publish "${assignment.title}" to students now? Submission rows will be generated for every active member of the target groups.`,
     hint: 'This action makes the assignment visible to students immediately.',
@@ -824,27 +772,25 @@ const handlePublish = (assignment) => {
     cancelText: 'Not Yet',
     loadingText: 'Publishing…',
     confirmIcon: 'fa-paper-plane',
-    onConfirm: async () => {
-      confirmState.loading = true
-      publishingName.value = assignment.name
-      const res = await publishAssignment(assignment.name)
-      publishingName.value = null
-      resetConfirm()
-
-      if (res?.error) {
-        addToast(res.error, 'error')
-      } else {
-        addToast(`Published "${assignment.title}".`, 'success')
-        await loadAssignments()
-      }
-    },
   })
+  if (!ok) return
+  setConfirmLoading(true)
+  publishingName.value = assignment.name
+  const res = await publishAssignment(assignment.name)
+  publishingName.value = null
+  setConfirmLoading(false)
+  if (res?.error) {
+    addToast(res.error, 'error')
+  } else {
+    addToast(`Published "${assignment.title}".`, 'success')
+    await loadAssignments()
+  }
 }
 
 // ─── Close ────────────────────────────────────────────────────────────────
 
-const handleClose = (assignment) => {
-  openConfirm({
+const handleClose = async (assignment) => {
+  const ok = await confirm({
     title: 'Close Assignment',
     message: `Close "${assignment.title}"? Students will no longer be able to submit, but existing submissions and grades will be preserved.`,
     hint: 'You can still view and grade pending submissions.',
@@ -853,24 +799,23 @@ const handleClose = (assignment) => {
     cancelText: 'Keep Open',
     loadingText: 'Closing…',
     confirmIcon: 'fa-lock',
-    onConfirm: async () => {
-      confirmState.loading = true
-      const res = await closeAssignment(assignment.name)
-      resetConfirm()
-      if (res?.error) {
-        addToast(res.error, 'error')
-      } else {
-        addToast(`Closed "${assignment.title}".`, 'success')
-        await loadAssignments()
-      }
-    },
   })
+  if (!ok) return
+  setConfirmLoading(true)
+  const res = await closeAssignment(assignment.name)
+  setConfirmLoading(false)
+  if (res?.error) {
+    addToast(res.error, 'error')
+  } else {
+    addToast(`Closed "${assignment.title}".`, 'success')
+    await loadAssignments()
+  }
 }
 
 // ─── Delete ───────────────────────────────────────────────────────────────
 
-const handleDelete = (assignment) => {
-  openConfirm({
+const handleDelete = async (assignment) => {
+  const ok = await confirm({
     title: 'Delete Assignment',
     message: `Delete "${assignment.title}" permanently? This cannot be undone.`,
     hint: 'Graded submissions will block deletion. Close the assignment instead.',
@@ -879,18 +824,17 @@ const handleDelete = (assignment) => {
     cancelText: 'Keep It',
     loadingText: 'Deleting…',
     confirmIcon: 'fa-trash',
-    onConfirm: async () => {
-      confirmState.loading = true
-      const res = await deleteAssignment(assignment.name)
-      resetConfirm()
-      if (res?.error) {
-        addToast(res.error, 'error')
-      } else {
-        addToast(`Deleted "${assignment.title}".`, 'success')
-        await loadAssignments()
-      }
-    },
   })
+  if (!ok) return
+  setConfirmLoading(true)
+  const res = await deleteAssignment(assignment.name)
+  setConfirmLoading(false)
+  if (res?.error) {
+    addToast(res.error, 'error')
+  } else {
+    addToast(`Deleted "${assignment.title}".`, 'success')
+    await loadAssignments()
+  }
 }
 
 // ─── Submissions ──────────────────────────────────────────────────────────

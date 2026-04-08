@@ -2,11 +2,30 @@
     <NuxtLayout>
         <NuxtPage />
         <ToastContainer />
+        <ConfirmDialog
+            v-model="open"
+            :title="opts.title"
+            :message="opts.message"
+            :hint="opts.hint"
+            :variant="opts.variant"
+            :confirm-text="opts.confirmText"
+            :cancel-text="opts.cancelText"
+            :loading-text="opts.loadingText"
+            :confirm-icon="opts.confirmIcon"
+            :icon="opts.icon"
+            :loading="loading"
+            @confirm="_accept"
+            @cancel="_cancel"
+        />
     </NuxtLayout>
 </template>
 
-<script setup>
-import ToastContainer from '~/components/ToastContainer.vue';
+<script setup lang="ts">
+import ToastContainer from '~/components/ToastContainer.vue'
+import ConfirmDialog from '~/components/ui/ConfirmDialog.vue'
+import { useConfirm } from '~/composables/useConfirm'
+
+const { open, loading, opts, _accept, _cancel } = useConfirm()
 </script>
 
 <style>
