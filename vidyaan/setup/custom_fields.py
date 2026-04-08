@@ -77,3 +77,22 @@ def create_vidyaan_custom_fields():
     }
     create_custom_fields(instructor_fields)
 
+    # Student Group → dedicated classroom (one room per section, never changes).
+    # Required because ERPNext Course Schedule has a mandatory `room` field, and
+    # Vidyaan's routine generator inherits the section's room into every slot.
+    student_group_room = {
+        "Student Group": [
+            {
+                "fieldname": "room",
+                "label": "Classroom",
+                "fieldtype": "Link",
+                "options": "Room",
+                "insert_after": "company",
+                "reqd": 0,  # not enforced at form save — enforced at routine submit
+                "in_list_view": 1,
+                "description": "Dedicated classroom for this section. "
+                               "Required before submitting a Routine Generation.",
+            }
+        ]
+    }
+    create_custom_fields(student_group_room)
