@@ -4,7 +4,7 @@
 Authentication state management composable handling user login, logout, session persistence, and role-based access control.
 
 ## Location
-`frontend/composable/useAuth.js`
+`frontend/composables/auth/useAuth.ts`
 
 ## State Management
 

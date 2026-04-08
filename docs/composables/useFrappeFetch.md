@@ -4,7 +4,11 @@
 Core API wrapper composable providing standardized Frappe REST API communication with loading states, error handling, and reactive data management.
 
 ## Location
-`frontend/composable/useFrappeFetch.ts`
+`frontend/composables/api/useFrappeFetch.ts`
+
+> Companion files: `composables/api/types.ts` (shared type definitions),
+> `composables/api/parseFrappeError.ts` (extracts real messages from
+> Frappe `_server_messages` JSON envelopes).
 
 ## API Contract
 

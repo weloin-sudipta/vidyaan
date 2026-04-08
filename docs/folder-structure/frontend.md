@@ -1,6 +1,6 @@
 # Vidyaan Frontend Documentation
 
-> **App Name:** MaxEdu | Student ERM (needs rebranding to Vidyaan)
+> **App Name:** Vidyaan School ERP
 > **Framework:** Nuxt 4.3.1 + Vue 3.5.28 + Tailwind CSS
 > **Backend:** Frappe Framework API
 > **Location:** `apps/vidyaan/frontend/`
@@ -79,38 +79,145 @@
 frontend/
 ├── assets/              # Images, static assets
 ├── components/
-│   ├── ui/              # Reusable UI primitives (11 components)
+│   ├── ui/              # Reusable UI primitives (19 components)
+│   │   ├── AppModal.vue
+│   │   ├── AppNavBar.vue
+│   │   ├── AppSideBar.vue
+│   │   ├── ConfirmDialog.vue   # Global confirmation dialog (paired with useConfirm)
+│   │   ├── HeroHeader.vue
+│   │   ├── StatCard.vue
+│   │   ├── UiAvatar.vue
+│   │   ├── UiBadge.vue
+│   │   ├── UiButton.vue
+│   │   ├── UiCard.vue
+│   │   ├── UiEmptyState.vue
+│   │   ├── UiInput.vue
+│   │   ├── UiSearchFilterBar.vue
+│   │   ├── UiSelect.vue
+│   │   ├── UiSkeleton.vue
+│   │   └── UiTextarea.vue
 │   ├── applications/    # Application request modals
-│   ├── dashboard/       # Dashboard widgets (teacher)
-│   ├── profile/         # Profile edit form
-│   ├── BookCard.vue
-│   ├── BookRecommendation.vue
+│   ├── dashboard/
+│   │   ├── AdminDashboardView.vue
+│   │   ├── StudentDashboardView.vue
+│   │   ├── TeacherDashboardView.vue
+│   │   ├── student/             # Student dashboard widgets (PascalCase)
+│   │   │   ├── AcademicCalendar.vue
+│   │   │   ├── Assignment.vue
+│   │   │   ├── Attendance.vue
+│   │   │   ├── BookRecommendation.vue
+│   │   │   ├── CampusNotice.vue
+│   │   │   ├── CurrentProgram.vue
+│   │   │   ├── Event.vue
+│   │   │   ├── PaymentHistory.vue
+│   │   │   ├── StopWatch.vue
+│   │   │   ├── TodayClass.vue
+│   │   │   └── UpcomingExams.vue
+│   │   └── teacher/             # Teacher dashboard widgets
+│   │       ├── Announcements.vue
+│   │       ├── AttendanceCard.vue
+│   │       ├── DailyRoutine.vue
+│   │       ├── GradingQueue.vue
+│   │       └── TeacherDashboardPendingTasks.vue
+│   ├── profile/         # Profile components (role-aware)
+│   │   ├── ProfileForm.vue
+│   │   ├── StudentProfileView.vue
+│   │   └── TeacherProfileView.vue
+│   ├── MaterialDetailsModal.vue
 │   ├── StudyMaterialModal.vue
-│   └── ToastContainer.vue
-├── composable/          # 31 composables (state + API)
+│   ├── ToastContainer.vue
+│   └── TopicMaterialsModal.vue
+├── composables/         # 29 composables organised into 7 subfolders
+│   ├── api/
+│   │   ├── parseFrappeError.ts  # Error extraction from _server_messages
+│   │   ├── types.ts             # Shared API types
+│   │   └── useFrappeFetch.ts   # Core API wrapper
+│   ├── auth/
+│   │   └── useAuth.ts
+│   ├── academics/
+│   │   ├── useAssignments.ts
+│   │   ├── useAttendance.ts
+│   │   ├── useCourseTopics.ts
+│   │   ├── useEvents.ts
+│   │   ├── useExaminations.ts
+│   │   ├── useHolidays.ts
+│   │   ├── useNotices.ts
+│   │   ├── useStudyMaterials.ts
+│   │   └── useTimetable.ts
+│   ├── library/
+│   │   ├── useBookRequest.ts
+│   │   ├── useLibraryAdmin.ts
+│   │   └── useLibraryBooks.ts
+│   ├── student/
+│   │   ├── useProfile.ts
+│   │   ├── useStudent.ts
+│   │   ├── useStudentDashboard.ts
+│   │   └── useUserProfile.ts
+│   ├── teacher/
+│   │   ├── useFacultyMember.ts
+│   │   ├── useGrading.ts
+│   │   ├── useTeacherAssignments.ts
+│   │   ├── useTeacherClasses.ts
+│   │   ├── useTeacherDashboard.ts
+│   │   └── useTeacherExams.ts
+│   └── ui/
+│       ├── useConfirm.ts        # Global confirm dialog
+│       ├── usePdf.ts
+│       └── useToast.ts
 ├── layouts/
 │   ├── default.vue      # Main app (sidebar + navbar)
-│   └── authLayout.vue   # Auth pages (centered, minimal)
+│   └── auth.vue         # Auth pages (centered, minimal)
 ├── middleware/
-│   ├── auth.global.js        # Login enforcement
-│   └── role-based.global.js  # RBAC enforcement
-├── pages/               # ~31 route pages
-│   ├── auth/            # Login, forgot password
-│   ├── dashboard/       # Student, teacher, admin dashboards
-│   ├── academics/       # Subjects, materials, assignments, timetable
-│   ├── exam/            # Schedule, results
-│   ├── library/         # Books, requests, recommendations
-│   ├── teacher/         # Teacher-specific pages
-│   ├── admin/           # Admin pages
-│   ├── profile/         # Profile with tabs
-│   ├── documents/       # Personal docs, fees, ID card
-│   ├── applications/    # Leave/resource applications
-│   ├── notices/         # Notice board + detail
-│   ├── events.vue       # Event calendar
-│   ├── faculty.vue      # Faculty directory
-│   └── error/           # 404, 500, maintenance (Three.js)
+│   ├── auth.global.ts        # Login enforcement
+│   └── role-based.global.ts  # RBAC enforcement
+├── pages/               # 50+ route pages
+│   ├── index.vue            # Redirects to /dashboard
+│   ├── auth/
+│   │   ├── login.vue
+│   │   └── forgot-password.vue
+│   ├── dashboard/
+│   │   └── index.vue        # Role-aware unified dashboard (student/teacher/admin)
+│   ├── academics/
+│   │   ├── index.vue
+│   │   ├── assignments.vue
+│   │   ├── attendance.vue   # Unified: student view + teacher marking by role
+│   │   ├── study-materials.vue
+│   │   ├── subjects.vue
+│   │   └── timetable.vue
+│   ├── exam/
+│   │   ├── schedule.vue
+│   │   └── result.vue
+│   ├── library/             # Student library pages
+│   ├── teacher/             # Teacher-specific pages
+│   │   ├── academics/
+│   │   │   ├── assignments.vue
+│   │   │   ├── attendance.vue
+│   │   │   ├── lesson-planning.vue
+│   │   │   └── my-classes.vue
+│   │   ├── grading/
+│   │   │   ├── mark-entry.vue
+│   │   │   ├── performance.vue
+│   │   │   └── report-cards.vue
+│   │   ├── students/index.vue
+│   │   └── applications.vue
+│   ├── admin/               # Admin pages
+│   │   ├── library/
+│   │   └── students/
+│   ├── profile/
+│   │   ├── index.vue        # Role-aware profile (student/teacher)
+│   │   ├── edit.vue
+│   │   └── tabs/
+│   ├── documents/           # Personal docs, fees, ID card
+│   ├── applications/        # Leave/resource applications
+│   ├── notices/             # Notice board + detail
+│   ├── events.vue           # Event calendar
+│   ├── faculty.vue          # Faculty directory
+│   └── error/               # 404, 500, maintenance (Three.js)
+├── utils/
+│   └── pdf-templates/
+│       └── certificate.html  # PDF certificate template
 ├── public/
-├── templates/
+├── app.vue              # Root — mounts <ConfirmDialog> globally
 ├── nuxt.config.ts
 ├── tailwind.config.ts
 └── package.json
@@ -130,20 +237,19 @@ frontend/
 ### Middleware Stack
 | Middleware | File | Purpose |
 |-----------|------|---------|
-| `auth.global.js` | `/middleware/` | Blocks unauthenticated access to all routes except `/auth/*` |
-| `role-based.global.js` | `/middleware/` | Enforces role-specific route access after auth |
+| `auth.global.ts` | `/middleware/` | Blocks unauthenticated access to all routes except `/auth/*` |
+| `role-based.global.ts` | `/middleware/` | Enforces role-specific route access after auth |
 
 ### Role-Route Mapping
 | Role | Allowed Routes |
 |------|---------------|
-| **Student** | `/academics/*`, `/attendance`, `/exam/*`, `/applications`, `/library`, `/faculty`, `/profile`, `/notices/*`, `/events` |
-| **Teacher** | `/teacher/*`, `/notices/*`, `/events`, `/library` |
-| **Admin** | `/admin/*` (minimal) |
-| **Shared** | `/`, `/notices/*`, `/events` |
+| **Student** | `/academics/*`, `/exam/*`, `/applications`, `/library`, `/faculty`, `/profile`, `/notices/*`, `/events`, `/dashboard` |
+| **Teacher** | `/teacher/*`, `/academics/attendance`, `/notices/*`, `/events`, `/library`, `/profile`, `/dashboard` |
+| **Admin** | `/admin/*`, `/dashboard` |
+| **Shared** | `/dashboard`, `/notices/*`, `/events` |
 
 ### Current Issues
-- Roles use old names (student/teacher) — need migration to Vidyaan roles: `Student`, `Instructor`, `Institute Admin`, `System Administrator`
-- No `Institute Admin` or `System Administrator` route groups exist
+- No `Institute Admin` or `System Administrator` route groups exist beyond basic `/admin/*`
 
 ---
 
@@ -151,7 +257,7 @@ frontend/
 
 ### Layouts
 - **`default.vue`** — Sidebar + Navbar + scrollable content area (used for all authenticated pages)
-- **`authLayout.vue`** — Minimal centered layout for login/forgot-password
+- **`auth.vue`** — Minimal centered layout for login/forgot-password
 
 ### Sidebar Navigation (`AppSideBar.vue`)
 - Collapsible with icon-only mode
@@ -175,41 +281,41 @@ Features that exist in the frontend with functional UI and API integration.
 
 | Feature | Page | Composable | Status |
 |---------|------|-----------|--------|
-| Student Dashboard | `/dashboard/student.vue` | `userDashboard.ts` | Working — welcome hero, stats |
+| Student Dashboard | `/dashboard/index.vue` (role-aware) | `student/useStudentDashboard.ts` | Working — welcome hero, stats |
 | Subjects List | `/academics/subjects.vue` | — | Working |
-| Study Materials | `/academics/study-materials.vue` | `useStudyMaterials.js` | Working — view/download |
-| Assignments | `/academics/assignments.vue` | `useAssignments.js` | Working — view + submit with file upload |
-| Timetable | `/academics/timetable.vue` | `useTimetable.js` | Working — weekly calendar view |
-| Attendance Calendar | `/attendance.vue` | `useAttendance.js`, `useAttendanceSummary.js` | Working — monthly view, stats, progress ring |
-| Exam Schedule | `/exam/schedule.vue` | `useExaminations.js` | Working |
-| Exam Results | `/exam/result.vue` | `useExaminations.js` | Working |
-| Library Browse | `/library/tabs/allBooks.vue` | `useLibraryBooks.js` | Working — search + filter |
-| Library Issued Books | `/library/tabs/issuedBooks.vue` | `useBorrowedBooks.js` | Working |
-| Library Requests | `/library/tabs/requestTracking.vue` | `useBookRequest.js` | Working — request + cancel |
-| Library Recommendations | `/library/tabs/recommendations.vue` | `useLibraryBooks.js` | Working |
-| Applications | `/applications/index.vue` | `useAllWorkFlow.js`, `useLeaveApplication.js` | Working — submit + workflow tracking |
-| Notices Board | `/notices/index.vue` | `useNotices.js` | Working — pinned carousel, filtering |
-| Notice Detail | `/notices/[slug].vue` | `useNotices.js` | Working — dynamic slug route |
-| Events Calendar | `/events.vue` | `useEvents.js` | Working — category filter, status tags |
-| Faculty Directory | `/faculty.vue` | `useFacultyMember.js` | Working |
-| Profile View | `/profile/index.vue` | `useProfile.js`, `useUserProfile.js` | Working — tabbed interface |
-| Profile Edit | `/profile/edit.vue` | `useProfile.js` | Working — photo upload |
+| Study Materials | `/academics/study-materials.vue` | `academics/useStudyMaterials.ts` | Working — view/download |
+| Assignments | `/academics/assignments.vue` | `academics/useAssignments.ts` | Working — view + submit with file upload |
+| Timetable | `/academics/timetable.vue` | `academics/useTimetable.ts` | Working — weekly calendar view |
+| Attendance Calendar | `/academics/attendance.vue` | `academics/useAttendance.ts` | Working — monthly view, stats, progress ring |
+| Exam Schedule | `/exam/schedule.vue` | `academics/useExaminations.ts` | Working |
+| Exam Results | `/exam/result.vue` | `academics/useExaminations.ts` | Working |
+| Library Browse | `/library/tabs/allBooks.vue` | `library/useLibraryBooks.ts` | Working — search + filter |
+| Library Issued Books | `/library/tabs/issuedBooks.vue` | `library/useLibraryBooks.ts` | Working |
+| Library Requests | `/library/tabs/requestTracking.vue` | `library/useBookRequest.ts` | Working — request + cancel |
+| Library Recommendations | `/library/tabs/recommendations.vue` | `library/useLibraryBooks.ts` | Working |
+| Applications | `/applications/index.vue` | — | Working — submit + workflow tracking |
+| Notices Board | `/notices/index.vue` | `academics/useNotices.ts` | Working — pinned carousel, filtering |
+| Notice Detail | `/notices/[slug].vue` | `academics/useNotices.ts` | Working — dynamic slug route |
+| Events Calendar | `/events.vue` | `academics/useEvents.ts` | Working — category filter, status tags |
+| Faculty Directory | `/faculty.vue` | `teacher/useFacultyMember.ts` | Working |
+| Profile View | `/profile/index.vue` | `student/useProfile.ts`, `student/useUserProfile.ts` | Working — role-aware tabbed interface |
+| Profile Edit | `/profile/edit.vue` | `student/useProfile.ts` | Working — photo upload |
 | Documents / ID Card | `/documents/*.vue` | — | Working |
 
 ### Teacher Features
 
 | Feature | Page | Composable | Status |
 |---------|------|-----------|--------|
-| Teacher Dashboard | `/dashboard/teacher.vue` | `useTeacherDashboard.js` | Working — schedule, tasks, calendar |
-| Attendance Marking | `/teacher/academics/attendance.vue` | — | Working — calendar-based |
-| Assignment Management | `/teacher/academics/assignments.vue` | `useTeacherAssignments.js` | Working |
+| Teacher Dashboard | `/dashboard/index.vue` (role-aware) | `teacher/useTeacherDashboard.ts` | Working — schedule, tasks, calendar |
+| Attendance Marking | `/academics/attendance.vue` (role-aware) | `academics/useAttendance.ts` | Working — calendar-based |
+| Assignment Management | `/teacher/academics/assignments.vue` | `teacher/useTeacherAssignments.ts` | Working |
 | Lesson Planning | `/teacher/academics/lesson-planning.vue` | — | Working |
-| My Classes | `/teacher/academics/my-classes.vue` | `useTeacherClasses.js` | Working |
-| Mark Entry (Speed Grader) | `/teacher/grading/mark-entry.vue` | `useGreading.js` | Working — exam selector + bulk save |
+| My Classes | `/teacher/academics/my-classes.vue` | `teacher/useTeacherClasses.ts` | Working |
+| Mark Entry (Speed Grader) | `/teacher/grading/mark-entry.vue` | `teacher/useGrading.ts` | Working — exam selector + bulk save |
 | Performance View | `/teacher/grading/performance.vue` | — | Working |
 | Report Cards | `/teacher/grading/report-cards.vue` | — | Working |
 | Student List | `/teacher/students/` | — | Working |
-| Teacher Profile | `/teacher/profile.vue` | — | Working |
+| Profile View | `/profile/index.vue` (role-aware) | `teacher/useFacultyMember.ts` | Working |
 
 ### Admin Features
 
@@ -241,10 +347,10 @@ Features that have UI elements but are NOT fully functional.
 |---------|----------|-------------|----------------|
 | **Global Search** | `AppNavBar.vue` | Search bar with Ctrl+/ shortcut | No search logic, no results, purely cosmetic |
 | **Notifications** | `AppNavBar.vue` | Bell icon, badge, dropdown with items | Hardcoded sample data, no backend integration |
-| **Forgot Password** | `/auth/forget-password.vue` | Email + OTP form fields | OTP flow likely incomplete, needs backend verification |
+| **Forgot Password** | `/auth/forgot-password.vue` | Email + OTP form fields | OTP flow likely incomplete, needs backend verification |
 | **Teacher Announcements** | `dashboard/Announcements.vue` | Textarea for posting announcements | No submit handler, no backend call |
 | **Social Login (Google/Microsoft)** | `/auth/login.vue` | Buttons exist in code | Commented out, not connected |
-| **Admin Dashboard** | `/dashboard/admin.vue` | Page exists | Minimal implementation, no stats or widgets |
+| **Admin Dashboard** | `/dashboard/index.vue` (admin role) | Role-aware page renders admin view | Minimal implementation, no stats or widgets |
 | **PDF Resume Download** | `/profile/index.vue` | jsPDF + html2canvas logic | May have edge cases, dynamic import complexity |
 | **Event Filtering** | `/events.vue` | activeFilter ref, filter buttons | Filter may not be fully wired to API |
 | **404 Page Navigation** | `/error/404.vue` | goBack() function | Commented out |
@@ -302,140 +408,177 @@ Features that the backend supports or the project requires, but have NO frontend
 
 ## 9. Composables Reference
 
-### Core / Auth
+All composables live under `frontend/composables/` (plural) and are auto-imported
+by Nuxt 4. They are organised into 7 subfolders.
+
+### api/ — Core API layer
 | Composable | File | Purpose |
 |-----------|------|---------|
-| `useFrappeFetch` | `useFrappeFetch.ts` | API wrapper — `createResource()`, `createListResource()`, `createDocumentResource()`, `call()`, `auth.*` |
-| `useAuth` | `useAuth.js` | `login()`, `logout()` functions |
-| `useUserProfile` | `useUserProfile.js` | Global SSR-safe auth state — profile, role, isAuthenticated |
+| `useFrappeFetch` | `api/useFrappeFetch.ts` | API wrapper — `createResource()`, `createListResource()`, `call()`, `callMultipart()`, `auth.*`. Surfaces real Frappe errors from `_server_messages`. |
+| `parseFrappeError` | `api/parseFrappeError.ts` | Extracts human-readable message from Frappe error envelopes |
+| _(types)_ | `api/types.ts` | Shared API type definitions (`FrappeFetchError`, envelopes, etc.) |
 
-### Student
-| Composable | File | API Endpoint |
-|-----------|------|-------------|
-| `useAssignments` | `useAssignments.js` | `maxedu.api_folder.assignments.*` |
-| `useAttendance` | `useAttendance.js` | `maxedu.api_folder.attendance.get_attendance` |
-| `useAttendanceSummary` | `useAttendanceSummary.js` | `maxedu.api_folder.attendance.get_attendance_summary` |
-| `useExaminations` | `useExaminations.js` | `maxedu.api_folder.exam.*` |
-| `useAdmitCard` | `useAdmitCard.js` | — |
-| `useCourseTopics` | `useCourseTopics.js` | — |
-| `useStudent` | `useStudent.js` | — |
-| `useStudyMaterials` | `useStudyMaterials.js` | — |
-| `useTimetable` | `useTimetable.js` | — |
-| `useProfile` | `useProfile.js` | — |
-| `userDashboard` | `userDashboard.ts` | — |
-
-### Teacher
-| Composable | File | API Endpoint |
-|-----------|------|-------------|
-| `useTeacherDashboard` | `useTeacherDashboard.js` | `maxedu.api_folder.teacher_data.*` |
-| `useTeacherAssignments` | `useTeacherAssignments.js` | — |
-| `useTeacherClasses` | `useTeacherClasses.js` | `maxedu.api_folder.classes.get_my_schedule` |
-| `useTeacherExams` | `useTeacherExams.js` | `maxedu.api_folder.exam.get_teacher_exams` |
-| `useGreading` | `useGreading.js` | `maxedu.api_folder.grading.*` |
-
-### Library
-| Composable | File | API Endpoint |
-|-----------|------|-------------|
-| `useLibraryBooks` | `useLibraryBooks.js` | `maxedu.library_management.api.*` |
-| `useBorrowedBooks` | `useBorrowedBooks.js` | `maxedu.library_management.api.get_my_issues` |
-| `useBookRequest` | `useBookRequest.js` | `maxedu.library_management.api.request_book/cancel_request` |
-| `useLibraryMember` | `useLibraryMember.js` | — |
-
-### Shared
-| Composable | File | API Endpoint |
-|-----------|------|-------------|
-| `useNotices` | `useNotices.js` | `maxedu.desk_approval.doctype.application.application.*` |
-| `useEvents` | `useEvents.js` | `maxedu.api_folder.event.get_all_events` |
-| `useFacultyMember` | `useFacultyMember.js` | — |
-| `useHolidays` | `useHolidays.js` | — |
-| `useAllWorkFlow` | `useAllWorkFlow.js` | — |
-| `useLeaveApplication` | `useLeaveApplication.js` | — |
-
-### Utilities
+### auth/ — Authentication
 | Composable | File | Purpose |
 |-----------|------|---------|
-| `useToast` | `useToast.js` | Toast notification queue |
-| `usePdf` | `usePdf.js` | PDF generation (jsPDF + html2canvas) |
+| `useAuth` | `auth/useAuth.ts` | `login()`, `logout()` — wraps Frappe auth endpoints |
+
+### academics/ — Academic features
+| Composable | File | API Endpoint |
+|-----------|------|-------------|
+| `useAssignments` | `academics/useAssignments.ts` | `vidyaan.api_folder.assignments.*` |
+| `useAttendance` | `academics/useAttendance.ts` | `vidyaan.api_folder.attendance.*` |
+| `useCourseTopics` | `academics/useCourseTopics.ts` | `vidyaan.api_folder.subjects.*` |
+| `useEvents` | `academics/useEvents.ts` | `vidyaan.api_folder.event.get_all_events` |
+| `useExaminations` | `academics/useExaminations.ts` | `vidyaan.api_folder.exam.*` |
+| `useHolidays` | `academics/useHolidays.ts` | — |
+| `useNotices` | `academics/useNotices.ts` | `vidyaan.api_folder.notices.*` |
+| `useStudyMaterials` | `academics/useStudyMaterials.ts` | `vidyaan.api_folder.study_materials.*` |
+| `useTimetable` | `academics/useTimetable.ts` | `vidyaan.api_folder.schedule.*` |
+
+### library/ — Library management
+| Composable | File | API Endpoint |
+|-----------|------|-------------|
+| `useBookRequest` | `library/useBookRequest.ts` | `vidyaan.library.api.request_book/cancel_request` |
+| `useLibraryAdmin` | `library/useLibraryAdmin.ts` | `vidyaan.library.api.*` (admin ops) |
+| `useLibraryBooks` | `library/useLibraryBooks.ts` | `vidyaan.library.api.get_catalog/get_my_issues/get_my_requests` |
+
+### student/ — Student-specific
+| Composable | File | Purpose |
+|-----------|------|---------|
+| `useProfile` | `student/useProfile.ts` | Student profile data and photo upload |
+| `useStudent` | `student/useStudent.ts` | Student record helpers |
+| `useStudentDashboard` | `student/useStudentDashboard.ts` | Student dashboard stats |
+| `useUserProfile` | `student/useUserProfile.ts` | Global SSR-safe auth state — profile, role, isAuthenticated |
+
+### teacher/ — Teacher-specific
+| Composable | File | API Endpoint |
+|-----------|------|-------------|
+| `useFacultyMember` | `teacher/useFacultyMember.ts` | `vidyaan.api_folder.faculty.*` |
+| `useGrading` | `teacher/useGrading.ts` | `vidyaan.api_folder.teacher_grading.*` |
+| `useTeacherAssignments` | `teacher/useTeacherAssignments.ts` | `vidyaan.api_folder.assignments.*` (instructor ops) |
+| `useTeacherClasses` | `teacher/useTeacherClasses.ts` | `vidyaan.api_folder.teachers_classes.*` |
+| `useTeacherDashboard` | `teacher/useTeacherDashboard.ts` | `vidyaan.api_folder.teacher_data.*` |
+| `useTeacherExams` | `teacher/useTeacherExams.ts` | `vidyaan.api_folder.teacher_grading.*` |
+
+### ui/ — UI utilities
+| Composable | File | Purpose |
+|-----------|------|---------|
+| `useConfirm` | `ui/useConfirm.ts` | Global confirmation dialog — `confirm(message, options)` resolves a Promise; paired with `<ConfirmDialog>` in `app.vue` |
+| `usePdf` | `ui/usePdf.ts` | PDF generation (jsPDF + html2canvas) |
+| `useToast` | `ui/useToast.ts` | Toast notification queue |
 
 ---
 
 ## 10. Components Reference
 
 ### UI Primitives (`/components/ui/`)
-| Component | Purpose | Lines |
-|-----------|---------|-------|
-| `AppSideBar.vue` | Collapsible sidebar with role-based nav | ~374 |
-| `AppNavBar.vue` | Top bar — search, notifications, dark mode, profile | ~137 |
-| `DataTable.vue` | Reusable table with sort/filter | — |
-| `AppModal.vue` | Modal dialog v1 | — |
-| `AppModal2.vue` | Modal dialog v2 | — |
-| `HeroHeader.vue` | Page header with icon + search | — |
-| `StatCard.vue` | Statistics display card | — |
-| `UiCard.vue` | Generic card wrapper | — |
-| `UiSkeleton.vue` | Loading skeleton placeholder | — |
-| `UiStatusBadge.vue` | Status indicator badge | — |
-| `AppLoader.vue` | Loading spinner | — |
+| Component | Purpose |
+|-----------|---------|
+| `AppSideBar.vue` | Collapsible sidebar with role-based nav |
+| `AppNavBar.vue` | Top bar — search, notifications, dark mode, profile |
+| `AppModal.vue` | Modal dialog |
+| `ConfirmDialog.vue` | Global confirmation modal — mounted once in `app.vue`, driven by `useConfirm()` |
+| `HeroHeader.vue` | Page header with icon + search |
+| `StatCard.vue` | Statistics display card |
+| `UiAvatar.vue` | User avatar with fallback initials |
+| `UiBadge.vue` | Status/label badge |
+| `UiButton.vue` | Styled button with variants (primary, secondary, danger, ghost) |
+| `UiCard.vue` | Generic card wrapper |
+| `UiEmptyState.vue` | Empty state illustration + message |
+| `UiInput.vue` | Styled text input with label and error slot |
+| `UiSearchFilterBar.vue` | Combined search + filter bar |
+| `UiSelect.vue` | Styled select dropdown |
+| `UiSkeleton.vue` | Loading skeleton placeholder |
+| `UiTextarea.vue` | Styled multi-line text input |
+
+### Dashboard Components (`/components/dashboard/`)
+| Component | Purpose |
+|-----------|---------|
+| `StudentDashboardView.vue` | Student dashboard shell |
+| `TeacherDashboardView.vue` | Teacher dashboard shell |
+| `AdminDashboardView.vue` | Admin dashboard shell |
+| `student/AcademicCalendar.vue` | Academic calendar widget |
+| `student/Assignment.vue` | Assignment summary widget |
+| `student/Attendance.vue` | Attendance ring + stats widget |
+| `student/BookRecommendation.vue` | Book recommendation widget |
+| `student/CampusNotice.vue` | Latest notices widget |
+| `student/CurrentProgram.vue` | Enrolled program display |
+| `student/Event.vue` | Upcoming events widget |
+| `student/PaymentHistory.vue` | Fee payment history widget |
+| `student/StopWatch.vue` | Study timer widget |
+| `student/TodayClass.vue` | Today's class schedule widget |
+| `student/UpcomingExams.vue` | Upcoming exams widget |
+| `teacher/Announcements.vue` | Announcement post box (incomplete) |
+| `teacher/AttendanceCard.vue` | Attendance summary card |
+| `teacher/DailyRoutine.vue` | Teacher daily schedule widget |
+| `teacher/GradingQueue.vue` | Assignments pending grading |
+| `teacher/TeacherDashboardPendingTasks.vue` | Pending task list |
+
+### Profile Components (`/components/profile/`)
+| Component | Purpose |
+|-----------|---------|
+| `ProfileForm.vue` | Shared profile edit form |
+| `StudentProfileView.vue` | Student profile layout with tabs |
+| `TeacherProfileView.vue` | Teacher profile layout |
 
 ### Feature Components
 | Component | Purpose |
 |-----------|---------|
-| `BookCard.vue` | Library book display card |
-| `BookRecommendation.vue` | Recommendation item |
-| `StudyMaterialModal.vue` | Add/edit study material (large — 13K+ lines) |
+| `StudyMaterialModal.vue` | Add/edit study material |
+| `MaterialDetailsModal.vue` | View material details |
+| `TopicMaterialsModal.vue` | Materials list under a topic |
 | `ToastContainer.vue` | Toast notification renderer |
 | `applications/NewRequestModal.vue` | Create application/leave request |
-| `dashboard/DailyRoutine.vue` | Teacher daily schedule widget |
-| `dashboard/TeacherDashboardPendingTasks.vue` | Pending task list |
-| `dashboard/Announcements.vue` | Announcement post box (incomplete) |
-| `dashboard/academicCalendar.vue` | Calendar widget |
-| `dashboard/campusNotice.vue` | Notice sidebar widget |
-| `profile/ProfileForm.vue` | Profile edit form |
 
 ---
 
 ## 11. API Integration
 
-### API Wrapper (`useFrappeFetch.ts`)
+### API Wrapper (`composables/api/useFrappeFetch.ts`)
 
 ```
-createResource(options)       → POST /api/method/{method} with params
-createListResource(doctype)   → GET /api/resource/{doctype} with filters
-createDocumentResource(dt, n) → GET /api/resource/{doctype}/{name}
-call(method, params)          → POST /api/method/{method}
-auth.login(email, password)   → POST /api/method/login
-auth.logout()                 → POST /api/method/logout
-auth.getLoggedUser()          → GET /api/method/frappe.auth.get_logged_user
+createResource(options)         → POST /api/method/{method} with params
+createListResource(doctype)     → GET /api/resource/{doctype} with filters
+createDocumentResource(dt, n)   → GET /api/resource/{doctype}/{name}
+call<T>(method, params)         → POST /api/method/{method}
+callMultipart<T>(method, file)  → POST /api/method/{method} (multipart/form-data)
+auth.login(email, password)     → POST /api/method/login
+auth.logout()                   → POST /api/method/logout
+auth.getLoggedUser()            → GET /api/method/frappe.auth.get_logged_user
 ```
+
+**Error extraction:** `parseFrappeError.ts` pulls real messages out of Frappe's
+`_server_messages` JSON envelope so the UI shows the actual validation message
+instead of a generic HTTP error.
 
 ### All Backend Endpoints Currently Used
 
 | Endpoint | Called From | Purpose |
 |----------|-----------|---------|
-| `maxedu.api_folder.profile.get_user_info` | useUserProfile | Load auth profile |
-| `maxedu.api_folder.assignments.get_assignments` | useAssignments | Student assignments |
-| `maxedu.api_folder.assignments.submit_assignment` | useAssignments | Submit with file |
-| `maxedu.api_folder.attendance.get_attendance` | useAttendance | Calendar data |
-| `maxedu.api_folder.attendance.get_attendance_summary` | useAttendanceSummary | Stats |
-| `maxedu.api_folder.exam.get_exams` | useExaminations | Exam schedule |
-| `maxedu.api_folder.exam.get_results` | useExaminations | Results |
-| `maxedu.api_folder.exam.get_teacher_exams` | useTeacherExams | Teacher exams |
-| `maxedu.api_folder.teacher_data.get_my_profile` | useTeacherDashboard | Teacher info |
-| `maxedu.api_folder.teacher_data.get_teacher_pending_tasks` | useTeacherDashboard | Pending tasks |
-| `maxedu.api_folder.classes.get_my_schedule` | useTeacherClasses | Schedule |
-| `maxedu.api_folder.grading.get_plan_details` | useGreading | Grading plan |
-| `maxedu.api_folder.grading.save_marks` | useGreading | Save marks |
-| `maxedu.api_folder.event.get_all_events` | useEvents | Events |
-| `maxedu.library_management.api.get_catalog` | useLibraryBooks | All books |
-| `maxedu.library_management.api.get_my_issues` | useBorrowedBooks | Borrowed books |
-| `maxedu.library_management.api.get_my_requests` | useLibraryBooks | Requests |
-| `maxedu.library_management.api.get_book_recommendations` | useLibraryBooks | Recommendations |
-| `maxedu.library_management.api.request_book` | useBookRequest | Request book |
-| `maxedu.library_management.api.cancel_request` | useBookRequest | Cancel request |
-| `maxedu.desk_approval.doctype.application.application.get_approved_notices` | useNotices | Notices |
-| `maxedu.desk_approval.doctype.application.application.get_notice` | useNotices | Notice detail |
-| `/api/method/upload_file` | useAssignments | File upload |
-
-> **Migration needed:** All `maxedu.*` endpoints should be migrated to `vidyaan.*` or native Frappe resource API.
+| `vidyaan.api_folder.profile.get_user_info` | useUserProfile | Load auth profile |
+| `vidyaan.api_folder.assignments.get_student_assignments` | useAssignments | Student assignments |
+| `vidyaan.api_folder.assignments.submit_student_assignment` | useAssignments | Submit with file |
+| `vidyaan.api_folder.attendance.get_attendance` | useAttendance | Calendar data |
+| `vidyaan.api_folder.attendance.get_attendance_summary` | useAttendance | Stats |
+| `vidyaan.api_folder.exam.get_exams` | useExaminations | Exam schedule |
+| `vidyaan.api_folder.exam.get_results` | useExaminations | Results |
+| `vidyaan.api_folder.teacher_grading.get_my_exams` | useTeacherExams | Teacher exams |
+| `vidyaan.api_folder.teacher_data.get_my_profile` | useTeacherDashboard | Teacher info |
+| `vidyaan.api_folder.teacher_data.get_teacher_pending_tasks` | useTeacherDashboard | Pending tasks |
+| `vidyaan.api_folder.teachers_classes.get_my_classes` | useTeacherClasses | Schedule |
+| `vidyaan.api_folder.teacher_grading.get_exam_students` | useGrading | Grading plan |
+| `vidyaan.api_folder.teacher_grading.submit_exam_results` | useGrading | Save marks |
+| `vidyaan.api_folder.event.get_all_events` | useEvents | Events |
+| `vidyaan.library.api.get_catalog` | useLibraryBooks | All books |
+| `vidyaan.library.api.get_my_issues` | useLibraryBooks | Borrowed books |
+| `vidyaan.library.api.get_my_requests` | useLibraryBooks | Requests |
+| `vidyaan.library.api.get_book_recommendations` | useLibraryBooks | Recommendations |
+| `vidyaan.library.api.request_book` | useBookRequest | Request book |
+| `vidyaan.library.api.cancel_request` | useBookRequest | Cancel request |
+| `vidyaan.api_folder.notices.get_approved_notices` | useNotices | Notices |
+| `vidyaan.api_folder.notices.get_notice` | useNotices | Notice detail |
+| `/api/method/upload_file` | useAssignments | File upload (Frappe core multipart) |
 
 ---
 
@@ -444,24 +587,18 @@ auth.getLoggedUser()          → GET /api/method/frappe.auth.get_logged_user
 ### Critical
 | Issue | Description |
 |-------|-------------|
-| **Wrong branding** | All UI says "MaxEdu ERP" — must be "Vidyaan" |
-| **Legacy API endpoints** | All composables call `maxedu.api_folder.*` which is the old module name |
-| **Old role names** | Middleware checks for `student`/`teacher` — Vidyaan uses `Student`/`Instructor`/`Institute Admin` |
-| **No Institute Admin routes** | No pages or dashboard for Institute Admin role |
+| **Wrong branding** | Some UI text still says "MaxEdu ERP" — should be "Vidyaan" |
+| **No Institute Admin routes** | No dedicated pages or dashboard for Institute Admin role |
 | **No System Admin routes** | No SaaS admin dashboard |
 
 ### Medium
 | Issue | Description |
 |-------|-------------|
-| **21 console.log statements** | Debug logging left in production code |
 | **Hardcoded notification data** | Navbar notifications are fake/sample data |
 | **Global search not functional** | Search bar is cosmetic only |
 | **Announcements can't be posted** | No submit handler in Announcements component |
 | **Social login commented out** | Google/Microsoft buttons disabled |
-| **StudyMaterialModal is 13K+ lines** | Should be broken into sub-components |
-| **useBookRequest is 8200+ lines** | Overly complex, needs refactoring |
-| **Duplicate modal components** | AppModal.vue and AppModal2.vue — consolidate |
-| **Typo in folder name** | `components/dashbaord/` should be `dashboard/` |
+| **StudyMaterialModal is large** | Should be broken into sub-components |
 
 ### Low
 | Issue | Description |
@@ -478,11 +615,9 @@ auth.getLoggedUser()          → GET /api/method/frappe.auth.get_logged_user
 
 | # | Task | Effort | Files Affected |
 |---|------|--------|---------------|
-| 1.1 | Rebrand MaxEdu → Vidyaan everywhere | Low | nuxt.config.ts, login.vue, AppSideBar.vue, all page titles |
-| 1.2 | Migrate API endpoints from `maxedu.*` to `vidyaan.*` | Medium | All 31 composables |
-| 1.3 | Update role detection in middleware | Low | role-based.global.js, useUserProfile.js |
-| 1.4 | Remove all console.log statements | Low | ~15 files |
-| 1.5 | Fix folder typo `dashbaord` → `dashboard` | Low | Components + imports |
+| 1.1 | Complete Vidyaan branding (remaining UI text) | Low | login.vue, AppSideBar.vue, page titles |
+| 1.2 | Implement Institute Admin dashboard | High | New pages under `/admin/` |
+| 1.3 | Implement System Administrator dashboard | High | New pages + role route group |
 
 ### Phase 2 — Missing Dashboards & Admin
 
@@ -532,14 +667,14 @@ auth.getLoggedUser()          → GET /api/method/frappe.auth.get_logged_user
 | Category | Count |
 |----------|-------|
 | Implemented features (functional) | **33** |
-| Incomplete / placeholder features | **9** |
+| Incomplete / placeholder features | **8** |
 | Not yet built (backend ready) | **6** |
 | Not yet built (needs backend + frontend) | **12** |
-| Composables | **31** |
-| Components | **22** |
-| Pages/Routes | **~31** |
-| Known issues / tech debt items | **14** |
+| Composables | **29** |
+| Components | **~41** |
+| Pages/Routes | **~50** |
+| Known issues / tech debt items | **8** |
 
 ---
 
-*Last updated: 2026-04-01*
+*Last updated: 2026-04-08*

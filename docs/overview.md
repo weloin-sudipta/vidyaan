@@ -103,18 +103,31 @@ apps/vidyaan/
 │
 ├── frontend/                             # Nuxt 4 Student/Teacher Portal
 │   ├── pages/                            # Auto-routed pages
-│   │   ├── dashboard/                    # Role-specific dashboards
-│   │   ├── academics/                    # Subjects, timetable, materials
+│   │   ├── dashboard/index.vue           # Role-aware unified dashboard
+│   │   ├── academics/                    # Subjects, timetable, materials, attendance
 │   │   ├── teacher/                      # Teacher modules
 │   │   ├── admin/                        # Admin modules
 │   │   ├── exam/                         # Assessment pages
 │   │   ├── library/                      # Library management
 │   │   ├── notices/                      # Publications
-│   │   └── profile/                      # User profile
+│   │   └── profile/                      # Role-aware profile
 │   ├── components/                       # Reusable Vue components
-│   ├── composable/                       # Vue 3 composables (API logic)
-│   ├── middleware/                        # Auth & role-based route guards
-│   ├── layouts/                          # Page layouts
+│   │   ├── ui/                           # 16 UI primitives incl. UiButton, UiInput, ConfirmDialog
+│   │   ├── dashboard/student/            # Student dashboard widgets (PascalCase)
+│   │   └── dashboard/teacher/           # Teacher dashboard widgets
+│   ├── composables/                      # Vue 3 composables (29 files in 7 subfolders)
+│   │   ├── api/                          # Core fetch layer + error parsing
+│   │   ├── auth/                         # useAuth
+│   │   ├── academics/                    # 9 academic composables
+│   │   ├── library/                      # 3 library composables
+│   │   ├── student/                      # 4 student composables
+│   │   ├── teacher/                      # 6 teacher composables
+│   │   └── ui/                           # useConfirm, usePdf, useToast
+│   ├── middleware/                        # Auth & role-based route guards (TypeScript)
+│   ├── layouts/
+│   │   ├── default.vue                   # Authenticated layout
+│   │   └── auth.vue                      # Login/auth layout
+│   ├── utils/pdf-templates/              # Jinja/HTML templates for PDF generation
 │   └── nuxt.config.ts                    # Nuxt configuration
 │
 └── docs/                                 # Documentation (you are here)

@@ -45,24 +45,22 @@ Each item includes:
 
 ### FE-002: Migrate API endpoints
 - **Priority:** High | **Effort:** M
-- **Status:** Todo
-- **Problem:** Composables reference old `maxedu.api_folder` endpoints that don't exist.
-- **Approach:** Refactor all composables to use native Frappe API patterns (`/api/resource/`, `/api/method/`).
-- **Files:** All files under `frontend/composable/`
+- **Status:** Done (composables now call `vidyaan.api_folder.*`)
+- **Problem:** Composables previously referenced old `maxedu.api_folder` endpoints.
+- **Files:** All files under `frontend/composables/`
 
 ### FE-003: Update role detection in middleware
 - **Priority:** High | **Effort:** S
-- **Status:** Todo
-- **Problem:** Middleware checks for old role names.
-- **Approach:** Update `auth.global.js` and `role-based.global.js` to use: System Administrator, Institute Admin, Instructor, Student.
-- **Files:** `frontend/middleware/`
+- **Status:** Done (middleware now TypeScript)
+- **Problem:** Middleware previously checked for old role names.
+- **Files:** `frontend/middleware/auth.global.ts`, `frontend/middleware/role-based.global.ts`
 
 ### FE-004: Build Institute Admin dashboard
 - **Priority:** High | **Effort:** L
 - **Status:** Todo
 - **Problem:** No admin dashboard in frontend — only Desk workspace exists.
-- **Approach:** Create `/dashboard/admin.vue` with stat cards (students, teachers, programs), quick actions (generate routine, admit student), upcoming exams, recent publications. All API calls Company-scoped.
-- **Files:** `frontend/pages/dashboard/admin.vue`, new composable `useAdminDashboard.js`
+- **Approach:** Build the admin view within `/dashboard/index.vue` (role-aware) with stat cards (students, teachers, programs), quick actions (generate routine, admit student), upcoming exams, recent publications. All API calls Company-scoped.
+- **Files:** `frontend/pages/dashboard/index.vue` (admin branch), new composable `frontend/composables/student/useAdminDashboard.ts`
 
 ---
 
@@ -93,16 +91,16 @@ Each item includes:
 
 ### ENH-003: Instructor dashboard
 - **Priority:** Medium | **Effort:** L
-- **Status:** Todo
-- **Approach:** Page at `/dashboard/teacher.vue`:
+- **Status:** Partial (basic structure exists in `/dashboard/index.vue` teacher branch)
+- **Approach:** Enhance the teacher view of `/dashboard/index.vue`:
   - Today's schedule from Course Schedule (filtered by instructor + today's date)
   - Grading queue: Assessment Plans where instructor is examiner, results not yet submitted
   - Recent publications/announcements
 
 ### ENH-004: Student dashboard
 - **Priority:** Medium | **Effort:** L
-- **Status:** Todo
-- **Approach:** Page at `/dashboard/student.vue`:
+- **Status:** Partial (basic structure exists in `/dashboard/index.vue` student branch)
+- **Approach:** Enhance the student view of `/dashboard/index.vue`:
   - Personal timetable from Course Schedule (via Student Group membership)
   - Attendance summary (present/absent/leave counts)
   - Upcoming exams from Assessment Plans

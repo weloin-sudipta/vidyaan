@@ -4,7 +4,7 @@
 Notice/announcement management composable handling creation, approval, distribution, and tracking of school notices.
 
 ## Location
-`frontend/composable/useNotices.js`
+`frontend/composables/academics/useNotices.ts`
 
 ## State Management
 

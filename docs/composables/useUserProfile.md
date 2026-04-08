@@ -4,7 +4,7 @@
 User profile management composable handling profile data retrieval, updates, and avatar management for authenticated users.
 
 ## Location
-`frontend/composable/useUserProfile.js`
+`frontend/composables/student/useUserProfile.ts`
 
 ## State Management
 

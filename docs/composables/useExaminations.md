@@ -4,7 +4,7 @@
 Examination management composable handling exam creation, scheduling, result management, and grading workflows.
 
 ## Location
-`frontend/composable/useExaminations.js`
+`frontend/composables/academics/useExaminations.ts`
 
 ## State Management
 

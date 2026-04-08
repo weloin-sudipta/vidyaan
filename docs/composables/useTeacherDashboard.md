@@ -4,7 +4,7 @@
 Teacher dashboard composable providing comprehensive dashboard data, statistics, and quick actions for teachers.
 
 ## Location
-`frontend/composable/useTeacherDashboard.js`
+`frontend/composables/teacher/useTeacherDashboard.ts`
 
 ## State Management
 

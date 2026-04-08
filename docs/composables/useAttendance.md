@@ -4,7 +4,7 @@
 Attendance management composable handling student attendance marking, tracking, and reporting for teachers and students.
 
 ## Location
-`frontend/composable/useAttendance.js`
+`frontend/composables/academics/useAttendance.ts`
 
 ## State Management
 

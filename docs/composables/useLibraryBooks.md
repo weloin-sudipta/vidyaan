@@ -4,7 +4,7 @@
 Library book management composable handling book catalog, borrowing, returning, and library administration.
 
 ## Location
-`frontend/composable/useLibraryBooks.js`
+`frontend/composables/library/useLibraryBooks.ts`
 
 ## State Management
 
