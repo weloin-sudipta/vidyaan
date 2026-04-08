@@ -9,8 +9,6 @@
 import { shallowRef, onMounted, defineAsyncComponent } from 'vue'
 import { useUserProfile } from '~/composables/student/useUserProfile'
 
-definePageMeta({ middleware: 'auth' })
-
 const { userRole, isAuthenticated, loadProfile } = useUserProfile()
 
 const profileComponent = shallowRef<object | null>(null)

@@ -15,7 +15,7 @@ export function parseFrappeError(err: unknown, fallback: string): string {
   if (serverMsgs) {
     try {
       const parsed = JSON.parse(serverMsgs) as string[]
-      const first = JSON.parse(parsed[0]) as { message?: string }
+      const first = JSON.parse(parsed[0] ?? '') as { message?: string }
       if (first?.message) return first.message
     } catch {
       /* ignore parse failures, fall through */

@@ -68,7 +68,7 @@ export function useTimetable(): UseTimetableReturn {
   function setToday(): void {
     const today = new Date().getDay()
     const index = today === 0 ? 6 : today - 1
-    activeDay.value = weekDays[index]
+    activeDay.value = weekDays[index] ?? 'Monday'
   }
   onMounted(() => {
     setToday()
@@ -116,7 +116,7 @@ export function useTimetable(): UseTimetableReturn {
         // If current day has no classes, default to first day that does
         if (
           !timetableData.value[activeDay.value] ||
-          timetableData.value[activeDay.value].length === 0
+          (timetableData.value[activeDay.value]?.length ?? 0) === 0
         ) {
           const firstDayWithClasses = weekDays.find(
             d => timetableData.value[d] && timetableData.value[d].length > 0

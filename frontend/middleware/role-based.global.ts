@@ -17,13 +17,13 @@ export default defineNuxtRouteMiddleware(async (to, from) => {
   if (!isAuthenticated.value) return
 
 
-  const role = userRole.value?.toLowerCase()
-  
+  const role = userRole.value?.toLowerCase() ?? ''
+
   // Shared routes accessible by all roles
   const sharedPrefixes = ['/notices', '/events', '/library', '/login', '/dashboard']
 
   // Rules definition
-  const roleAccess = {
+  const roleAccess: Record<string, { allowedPrefixes: string[] }> = {
     teacher: {
       allowedPrefixes: ['/teacher', '/profile', '/notices', '/events'],
     },

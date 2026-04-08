@@ -1,7 +1,7 @@
 import { ref, type Ref } from 'vue'
 import { createResource, type FrappeParams } from '~/composables/api/useFrappeFetch'
 import { useToast } from '~/composables/ui/useToast'
-import { parseFrappeError } from './utils/parseFrappeError'
+import { parseFrappeError } from '~/composables/api/parseFrappeError'
 
 // ─── Local shapes ─────────────────────────────────────────────────────────
 export interface LibraryStats {

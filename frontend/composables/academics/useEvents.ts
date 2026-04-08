@@ -82,7 +82,7 @@ export const useEvents = (): UseEventsReturn => {
     General: 'bg-slate-50 text-slate-600 border-slate-100',
   }
 
-  const getCategoryStyle = (tag: string): string => categoryStyles[tag] || categoryStyles.General
+  const getCategoryStyle = (tag: string): string => categoryStyles[tag] || categoryStyles['General'] || 'bg-slate-50 text-slate-600 border-slate-100'
 
   const getEventStatus = (dateStr?: string): EventStatus => {
     if (!dateStr) return 'General'

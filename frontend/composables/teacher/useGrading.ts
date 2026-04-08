@@ -194,13 +194,14 @@ export const useGrading = (): UseGradingReturn => {
       // Patch the local row from the server response (avoids full refetch)
       if (res?.success && res.result) {
         const idx = students.value.findIndex(s => s.student === student.student)
-        if (idx !== -1) {
+        const existing = students.value[idx]
+        if (idx !== -1 && existing) {
           students.value[idx] = {
-            ...students.value[idx],
+            ...existing,
             result_id: res.result.result_id,
             grade: res.result.grade,
             docstatus: res.result.docstatus,
-            score: res.result.total_score ?? students.value[idx].score,
+            score: res.result.total_score ?? existing.score,
           }
         }
       } else if (res && !res.success) {

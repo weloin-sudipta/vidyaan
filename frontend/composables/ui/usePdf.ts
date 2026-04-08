@@ -16,7 +16,7 @@
  */
 
 import { ref, type Ref } from 'vue'
-import { parseFrappeError } from './utils/parseFrappeError'
+import { parseFrappeError } from '~/composables/api/parseFrappeError'
 import type { PdfGenerationResult } from '~/composables/api/types'
 
 export interface PdfTemplateOptions {
