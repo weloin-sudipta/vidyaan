@@ -77,8 +77,8 @@
 import { ref, computed, onMounted } from 'vue'
 import DailyRoutine from '~/components/dashboard/teacher/DailyRoutine.vue'
 import TeacherDashboardPendingTasks from '~/components/dashboard/teacher/TeacherDashboardPendingTasks.vue'
-import AcademicCalendar from '~/components/dashbaord/academicCalendar.vue'
-import CampusNotice from '~/components/dashbaord/campusNotice.vue'
+import AcademicCalendar from '~/components/dashboard/student/AcademicCalendar.vue'
+import CampusNotice from '~/components/dashboard/student/CampusNotice.vue'
 import { useTeacherClasses } from '~/composables/useTeacherClasses'
 import { useNotices } from '~/composables/useNotices'
 
