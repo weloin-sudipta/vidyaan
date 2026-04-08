@@ -63,6 +63,25 @@ def _get_doc_workflow_state(doc):
 	return "Approved" if doc.docstatus == 1 else ("Cancelled" if doc.docstatus == 2 else "Draft")
 
 
+def _get_allowed_workflow_states(doctype):
+    """Return distinct source workflow states where the current user has an allowed transition."""
+    workflow_name = get_workflow_name(doctype)
+    if not workflow_name:
+        return []
+
+    workflow = frappe.get_cached_doc("Workflow", workflow_name)
+    if not workflow.is_active:
+        return []
+
+    user_roles = set(frappe.get_roles())  # set for O(1) lookup
+
+    return list({
+        transition.state
+        for transition in workflow.transitions
+        if transition.allowed in user_roles
+    })
+
+
 # ─── APIs ─────────────────────────────────────────────────────────────────────
 
 
@@ -253,10 +272,13 @@ def get_application_detail(doctype, name):
 
 
 @frappe.whitelist()
-def submit_noc(noc_type, purpose, effective_date=None, destination=None):
+def submit_noc(noc_type, purpose, effective_date=None, destination=None, supporting_document=None):
 	student = _get_student_for_user()
 	if not student:
 		frappe.throw("You are not registered as a student.")
+
+	# Auto-fetch the program from Program Enrollment
+	program = frappe.db.get_value("Program Enrollment", {"student": student, "docstatus": 1}, "program", order_by="creation desc")
 
 	doc = frappe.get_doc({
 		"doctype": "Student NOC",
@@ -265,14 +287,28 @@ def submit_noc(noc_type, purpose, effective_date=None, destination=None):
 		"purpose": purpose,
 		"effective_date": effective_date or None,
 		"destination": destination or None,
+		"supporting_document": supporting_document or None,
+		"program": program or None,
 	})
 	doc.insert(ignore_permissions=True)
 	try:
-		if not get_workflow_name("Student NOC"):
+		if get_workflow_name("Student NOC"):
+			from frappe.model.workflow import apply_workflow
+			apply_workflow(doc, "Submit")
+		else:
 			doc.submit()
-	except Exception:
+	except Exception as e:
+		frappe.log_error(title="Submit NOC Error", message=str(e))
 		pass  # Submit may fail if workflow requires approval
-	return {"success": True, "name": doc.name}
+	return {"success": True, "name": doc.name, "program": program}
+
+
+@frappe.whitelist()
+def get_student_program():
+	student = _get_student_for_user()
+	if not student:
+		return None
+	return frappe.db.get_value("Program Enrollment", {"student": student, "docstatus": 1}, "program", order_by="creation desc")
 
 
 @frappe.whitelist()
@@ -433,37 +469,77 @@ def submit_leave(from_date, to_date, reason=None, attendance_based_on="Student G
 # ─── Teacher APIs ─────────────────────────────────────────────────────────────
 
 @frappe.whitelist()
-def get_teacher_pending_leaves():
-	"""Fetch all leave applications pending teacher approval for the current instructor."""
+def get_teacher_pending_applications():
+	"""Fetch all applications (Leaves and NOCs) pending teacher approval for the current instructor."""
 	from vidyaan.api_folder.profile import _get_instructor_for_user
 	instructor = _get_instructor_for_user()
 	if not instructor:
 		frappe.throw("You are not registered as an Instructor.")
 		
-	# In a real system, you would filter by the instructor's associated modules/classes.
-	# Here we fetch all "Pending Teacher Approval" applications as requested.
+	# Get instructor's student groups
+	assigned_groups = frappe.get_all(
+		"Student Group Instructor",
+		filters={"instructor": instructor.name},
+		pluck="parent",
+		ignore_permissions=True
+	)
+	
+	# Also include groups from Course Schedule if applicable
+	schedule_groups = frappe.get_all(
+		"Course Schedule",
+		filters={"instructor": instructor.name},
+		pluck="student_group",
+		distinct=True,
+		ignore_permissions=True
+	)
+	
+	all_groups = list(set(assigned_groups + schedule_groups))
+	
+	if not all_groups:
+		return []
+		
+	# Get all students in these groups
+	students = frappe.get_all(
+		"Student Group Student",
+		filters={"parent": ["in", all_groups], "active": 1},
+		pluck="student",
+		ignore_permissions=True
+	)
+	
+	if not students:
+		return []
+
+	enhanced_apps = []
+
+	# Leaves
+	leave_states = _get_allowed_workflow_states("Student Leave Application")
+	leave_filters = {
+		"docstatus": 0,
+		"student": ["in", students]
+	}
+	if leave_states:
+		leave_filters["workflow_state"] = ["in", leave_states]
+	else:
+		leave_filters["workflow_state"] = "Pending Teacher Approval"
+
 	leaves = frappe.get_all(
 		"Student Leave Application",
-		filters={"workflow_state": "Pending Teacher Approval", "docstatus": 0},
+		filters=leave_filters,
 		fields=["name", "student", "student_name", "from_date", "to_date", "reason", "total_leave_days", "attendance_based_on", "student_group", "course_schedule", "creation"],
 		order_by="creation desc",
 		ignore_permissions=True
 	)
-	
-	# Enhance with student info and student group details
-	enhanced_leaves = []
 	for leave in leaves:
-		# Get student group students info
 		sg_info = ""
 		if leave.attendance_based_on == "Student Group" and leave.student_group:
 			sg_info = leave.student_group
 		elif leave.course_schedule:
-			# Get course schedule info (student_group, course)
 			cs = frappe.db.get_value("Course Schedule", leave.course_schedule, ["student_group", "course"])
 			if cs:
 				sg_info = f"{cs[0]} ({cs[1]})"
 		
-		enhanced_leaves.append({
+		enhanced_apps.append({
+			"app_type": "Leave",
 			"name": leave.name,
 			"student": leave.student,
 			"student_name": leave.student_name,
@@ -472,39 +548,122 @@ def get_teacher_pending_leaves():
 			"date_range": f"{leave.from_date} to {leave.to_date}",
 			"reason": leave.reason,
 			"total_leave_days": leave.total_leave_days,
-			"attendance_based_on": leave.attendance_based_on,
-			"student_group": leave.student_group,
-			"course_schedule": leave.course_schedule,
 			"group_info": sg_info,
 			"creation": str(leave.creation)
 		})
+
+	# NOCs
+	if frappe.db.exists("DocType", "Student NOC"):
+		noc_states = _get_allowed_workflow_states("Student NOC")
+		noc_filters = {
+			"docstatus": 0,
+			"student": ["in", students]
+		}
+		if noc_states:
+			noc_filters["workflow_state"] = ["in", noc_states]
+		else:
+			noc_filters["workflow_state"] = ["in", ["Pending Review", "Pending Teacher Approval"]]
+
+		nocs = frappe.get_all(
+			"Student NOC",
+			filters=noc_filters,
+			fields=["name", "student", "student_name", "noc_type", "purpose", "application_date", "creation", "program", "supporting_document"],
+			order_by="creation desc",
+			ignore_permissions=True
+		)
+		
+		for noc in nocs:
+			enhanced_apps.append({
+				"app_type": "NOC",
+				"name": noc.name,
+				"student": noc.student,
+				"student_name": noc.student_name,
+				"date_range": str(noc.application_date),
+				"reason": noc.purpose,
+				"noc_type": noc.noc_type,
+				"group_info": noc.program or "N/A",
+				"supporting_document": noc.supporting_document,
+				"creation": str(noc.creation)
+			})
 	
-	return enhanced_leaves
+	# Sort combined by creation
+	enhanced_apps.sort(key=lambda x: x.get("creation", ""), reverse=True)
+	
+	return enhanced_apps
 
 
 @frappe.whitelist()
 def get_teacher_leave_statistics():
-	"""Get leave approval statistics for teacher dashboard."""
+	"""Get application approval statistics for teacher dashboard."""
 	from vidyaan.api_folder.profile import _get_instructor_for_user
 	instructor = _get_instructor_for_user()
 	if not instructor:
 		frappe.throw("You are not registered as an Instructor.")
 	
+	# Get instructor's student groups and students
+	assigned_groups = frappe.get_all(
+		"Student Group Instructor",
+		filters={"instructor": instructor.name},
+		pluck="parent",
+		ignore_permissions=True
+	)
+	schedule_groups = frappe.get_all(
+		"Course Schedule",
+		filters={"instructor": instructor.name},
+		pluck="student_group",
+		distinct=True,
+		ignore_permissions=True
+	)
+	all_groups = list(set(assigned_groups + schedule_groups))
+	
+	students = []
+	if all_groups:
+		students = frappe.get_all(
+			"Student Group Student",
+			filters={"parent": ["in", all_groups], "active": 1},
+			pluck="student",
+			ignore_permissions=True
+		)
+
+	if not students:
+		return {"pending": 0, "approved": 0, "rejected": 0, "total": 0}
+
+	# Leaves
 	total_pending = frappe.db.count(
 		"Student Leave Application",
-		filters={"workflow_state": "Pending Teacher Approval", "docstatus": 0}
+		filters={"workflow_state": "Pending Teacher Approval", "docstatus": 0, "student": ["in", students]}
 	)
-	
 	total_approved = frappe.db.count(
 		"Student Leave Application",
-		filters={"workflow_state": ["in", ["Pending Admin Approval", "Approved"]], "docstatus": 1}
+		filters={"workflow_state": ["in", ["Pending Admin Approval", "Approved"]], "docstatus": 1, "student": ["in", students]}
 	)
-	
 	total_rejected = frappe.db.count(
 		"Student Leave Application",
-		filters={"workflow_state": "Rejected"}
+		filters={"workflow_state": "Rejected", "student": ["in", students]}
 	)
-	
+
+	# NOCs
+	if frappe.db.exists("DocType", "Student NOC"):
+		noc_states = _get_allowed_workflow_states("Student NOC")
+		if noc_states:
+			total_pending += frappe.db.count(
+				"Student NOC",
+				filters={"workflow_state": ["in", noc_states], "docstatus": 0, "student": ["in", students]}
+			)
+		else:
+			total_pending += frappe.db.count(
+				"Student NOC",
+				filters={"workflow_state": ["in", ["Pending Review", "Pending Teacher Approval"]], "docstatus": 0, "student": ["in", students]}
+			)
+		total_approved += frappe.db.count(
+			"Student NOC",
+			filters={"workflow_state": ["in", ["Pending Admin Approval", "Approved"]], "docstatus": 1, "student": ["in", students]}
+		)
+		total_rejected += frappe.db.count(
+			"Student NOC",
+			filters={"workflow_state": "Rejected", "student": ["in", students]}
+		)
+
 	return {
 		"pending": total_pending,
 		"approved": total_approved,
@@ -512,27 +671,57 @@ def get_teacher_leave_statistics():
 		"total": total_pending + total_approved + total_rejected
 	}
 
-@frappe.whitelist()
-def review_leave_application(name, action):
-	"""Teacher action to approve or reject a pending leave application."""
-	from vidyaan.api_folder.profile import _get_instructor_for_user
-	if not _get_instructor_for_user():
-		frappe.throw("You must be an instructor to perform this action")
+# @frappe.whitelist()
+# def review_application(name, action, app_type="Leave"):
+# 	"""Teacher action to approve or reject a pending leave or noc application."""
+# 	from vidyaan.api_folder.profile import _get_instructor_for_user
+# 	if not _get_instructor_for_user():
+# 		frappe.throw("You must be an instructor to perform this action")
 		
-	if action not in ["Approve", "Reject"]:
-		frappe.throw("Invalid action. Must be Approve or Reject")
-		
-	doc = frappe.get_doc("Student Leave Application", name)
-	if doc.workflow_state != "Pending Teacher Approval":
-		frappe.throw("Application is not in a pending state")
-		
-	# Change workflow state depending on transition configuration
-	if action == "Approve":
-		doc.workflow_state = "Pending Admin Approval"
-	else:
-		doc.workflow_state = "Rejected"
-		
-	# Simulate workflow transition via code
-	doc.save(ignore_permissions=True)
+# 	if action not in ["Approve", "Reject"]:
+# 		frappe.throw("Invalid action. Must be Approve or Reject")
 	
-	return {"success": True, "state": doc.workflow_state}
+# 	doctype = "Student Leave Application" if app_type == "Leave" else "Student NOC"
+# 	allowed_states = _get_allowed_workflow_states(doctype)
+# 	if allowed_states:
+# 		if frappe.get_value(doctype, name, "workflow_state") not in allowed_states:
+# 			frappe.throw("Application is not in a state you can review")
+# 	else:
+# 		if frappe.get_value(doctype, name, "workflow_state") != "Pending Teacher Approval":
+# 			frappe.throw("Application is not in a pending state")
+		
+# 	doc = frappe.get_doc(doctype, name)
+# 	# Change workflow state depending on transition configuration
+# 	if action == "Approve":
+# 		doc.workflow_state = "Pending Admin Approval"
+# 	else:
+# 		doc.workflow_state = "Rejected"
+		
+# 	# Simulate workflow transition via code
+# 	doc.save(ignore_permissions=True)
+	
+# 	return {"success": True, "state": doc.workflow_state}
+
+@frappe.whitelist()
+def review_application(name, action, app_type="Leave"):
+    from vidyaan.api_folder.profile import _get_instructor_for_user
+    if not _get_instructor_for_user():
+        frappe.throw("You must be an instructor to perform this action")
+
+    if action not in ["Approve", "Reject"]:
+        frappe.throw("Invalid action. Must be Approve or Reject")
+
+    doctype = "Student Leave Application" if app_type == "Leave" else "Student NOC"
+    allowed_states = _get_allowed_workflow_states(doctype)
+
+    current_state = frappe.get_value(doctype, name, "workflow_state")
+    if allowed_states and current_state not in allowed_states:
+        frappe.throw("Application is not in a state you can review")
+
+    doc = frappe.get_doc(doctype, name)
+
+    # Let Frappe resolve the correct next state from the workflow definition
+    from frappe.model.workflow import apply_workflow
+    apply_workflow(doc, action)  # "Approve" or "Reject"
+
+    return {"success": True, "state": doc.workflow_state}

@@ -199,8 +199,12 @@ const submit = async () => {
     emit('submitted')
   } catch (err) {
     let msg = 'Failed to submit leave.'
-    if (err?.data?._server_messages) {
-      try { msg = JSON.parse(JSON.parse(err.data._server_messages)[0]).message } catch {}
+    if (err instanceof Error && err.message) {
+      msg = err.message
+    } else if (err?.data?._server_messages) {
+      try {
+        msg = JSON.parse(JSON.parse(err.data._server_messages)[0]).message
+      } catch {}
     }
     addToast(msg, 'error')
   } finally { submitting.value = false }

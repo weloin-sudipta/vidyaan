@@ -45,6 +45,24 @@
               class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-sm font-bold text-slate-700 dark:text-slate-200 outline-none focus:ring-4 focus:ring-indigo-500/10 transition-colors" />
           </div>
         </div>
+
+        <div>
+           <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 block">Programme</label>
+           <input v-model="form.program" type="text" readonly disabled placeholder="Fetching..."
+              class="w-full bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-4 py-3 text-sm font-bold text-slate-500 dark:text-slate-400 cursor-not-allowed transition-colors" />
+        </div>
+
+        <div class="relative group">
+          <input type="file" @change="onFileChange" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" />
+          <div class="border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-2xl p-8 text-center group-hover:border-indigo-400 dark:group-hover:border-indigo-600 transition-all bg-slate-50/50 dark:bg-slate-800/50 flex flex-col items-center">
+            <svg class="w-8 h-8 text-slate-300 dark:text-slate-500 mb-3 group-hover:text-indigo-500 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+            </svg>
+            <p class="text-sm font-bold text-slate-600 dark:text-slate-300">
+              {{ form.file ? form.file.name : 'Choose a supporting document or drag it here' }}
+            </p>
+          </div>
+        </div>
       </div>
 
       <!-- Footer -->
@@ -63,8 +81,8 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
-import { call } from '~/composables/api/useFrappeFetch'
+import { ref, computed, onMounted } from 'vue'
+import { call, callMultipart } from '~/composables/api/useFrappeFetch'
 import { useToast } from '~/composables/ui/useToast'
 
 const emit = defineEmits(['close', 'submitted'])
@@ -78,25 +96,61 @@ const form = ref({
   purpose: '',
   effective_date: '',
   destination: '',
+  program: '',
+  file: null,
 })
 
 const isValid = computed(() => form.value.noc_type && form.value.purpose.trim())
 
+const onFileChange = (e) => {
+  if (e.target.files.length) {
+    form.value.file = e.target.files[0]
+  }
+}
+
+onMounted(async () => {
+  try {
+    const programStr = await call('vidyaan.api_folder.applications.get_student_program')
+    if (programStr) {
+      form.value.program = programStr
+    }
+  } catch(e) {
+    // Ignore fail since it's just a read-only field mapping
+  }
+})
+
 const submit = async () => {
   submitting.value = true
   try {
+    let fileUrl = null
+    
+    if (form.value.file) {
+      const fd = new FormData()
+      fd.append('file', form.value.file)
+      fd.append('is_private', '1') // Often NOC documents are private
+      
+      const uploadRes = await callMultipart('upload_file', fd)
+      fileUrl = uploadRes.message ? uploadRes.message.file_url : null
+    }
+
     await call('vidyaan.api_folder.applications.submit_noc', {
       noc_type: form.value.noc_type,
       purpose: form.value.purpose,
       effective_date: form.value.effective_date || undefined,
       destination: form.value.destination || undefined,
+      supporting_document: fileUrl || undefined,
     })
+    
     addToast('NOC application submitted successfully!', 'success')
     emit('submitted')
   } catch (err) {
     let msg = 'Failed to submit NOC.'
-    if (err?.data?._server_messages) {
-      try { msg = JSON.parse(JSON.parse(err.data._server_messages)[0]).message } catch {}
+    if (err instanceof Error && err.message) {
+      msg = err.message
+    } else if (err?.data?._server_messages) {
+      try {
+        msg = JSON.parse(JSON.parse(err.data._server_messages)[0]).message
+      } catch {}
     }
     addToast(msg, 'error')
   } finally {

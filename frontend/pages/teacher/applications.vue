@@ -66,8 +66,8 @@
         <!-- Card Header -->
         <div class="p-6 border-b border-gray-100 dark:border-zinc-800 flex items-center justify-between">
           <div>
-            <h2 class="text-lg font-bold">Pending Leave Applications</h2>
-            <p class="text-xs text-gray-500 dark:text-zinc-500 mt-1">Review and approve student leave requests from your classes</p>
+            <h2 class="text-lg font-bold">Pending Applications</h2>
+            <p class="text-xs text-gray-500 dark:text-zinc-500 mt-1">Review and approve student leave and NOC requests</p>
           </div>
           <span v-if="applications.length > 0" class="text-xs bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 px-2.5 py-1 rounded-full font-bold">
             {{ applications.length }} Pending
@@ -106,17 +106,24 @@
                 
                 <!-- Request Type -->
                 <td class="px-6 py-5">
-                  <span class="text-[11px] font-black uppercase px-2 py-1 rounded-lg bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 border border-blue-200 dark:border-blue-800">
+                  <span v-if="item.app_type === 'Leave'" class="text-[11px] font-black uppercase px-2 py-1 rounded-lg bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 border border-blue-200 dark:border-blue-800">
                     Leave Application
+                  </span>
+                  <span v-else class="text-[11px] font-black uppercase px-2 py-1 rounded-lg bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400 border border-purple-200 dark:border-purple-800">
+                    NOC Application
                   </span>
                 </td>
                 
                 <!-- Timeline & Reason -->
                 <td class="px-6 py-5">
-                  <div class="text-sm font-medium">{{ item.from_date }} to {{ item.to_date }}</div>
-                  <div class="text-[11px] text-gray-400 dark:text-zinc-500">{{ item.total_leave_days }} Day(s)</div>
-                  <div v-if="item.reason" class="text-[10px] text-gray-500 dark:text-zinc-400 mt-1 max-w-xs truncate">
-                    Reason: {{ item.reason }}
+                  <div class="text-sm font-medium">{{ item.date_range || (item.from_date + ' to ' + item.to_date) }}</div>
+                  <div v-if="item.app_type === 'Leave'" class="text-[11px] text-gray-400 dark:text-zinc-500">{{ item.total_leave_days }} Day(s)</div>
+                  <div v-else class="text-[11px] text-gray-400 dark:text-zinc-500">Type: {{ item.noc_type }}</div>
+                  <div class="text-[10px] text-gray-500 dark:text-zinc-400 mt-1 max-w-xs truncate flex items-center gap-1">
+                    <span>Reason: {{ item.reason || 'Not specified' }}</span>
+                    <a v-if="item.supporting_document" :href="item.supporting_document" target="_blank" class="ml-2 text-indigo-500 hover:text-indigo-600 dark:text-indigo-400 dark:hover:text-indigo-300">
+                      <i class="fas fa-paperclip"></i>
+                    </a>
                   </div>
                 </td>
                 
@@ -132,8 +139,8 @@
                 <td class="px-6 py-5">
                   <div class="flex justify-end gap-3">
                     <button 
-                      @click="handleAction(item.name, 'Reject')" 
-                      :disabled="processing"
+                      @click="handleAction(item.name, 'Reject', item.app_type)" 
+                      :disabled="processing === item.name"
                       class="p-2 text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition-colors rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 disabled:opacity-50"
                       title="Reject"
                     >
@@ -142,15 +149,15 @@
                       </svg>
                     </button>
                     <button 
-                      @click="handleAction(item.name, 'Approve')" 
-                      :disabled="processing"
+                      @click="handleAction(item.name, 'Approve', item.app_type)" 
+                      :disabled="processing === item.name"
                       class="bg-gray-900 dark:bg-white text-white dark:text-gray-900 px-5 py-2 rounded-lg text-xs font-bold hover:scale-105 transition-transform shadow-md disabled:opacity-50 flex items-center gap-2"
                     >
-                      <svg v-if="processing" class="w-3 h-3 animate-spin" fill="none" viewBox="0 0 24 24">
+                      <svg v-if="processing === item.name" class="w-3 h-3 animate-spin" fill="none" viewBox="0 0 24 24">
                         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                         <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                       </svg>
-                      {{ processing ? 'Processing' : 'Approve' }}
+                      {{ processing === item.name ? 'Processing' : 'Approve' }}
                     </button>
                   </div>
                 </td>
@@ -166,7 +173,7 @@
               </svg>
             </div>
             <h3 class="text-lg font-bold text-gray-900 dark:text-gray-100 mb-1">All Caught Up!</h3>
-            <p class="text-sm text-gray-600 dark:text-gray-400">No pending leave applications to review</p>
+            <p class="text-sm text-gray-600 dark:text-gray-400">No pending applications to review</p>
           </div>
         </div>
       </div>
@@ -194,6 +201,7 @@ const stats = ref({
 
 /* ------------------ TRANSFORMER ------------------ */
 const mapApplication = (item) => ({
+  app_type: item.app_type,
   name: item.name,
   student: item.student,
   student_name: item.student_name,
@@ -202,7 +210,10 @@ const mapApplication = (item) => ({
     .toUpperCase(),
   from_date: item.from_date,
   to_date: item.to_date,
+  date_range: item.date_range,
   reason: item.reason,
+  noc_type: item.noc_type,
+  supporting_document: item.supporting_document,
   total_leave_days: item.total_leave_days,
   group_info: item.group_info || 'N/A',
 })
@@ -212,7 +223,7 @@ const fetchApplications = async () => {
   loading.value = true
   try {
     const [appsRes, statsRes] = await Promise.all([
-      call('vidyaan.api_folder.applications.get_teacher_pending_leaves'),
+      call('vidyaan.api_folder.applications.get_teacher_pending_applications'),
       call('vidyaan.api_folder.applications.get_teacher_leave_statistics')
     ])
 
@@ -239,13 +250,14 @@ const fetchApplications = async () => {
 }
 
 /* ------------------ ACTION HANDLER ------------------ */
-const handleAction = async (name, action) => {
+const handleAction = async (name, action, app_type) => {
   processingId.value = name
 
   try {
-    await call('vidyaan.api_folder.applications.review_leave_application', {
+    await call('vidyaan.api_folder.applications.review_application', {
       name,
-      action
+      action,
+      app_type
     })
 
     addToast(`Application ${action.toLowerCase()}d`, 'success')
