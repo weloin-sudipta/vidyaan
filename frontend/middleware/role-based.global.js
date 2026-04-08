@@ -19,22 +19,29 @@ export default defineNuxtRouteMiddleware(async (to, from) => {
 
   const role = userRole.value?.toLowerCase()
   
-  // Shared routes accessible by both roles
-  const sharedPrefixes = ['/notices', '/events', '/library', '/login']
-  
+  // Shared routes accessible by all roles
+  const sharedPrefixes = ['/notices', '/events', '/library', '/login', '/dashboard']
+
   // Rules definition
   const roleAccess = {
     teacher: {
       allowedPrefixes: ['/teacher', '/teacher/'],
-      dashboard: '/'
+    },
+    instructor: {
+      allowedPrefixes: ['/teacher', '/teacher/'],
     },
     student: {
       allowedPrefixes: ['/academics', '/attendance', '/exam', '/applications', '/library', '/faculty', '/profile'],
-      dashboard: '/'
     },
-    shared: {
-      allowedPrefixes: ['/notices', '/events', '/']
-    }
+    admin: {
+      allowedPrefixes: ['/admin'],
+    },
+    'institute admin': {
+      allowedPrefixes: ['/admin'],
+    },
+    'system administrator': {
+      allowedPrefixes: ['/admin'],
+    },
   }
 
   const path = to.path
@@ -42,22 +49,19 @@ export default defineNuxtRouteMiddleware(async (to, from) => {
   // 1. Check if it's a shared route or home
   const isShared = sharedPrefixes.some(prefix => path === prefix || path.startsWith(prefix + '/'))
   const isHome = path === '/'
-  
+
   if (isShared || isHome) return
 
   // 2. Check Role Specific Access
-  let isAllowed = false
-  
-  if (role === 'teacher') {
-    isAllowed = roleAccess.teacher.allowedPrefixes.some(prefix => path.startsWith(prefix))
-  } else if (role === 'student') {
-    isAllowed = roleAccess.student.allowedPrefixes.some(prefix => path.startsWith(prefix))
-  }
+  const roleRules = roleAccess[role]
+  const isAllowed = roleRules
+    ? roleRules.allowedPrefixes.some(prefix => path.startsWith(prefix))
+    : false
 
-  // 3. Fallback: If not allowed, redirect to own dashboard (always /)
+  // 3. Fallback: If not allowed, redirect to dashboard
   if (!isAllowed) {
-    const redirectTo = '/'
-    
+    const redirectTo = '/dashboard'
+
     // Avoid infinite redirect if already at target
     if (path === redirectTo) return
 
