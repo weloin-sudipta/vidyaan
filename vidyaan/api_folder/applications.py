@@ -520,7 +520,7 @@ def get_teacher_pending_applications():
 	if leave_states:
 		leave_filters["workflow_state"] = ["in", leave_states]
 	else:
-		leave_filters["workflow_state"] = "Pending Teacher Approval"
+		leave_filters["workflow_state"] = "Pending Review"
 
 	leaves = frappe.get_all(
 		"Student Leave Application",
@@ -562,7 +562,7 @@ def get_teacher_pending_applications():
 		if noc_states:
 			noc_filters["workflow_state"] = ["in", noc_states]
 		else:
-			noc_filters["workflow_state"] = ["in", ["Pending Review", "Pending Teacher Approval"]]
+			noc_filters["workflow_state"] = ["in", ["Pending Review"]]
 
 		nocs = frappe.get_all(
 			"Student NOC",
@@ -631,11 +631,11 @@ def get_teacher_leave_statistics():
 	# Leaves
 	total_pending = frappe.db.count(
 		"Student Leave Application",
-		filters={"workflow_state": "Pending Teacher Approval", "docstatus": 0, "student": ["in", students]}
+		filters={"workflow_state": "Pending Review", "docstatus": 0, "student": ["in", students]}
 	)
 	total_approved = frappe.db.count(
 		"Student Leave Application",
-		filters={"workflow_state": ["in", ["Pending Admin Approval", "Approved"]], "docstatus": 1, "student": ["in", students]}
+		filters={"workflow_state": "Approved", "docstatus": 1, "student": ["in", students]}
 	)
 	total_rejected = frappe.db.count(
 		"Student Leave Application",
@@ -653,11 +653,11 @@ def get_teacher_leave_statistics():
 		else:
 			total_pending += frappe.db.count(
 				"Student NOC",
-				filters={"workflow_state": ["in", ["Pending Review", "Pending Teacher Approval"]], "docstatus": 0, "student": ["in", students]}
+				filters={"workflow_state": ["in", ["Pending Review"]], "docstatus": 0, "student": ["in", students]}
 			)
 		total_approved += frappe.db.count(
 			"Student NOC",
-			filters={"workflow_state": ["in", ["Pending Admin Approval", "Approved"]], "docstatus": 1, "student": ["in", students]}
+			filters={"workflow_state": "Approved", "docstatus": 1, "student": ["in", students]}
 		)
 		total_rejected += frappe.db.count(
 			"Student NOC",
