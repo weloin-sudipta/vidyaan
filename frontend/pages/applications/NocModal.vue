@@ -36,7 +36,7 @@
         <div class="grid grid-cols-2 gap-4">
           <div>
             <label class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 block">Effective Date</label>
-            <input v-model="form.effective_date" type="date"
+            <input v-model="form.effective_date" type="date" :min="today"
               class="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-sm font-bold text-slate-700 dark:text-slate-200 outline-none focus:ring-4 focus:ring-indigo-500/10 transition-colors" />
           </div>
           <div>
@@ -101,6 +101,11 @@ const form = ref({
 })
 
 const isValid = computed(() => form.value.noc_type && form.value.purpose.trim())
+
+const today = computed(() => {
+  const date = new Date()
+  return date.toISOString().split('T')[0]
+})
 
 const onFileChange = (e) => {
   if (e.target.files.length) {

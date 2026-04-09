@@ -1,185 +1,168 @@
 <template>
-  <div class="min-h-screen bg-gray-50 dark:bg-zinc-950 text-gray-900 dark:text-zinc-100 transition-colors duration-300">
+  <div class="p-6 lg:p-10 max-w-7xl mx-auto custom-scrollbar animate-in fade-in slide-in-from-bottom-4 duration-500">
     
-    <div class="max-w-7xl mx-auto p-4 md:p-8">
+    <header class="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
+      <div>
+        <div class="flex items-center gap-3 mb-2">
+          <div class="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center text-white shadow-lg shadow-indigo-500/20">
+            <i class="fa fa-clipboard-list"></i>
+          </div>
+          <h1 class="text-3xl font-black text-slate-800 dark:text-slate-100 tracking-tight">
+            Application Portal
+          </h1>
+        </div>
+        <p class="text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest ml-1">
+          Student Leave & Activity Authorizations
+        </p>
+      </div>
+
+      <div class="flex items-center gap-4 bg-white dark:bg-slate-900 p-2 rounded-2xl border border-slate-100 dark:border-slate-800 shadow-sm">
+        <div class="px-4 py-1 border-r border-slate-100 dark:border-slate-800">
+          <p class="text-[10px] font-black text-slate-400 uppercase tracking-tighter">Academic Year</p>
+          <p class="text-xs font-black text-indigo-500">Term 2, 2026</p>
+        </div>
+        <button class="px-4 py-2 bg-slate-50 dark:bg-slate-800 hover:bg-indigo-500 hover:text-white transition-all rounded-xl text-[10px] font-black uppercase tracking-widest text-slate-600 dark:text-slate-400">
+          History Log
+        </button>
+      </div>
+    </header>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
+      <div v-for="stat in statItems" :key="stat.label" 
+           class="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 p-6 rounded-[2rem] shadow-sm hover:shadow-xl transition-all group">
+        <p class="text-[10px] font-black uppercase tracking-widest text-slate-400 mb-3 group-hover:text-indigo-500 transition-colors">
+          {{ stat.label }}
+        </p>
+        <div class="flex items-end justify-between">
+          <h3 class="text-4xl font-black text-slate-800 dark:text-slate-100 leading-none">
+            {{ stat.value }}
+          </h3>
+          <span :class="stat.trendColor" class="text-[10px] font-black uppercase tracking-tighter px-2 py-1 rounded-lg bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700">
+            {{ stat.trend }}
+          </span>
+        </div>
+      </div>
+    </div>
+
+    <div v-if="loading" class="space-y-4">
+      <div v-for="n in 3" :key="n" class="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-[2.5rem] p-8 flex items-center gap-6">
+        <div class="w-12 h-12 rounded-2xl bg-slate-100 dark:bg-slate-800 animate-pulse"></div>
+        <div class="flex-1 space-y-3">
+          <div class="h-4 bg-slate-100 dark:bg-slate-800 rounded w-1/4 animate-pulse"></div>
+          <div class="h-3 bg-slate-100 dark:border-slate-800 rounded w-1/3 animate-pulse"></div>
+        </div>
+      </div>
+    </div>
+
+    <div v-else class="bg-white dark:bg-slate-900 border border-slate-100 dark:border-slate-800 rounded-[2.5rem] shadow-sm overflow-hidden">
       
-      <!-- Header Section - Matches My Classes style -->
-      <header class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-10">
+      <div class="p-8 border-b border-slate-50 dark:border-slate-800/50 flex items-center justify-between">
         <div>
-          <h1 class="text-3xl font-extrabold tracking-tight">Application Portal</h1>
-          <p class="text-gray-500 dark:text-zinc-400 mt-1">Manage student leave and activity authorizations</p>
+          <h2 class="text-xl font-black text-slate-800 dark:text-slate-100">Action Queue</h2>
+          <p class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest mt-1">Pending student requests</p>
         </div>
-        
-        <!-- <div class="flex items-center gap-3">
-          <div class="hidden md:block text-right">
-            <p class="text-sm font-medium">Term 2, 2026</p>
-            <p class="text-xs text-gray-500 dark:text-zinc-500">Academic Year</p>
-          </div>
-          <div class="h-10 w-[1px] bg-gray-200 dark:bg-zinc-800 hidden md:block mx-2"></div>
-          
-          <button class="bg-indigo-600 hover:bg-indigo-700 text-white px-5 py-2.5 rounded-xl font-medium shadow-sm transition-all flex items-center gap-2">
-            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-            </svg>
-            History Log
-          </button>
-        </div> -->
-      </header>
-
-      <!-- Stats Cards - Same style as My Classes -->
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
-        <div v-for="stat in statItems" :key="stat.label" 
-             class="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 p-5 rounded-2xl shadow-sm hover:shadow-md transition-shadow">
-          <p class="text-xs font-bold uppercase tracking-wider text-gray-500 dark:text-zinc-500">{{ stat.label }}</p>
-          <div class="flex items-end justify-between mt-2">
-            <h3 class="text-3xl font-bold">{{ stat.value }}</h3>
-            <span :class="stat.trendColor" class="text-xs font-medium px-2 py-1 rounded-lg bg-opacity-10 dark:bg-opacity-20">
-              {{ stat.trend }}
-            </span>
-          </div>
+        <div v-if="applications.length > 0" class="flex items-center gap-2 px-4 py-2 bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 rounded-xl text-[10px] font-black uppercase tracking-widest border border-amber-100 dark:border-amber-800/50">
+          <span class="relative flex h-2 w-2">
+            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+            <span class="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
+          </span>
+          {{ applications.length }} Pending
         </div>
       </div>
 
-      <!-- Loading State -->
-      <div v-if="loading" class="space-y-4">
-        <div class="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-2xl overflow-hidden">
-          <div class="p-6 border-b border-gray-100 dark:border-zinc-800">
-            <div class="h-6 bg-gray-200 dark:bg-zinc-800 rounded-lg w-48 mb-2"></div>
-            <div class="h-4 bg-gray-200 dark:bg-zinc-800 rounded-lg w-64"></div>
-          </div>
-          <div class="p-6 space-y-4">
-            <div v-for="n in 3" :key="n" class="flex items-center gap-4">
-              <div class="w-12 h-12 bg-gray-200 dark:bg-zinc-800 rounded-full"></div>
-              <div class="flex-1">
-                <div class="h-4 bg-gray-200 dark:bg-zinc-800 rounded-lg w-32 mb-2"></div>
-                <div class="h-3 bg-gray-200 dark:bg-zinc-800 rounded-lg w-48"></div>
-              </div>
-              <div class="w-24 h-8 bg-gray-200 dark:bg-zinc-800 rounded-lg"></div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Applications Table Card -->
-      <div v-else class="bg-white dark:bg-zinc-900 border border-gray-200 dark:border-zinc-800 rounded-2xl shadow-sm overflow-hidden">
-        
-        <!-- Card Header -->
-        <div class="p-6 border-b border-gray-100 dark:border-zinc-800 flex items-center justify-between">
-          <div>
-            <h2 class="text-lg font-bold">Pending Applications</h2>
-            <p class="text-xs text-gray-500 dark:text-zinc-500 mt-1">Review and approve student leave and NOC requests</p>
-          </div>
-          <span v-if="applications.length > 0" class="text-xs bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400 px-2.5 py-1 rounded-full font-bold">
-            {{ applications.length }} Pending
-          </span>
-          <span v-else class="text-xs bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 px-2.5 py-1 rounded-full font-bold">
-            All Clear
-          </span>
-        </div>
-
-        <!-- Table -->
-        <div class="overflow-x-auto">
-          <table v-if="applications.length > 0" class="w-full text-left">
-            <thead>
-              <tr class="bg-gray-50/50 dark:bg-zinc-800/50 text-gray-500 dark:text-zinc-400 text-xs uppercase tracking-widest font-semibold">
-                <th class="px-6 py-4">Student Info</th>
-                <th class="px-6 py-4">Request Type</th>
-                <th class="px-6 py-4">Timeline & Reason</th>
-                <th class="px-6 py-4">Status</th>
-                <th class="px-6 py-4 text-right">Decision</th>
-              </tr>
-            </thead>
-            <tbody class="divide-y divide-gray-100 dark:divide-zinc-800">
-              <tr v-for="item in applications" :key="item.name" class="group hover:bg-gray-50 dark:hover:bg-zinc-800/40 transition-colors">
-                <!-- Student Info -->
-                <td class="px-6 py-5">
-                  <div class="flex items-center gap-3">
-                    <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-500 to-purple-500 flex items-center justify-center text-white font-bold text-sm shadow-sm">
-                      {{ item.studentInitials }}
-                    </div>
-                    <div>
-                      <div class="font-bold text-sm">{{ item.student_name }}</div>
-                      <div class="text-xs text-gray-500 dark:text-zinc-500 leading-tight">{{ item.student }} • {{ item.group_info }}</div>
-                    </div>
+      <div class="overflow-x-auto">
+        <table v-if="applications.length > 0" class="w-full text-left">
+          <thead>
+            <tr class="text-slate-400 dark:text-slate-500 text-[10px] uppercase font-black tracking-[0.15em] border-b border-slate-50 dark:border-slate-800/50">
+              <th class="px-8 py-5">Student Information</th>
+              <th class="px-8 py-5">Request Detail</th>
+              <th class="px-8 py-5">Period</th>
+              <th class="px-8 py-5 text-right">Decision</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-50 dark:divide-slate-800/50">
+            <tr v-for="item in applications" :key="item.name" class="group hover:bg-slate-50/50 dark:hover:bg-indigo-500/5 transition-all">
+              
+              <td class="px-8 py-6">
+                <div class="flex items-center gap-4">
+                  <div class="w-12 h-12 rounded-2xl bg-indigo-50 dark:bg-indigo-900/30 flex items-center justify-center text-indigo-600 dark:text-indigo-400 font-black text-sm group-hover:bg-indigo-600 group-hover:text-white transition-all duration-300">
+                    {{ item.studentInitials }}
                   </div>
-                </td>
-                
-                <!-- Request Type -->
-                <td class="px-6 py-5">
-                  <span v-if="item.app_type === 'Leave'" class="text-[11px] font-black uppercase px-2 py-1 rounded-lg bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 border border-blue-200 dark:border-blue-800">
-                    Leave Application
+                  <div>
+                    <div class="font-black text-slate-800 dark:text-slate-100 text-sm mb-0.5">{{ item.student_name }}</div>
+                    <div class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-tight">{{ item.group_info }}</div>
+                  </div>
+                </div>
+              </td>
+              
+              <td class="px-8 py-6">
+                <span :class="item.app_type === 'Leave' ? 'text-blue-600 bg-blue-50 dark:bg-blue-900/20 border-blue-100 dark:border-blue-800' : 'text-purple-600 bg-purple-50 dark:bg-purple-900/20 border-purple-100 dark:border-purple-800'" 
+                      class="text-[10px] font-black uppercase px-3 py-1.5 rounded-lg border">
+                  {{ item.app_type }}
+                </span>
+                <div class="mt-3 text-xs font-bold text-slate-500 dark:text-slate-400 max-w-xs line-clamp-1 group-hover:line-clamp-none transition-all">
+                  {{ item.reason || 'No specific reason provided' }}
+                </div>
+              </td>
+              
+              <td class="px-8 py-6">
+                <div class="text-xs font-black text-slate-700 dark:text-slate-200 mb-1">
+                  {{ item.date_range || (item.from_date + ' → ' + item.to_date) }}
+                </div>
+                <div class="flex items-center gap-2">
+                   <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                    {{ item.app_type === 'Leave' ? `${item.total_leave_days} Days` : item.noc_type }}
                   </span>
-                  <span v-else class="text-[11px] font-black uppercase px-2 py-1 rounded-lg bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400 border border-purple-200 dark:border-purple-800">
-                    NOC Application
-                  </span>
-                </td>
-                
-                <!-- Timeline & Reason -->
-                <td class="px-6 py-5">
-                  <div class="text-sm font-medium">{{ item.date_range || (item.from_date + ' to ' + item.to_date) }}</div>
-                  <div v-if="item.app_type === 'Leave'" class="text-[11px] text-gray-400 dark:text-zinc-500">{{ item.total_leave_days }} Day(s)</div>
-                  <div v-else class="text-[11px] text-gray-400 dark:text-zinc-500">Type: {{ item.noc_type }}</div>
-                  <div class="text-[10px] text-gray-500 dark:text-zinc-400 mt-1 max-w-xs truncate flex items-center gap-1">
-                    <span>Reason: {{ item.reason || 'Not specified' }}</span>
-                    <a v-if="item.supporting_document" :href="getFileUrl(item.supporting_document)" target="_blank" class="ml-2 text-indigo-500 hover:text-indigo-600 dark:text-indigo-400 dark:hover:text-indigo-300">
-                      <i class="fas fa-paperclip"></i>
-                    </a>
-                  </div>
-                </td>
-                
-                <!-- Status -->
-                <td class="px-6 py-5">
-                  <div class="flex items-center gap-1.5">
-                    <div class="w-2 h-2 rounded-full bg-amber-500 animate-pulse"></div>
-                    <span class="text-xs font-medium text-amber-600 dark:text-amber-500">Pending Review</span>
-                  </div>
-                </td>
-                
-                <!-- Actions -->
-                <td class="px-6 py-5">
-                  <div class="flex justify-end gap-3">
-                    <button 
-                      @click="handleAction(item.name, 'Reject', item.app_type)" 
-                      :disabled="processing === item.name"
-                      class="p-2 text-gray-400 hover:text-red-500 dark:hover:text-red-400 transition-colors rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 disabled:opacity-50"
-                      title="Reject"
-                    >
-                      <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                      </svg>
-                    </button>
-                    <button 
-                      @click="handleAction(item.name, 'Approve', item.app_type)" 
-                      :disabled="processing === item.name"
-                      class="bg-gray-900 dark:bg-white text-white dark:text-gray-900 px-5 py-2 rounded-lg text-xs font-bold hover:scale-105 transition-transform shadow-md disabled:opacity-50 flex items-center gap-2"
-                    >
-                      <svg v-if="processing === item.name" class="w-3 h-3 animate-spin" fill="none" viewBox="0 0 24 24">
-                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                      </svg>
-                      {{ processing === item.name ? 'Processing' : 'Approve' }}
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-          
-          <!-- Empty State -->
-          <div v-else class="p-12 text-center">
-            <div class="inline-flex items-center justify-center w-20 h-20 bg-green-100 dark:bg-green-900/20 rounded-full mb-4">
-              <svg xmlns="http://www.w3.org/2000/svg" class="w-10 h-10 text-green-600 dark:text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
-              </svg>
-            </div>
-            <h3 class="text-lg font-bold text-gray-900 dark:text-gray-100 mb-1">All Caught Up!</h3>
-            <p class="text-sm text-gray-600 dark:text-gray-400">No pending applications to review</p>
+                  <a v-if="item.supporting_document" :href="getFileUrl(item.supporting_document)" target="_blank" class="text-indigo-500 hover:text-indigo-700">
+                    <i class="fa fa-paperclip text-[10px]"></i>
+                  </a>
+                </div>
+              </td>
+              
+              <td class="px-8 py-6">
+                <div class="flex justify-end items-center gap-3">
+                  <button 
+                    @click="handleAction(item.name, 'Reject', item.app_type)"
+                    class="w-10 h-10 flex items-center justify-center rounded-xl text-slate-400 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 transition-all border border-transparent hover:border-red-100 dark:hover:border-red-800"
+                  >
+                    <i class="fa fa-times"></i>
+                  </button>
+                  <button 
+                    @click="handleAction(item.name, 'Approve', item.app_type)"
+                    :disabled="processingId === item.name"
+                    class="h-10 px-6 bg-slate-900 dark:bg-white text-white dark:text-slate-900 rounded-xl text-[10px] font-black uppercase tracking-widest hover:scale-105 active:scale-95 transition-all shadow-lg shadow-slate-200 dark:shadow-none disabled:opacity-50 flex items-center gap-2"
+                  >
+                    <i v-if="processingId === item.name" class="fa fa-circle-notch animate-spin"></i>
+                    {{ processingId === item.name ? 'Processing' : 'Approve' }}
+                  </button>
+                </div>
+              </td>
+
+            </tr>
+          </tbody>
+        </table>
+
+        <div v-else class="py-24 text-center">
+          <div class="w-20 h-20 bg-slate-50 dark:bg-slate-800/50 rounded-[2rem] flex items-center justify-center mx-auto mb-6">
+            <i class="fa fa-check-double text-slate-200 dark:text-slate-700 text-3xl"></i>
           </div>
+          <h3 class="text-sm font-black text-slate-800 dark:text-slate-200 uppercase tracking-[0.2em]">Inbox Cleared</h3>
+          <p class="text-[10px] font-bold text-slate-400 mt-2 uppercase tracking-widest">No pending applications require your attention</p>
         </div>
       </div>
     </div>
   </div>
 </template>
+
+<style scoped>
+.custom-scrollbar::-webkit-scrollbar { width: 5px; height: 5px; }
+.custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+.custom-scrollbar::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 99px; }
+.dark .custom-scrollbar::-webkit-scrollbar-thumb { background: #334155; }
+
+/* Custom utilities for the "Black" aesthetic */
+.font-black { font-weight: 900; }
+</style>
 
 <script setup>
 import { ref, onMounted, computed } from 'vue'
@@ -328,37 +311,3 @@ const statItems = computed(() => [
   }
 ])
 </script>
-
-<style scoped>
-/* Custom scrollbar matching My Classes */
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-
-::-webkit-scrollbar-track {
-  background: transparent;
-}
-
-::-webkit-scrollbar-thumb {
-  background: #e2e8f0;
-  border-radius: 99px;
-}
-
-.dark ::-webkit-scrollbar-thumb {
-  background: #334155;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: #cbd5e1;
-}
-
-.dark ::-webkit-scrollbar-thumb:hover {
-  background: #475569;
-}
-
-/* Smooth transitions */
-* {
-  transition: background-color 0.2s ease, border-color 0.2s ease;
-}
-</style>

@@ -226,7 +226,7 @@
                 <label class="block text-xs font-black uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-2">
                   Due Date <span class="text-red-500">*</span>
                 </label>
-                <input v-model="form.due_date" type="date" required
+                <input v-model="form.due_date" type="date" :min="today" required
                   class="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-sm font-bold focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all dark:text-white" />
               </div>
             </div>
@@ -609,6 +609,12 @@ const form = ref({
   student_groups: [],
   description: '',
   assignment_file: '',
+})
+
+// Today's date for date input min attribute
+const today = computed(() => {
+  const date = new Date()
+  return date.toISOString().split('T')[0]
 })
 
 // Grading

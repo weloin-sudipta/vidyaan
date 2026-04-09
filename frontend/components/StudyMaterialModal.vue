@@ -91,7 +91,7 @@
             <label class="block text-xs font-black uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-2">
               Upload Date <span class="text-slate-400 text-[10px] font-normal">(optional)</span>
             </label>
-            <input type="date" v-model="formData.upload_date"
+            <input type="date" v-model="formData.upload_date" :min="today"
               class="w-full px-4 py-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-900 dark:text-white text-sm focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all" />
           </div>
         </div>
@@ -224,6 +224,12 @@ const formData = ref({
   file: null,
   upload_date: new Date().toISOString().split('T')[0],
   description: ''
+})
+
+// Today's date for date input min attribute
+const today = computed(() => {
+  const date = new Date()
+  return date.toISOString().split('T')[0]
 })
 
 // Available topics based on selected course
