@@ -1,7 +1,9 @@
 <template>
-  <component v-if="profileComponent" :is="profileComponent" />
-  <div v-else class="flex items-center justify-center h-64">
-    <p class="text-slate-400 dark:text-slate-500 font-bold text-sm">Loading profile…</p>
+  <div>
+    <component v-if="profileComponent" :is="profileComponent" />
+    <div v-else class="flex items-center justify-center h-64">
+      <p class="text-slate-400 dark:text-slate-500 font-bold text-sm">Loading profile…</p>
+    </div>
   </div>
 </template>
 

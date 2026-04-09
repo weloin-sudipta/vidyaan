@@ -68,23 +68,40 @@
       </div>
 
       <!-- Dark Mode Toggle (3-Way) -->
-      <div class="flex items-center gap-1 bg-gray-100 dark:bg-slate-900/50 p-1 rounded-full border border-gray-200 dark:border-slate-800 ml-2 shadow-inner transition-colors">
-        <button @click="colorMode.preference = 'light'" title="Light Mode"
-          :class="colorMode.preference === 'light' ? 'bg-white shadow-sm text-indigo-600 dark:bg-slate-700 dark:text-indigo-400' : 'text-gray-500 hover:text-gray-700 dark:text-slate-400 dark:hover:text-slate-200'"
-          class="p-1.5 rounded-full transition-all duration-300 w-8 h-8 flex items-center justify-center">
-          <i class="fa fa-sun-o"></i>
-        </button>
-        <button @click="colorMode.preference = 'system'" title="System Mode"
-          :class="colorMode.preference === 'system' ? 'bg-white shadow-sm text-indigo-600 dark:bg-slate-700 dark:text-indigo-400' : 'text-gray-500 hover:text-gray-700 dark:text-slate-400 dark:hover:text-slate-200'"
-          class="p-1.5 rounded-full transition-all duration-300 w-8 h-8 flex items-center justify-center">
-          <i class="fa fa-desktop"></i>
-        </button>
-        <button @click="colorMode.preference = 'dark'" title="Dark Mode"
-          :class="colorMode.preference === 'dark' ? 'bg-white shadow-sm text-indigo-600 dark:bg-slate-700 dark:text-indigo-400' : 'text-gray-500 hover:text-gray-700 dark:text-slate-400 dark:hover:text-slate-200'"
-          class="p-1.5 rounded-full transition-all duration-300 w-8 h-8 flex items-center justify-center">
-          <i class="fa fa-moon-o"></i>
-        </button>
-      </div>
+      <!--
+        Wrapped in <ClientOnly> because `useColorMode().preference` is only
+        available on the client (read from cookie/localStorage). During SSR it
+        resolves to the default ('system'), but after hydration the client may
+        pick a different preference → Vue hydration class mismatch.
+        Rendering this control client-only eliminates the mismatch entirely.
+      -->
+      <ClientOnly>
+        <div class="flex items-center gap-1 bg-gray-100 dark:bg-slate-900/50 p-1 rounded-full border border-gray-200 dark:border-slate-800 ml-2 shadow-inner transition-colors">
+          <button @click="colorMode.preference = 'light'" title="Light Mode"
+            :class="colorMode.preference === 'light' ? 'bg-white shadow-sm text-indigo-600 dark:bg-slate-700 dark:text-indigo-400' : 'text-gray-500 hover:text-gray-700 dark:text-slate-400 dark:hover:text-slate-200'"
+            class="p-1.5 rounded-full transition-all duration-300 w-8 h-8 flex items-center justify-center">
+            <i class="fa fa-sun-o"></i>
+          </button>
+          <button @click="colorMode.preference = 'system'" title="System Mode"
+            :class="colorMode.preference === 'system' ? 'bg-white shadow-sm text-indigo-600 dark:bg-slate-700 dark:text-indigo-400' : 'text-gray-500 hover:text-gray-700 dark:text-slate-400 dark:hover:text-slate-200'"
+            class="p-1.5 rounded-full transition-all duration-300 w-8 h-8 flex items-center justify-center">
+            <i class="fa fa-desktop"></i>
+          </button>
+          <button @click="colorMode.preference = 'dark'" title="Dark Mode"
+            :class="colorMode.preference === 'dark' ? 'bg-white shadow-sm text-indigo-600 dark:bg-slate-700 dark:text-indigo-400' : 'text-gray-500 hover:text-gray-700 dark:text-slate-400 dark:hover:text-slate-200'"
+            class="p-1.5 rounded-full transition-all duration-300 w-8 h-8 flex items-center justify-center">
+            <i class="fa fa-moon-o"></i>
+          </button>
+        </div>
+        <!-- Neutral placeholder for SSR to keep layout width stable -->
+        <template #fallback>
+          <div class="flex items-center gap-1 bg-gray-100 dark:bg-slate-900/50 p-1 rounded-full border border-gray-200 dark:border-slate-800 ml-2 shadow-inner">
+            <div class="w-8 h-8"></div>
+            <div class="w-8 h-8"></div>
+            <div class="w-8 h-8"></div>
+          </div>
+        </template>
+      </ClientOnly>
 
       <!-- Profile -->
       <div class="flex items-center gap-3 pl-2">

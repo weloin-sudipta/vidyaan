@@ -42,11 +42,11 @@ onMounted(async () => {
 
   const role = (userRole.value ?? '').toLowerCase()
 
-  if (role === 'student') {
+  if (role === 'Student') {
     dashboardComponent.value = StudentDashboard
-  } else if (role === 'teacher' || role === 'instructor') {
+  } else if (role === 'Instructor') {
     dashboardComponent.value = TeacherDashboard
-  } else if (role === 'admin' || role === 'institute admin' || role === 'system administrator') {
+  } else if (role === 'Institute Admin' || role === 'System Administrator') {
     dashboardComponent.value = AdminDashboard
   } else {
     // Unknown role — fall back to student dashboard
