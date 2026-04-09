@@ -85,39 +85,99 @@ def setup_assessment_groups():
                 frappe.log_error(frappe.get_traceback(), f"setup_assessment_groups: failed to create {name}")
 
 
-def setup_student_noc_workflow():
-    """Create workflow for Student NOC approval process."""
-    if frappe.db.exists("Workflow", "Student NOC Approval"):
-        return
+def _collect_workflow_roles(states_data, transitions_data):
+    """Collect every role referenced by a workflow definition."""
+    roles = set()
+    for s in states_data:
+        r = (s.get("allow_edit") or "").strip()
+        if r:
+            roles.add(r)
+    for t in transitions_data:
+        r = (t.get("allowed") or "").strip()
+        if r:
+            roles.add(r)
+    return roles
 
-    # Define workflow actions
-    workflow_actions = [
-        "Submit", "Send to Library", "Clear", "Reject", "Approve"
-    ]
 
-    # Create Workflow Action Master records if they don't exist
-    for action in workflow_actions:
+def _missing_roles(roles):
+    return [r for r in roles if not frappe.db.exists("Role", r)]
+
+
+def _ensure_workflow_masters(states_data, transitions_data):
+    """Create Workflow State and Workflow Action Master rows idempotently."""
+    for s in states_data:
+        name = s["state"]
+        if not frappe.db.exists("Workflow State", name):
+            frappe.get_doc({
+                "doctype": "Workflow State",
+                "workflow_state_name": name,
+            }).insert(ignore_permissions=True)
+    for t in transitions_data:
+        action = t["action"]
         if not frappe.db.exists("Workflow Action Master", action):
             frappe.get_doc({
                 "doctype": "Workflow Action Master",
                 "workflow_action_name": action,
             }).insert(ignore_permissions=True)
 
-    # Define workflow states
-    workflow_states = [
-        "Draft", "Pending Review", "Library Clearance", "Accounts Clearance", 
-        "Lab Clearance", "Hostel Clearance", "Final Approval", "Approved", "Rejected"
-    ]
 
-    # Create Workflow State records if they don't exist
-    for state in workflow_states:
-        if not frappe.db.exists("Workflow State", state):
-            frappe.get_doc({
-                "doctype": "Workflow State",
-                "workflow_state_name": state,
-            }).insert(ignore_permissions=True)
+def _install_workflow(workflow_name, document_type, states_data, transitions_data):
+    """Create a workflow doc with role guarding and idempotency.
 
-    # Create workflow states data
+    - Skips with a loud log if a required role is missing (fails loudly, not silently).
+    - Skips if the target doctype does not exist.
+    - Skips if the workflow is already installed.
+    - Ensures Workflow State / Workflow Action Master masters exist first.
+    """
+    if not frappe.db.exists("DocType", document_type):
+        frappe.log_error(
+            f"[vidyaan] Skipping workflow '{workflow_name}': doctype '{document_type}' not found.",
+            "vidyaan workflow install",
+        )
+        return False
+
+    if frappe.db.exists("Workflow", workflow_name):
+        return False
+
+    required_roles = _collect_workflow_roles(states_data, transitions_data)
+    missing = _missing_roles(required_roles)
+    if missing:
+        # Loud failure: log error row visible in Error Log, do NOT silently proceed.
+        frappe.log_error(
+            f"[vidyaan] Cannot install workflow '{workflow_name}' — missing roles: {missing}. "
+            f"Create these roles and re-run migrate.",
+            "vidyaan workflow install",
+        )
+        return False
+
+    _ensure_workflow_masters(states_data, transitions_data)
+
+    workflow = frappe.get_doc({
+        "doctype": "Workflow",
+        "workflow_name": workflow_name,
+        "document_type": document_type,
+        "is_active": 1,
+        "override_status": 0,
+        "send_email_alert": 1,
+        "workflow_state_field": "workflow_state",
+        "states": states_data,
+        "transitions": transitions_data,
+    })
+
+    try:
+        workflow.insert(ignore_permissions=True)
+        frappe.db.commit()
+        return True
+    except Exception as e:
+        frappe.log_error(
+            f"Failed to create workflow '{workflow_name}': {str(e)}",
+            "vidyaan workflow install",
+        )
+        return False
+
+
+def setup_student_noc_workflow():
+    """Create workflow for Student NOC approval process."""
     states_data = [
         {"state": "Draft", "doc_status": "0", "allow_edit": "Student"},
         {"state": "Pending Review", "doc_status": "1", "allow_edit": "Instructor"},
@@ -127,10 +187,10 @@ def setup_student_noc_workflow():
         {"state": "Hostel Clearance", "doc_status": "1", "allow_edit": "Instructor"},
         {"state": "Final Approval", "doc_status": "1", "allow_edit": "Institute Admin"},
         {"state": "Approved", "doc_status": "1", "allow_edit": ""},
-        {"state": "Rejected", "doc_status": "0", "allow_edit": ""},
+        # Rejected only transitions from submitted (doc_status=1) states, so 2 = cancelled.
+        {"state": "Rejected", "doc_status": "2", "allow_edit": ""},
     ]
 
-    # Create workflow transitions
     transitions_data = [
         {"state": "Draft", "action": "Submit", "next_state": "Pending Review", "allowed": "Student"},
         {"state": "Pending Review", "action": "Send to Library", "next_state": "Library Clearance", "allowed": "Instructor"},
@@ -146,85 +206,23 @@ def setup_student_noc_workflow():
         {"state": "Final Approval", "action": "Reject", "next_state": "Rejected", "allowed": "Institute Admin"},
     ]
 
-    # Create the workflow document
-    workflow = frappe.get_doc({
-        "doctype": "Workflow",
-        "workflow_name": "Student NOC Approval",
-        "document_type": "Student NOC",
-        "is_active": 1,
-        "override_status": 0,
-        "send_email_alert": 1,
-        "workflow_state_field": "workflow_state",
-        "states": states_data,
-        "transitions": transitions_data
-    })
-
-    try:
-        workflow.insert(ignore_permissions=True)
-        frappe.db.commit()
-    except Exception as e:
-        frappe.log_error(f"Failed to create Student NOC workflow: {str(e)}")
+    _install_workflow("Student NOC Approval", "Student NOC", states_data, transitions_data)
 
 
 def setup_student_leave_workflow():
     """Create workflow for Student Leave Application approval process."""
-    if frappe.db.exists("Workflow", "Student Leave Approval"):
-        return
-
-    # Define workflow actions
-    workflow_actions = [
-        "Submit", "Approve", "Reject"
-    ]
-
-    # Create Workflow Action Master records if they don't exist
-    for action in workflow_actions:
-        if not frappe.db.exists("Workflow Action Master", action):
-            frappe.get_doc({
-                "doctype": "Workflow Action Master",
-                "workflow_action_name": action,
-            }).insert(ignore_permissions=True)
-
-    # Define workflow states
-    workflow_states = ["Draft", "Pending Review", "Approved", "Rejected"]
-
-    # Create Workflow State records if they don't exist
-    for state in workflow_states:
-        if not frappe.db.exists("Workflow State", state):
-            frappe.get_doc({
-                "doctype": "Workflow State",
-                "workflow_state_name": state,
-            }).insert(ignore_permissions=True)
-
-    # Create workflow states data
     states_data = [
         {"state": "Draft", "doc_status": "0", "allow_edit": "Student"},
         {"state": "Pending Review", "doc_status": "1", "allow_edit": "Instructor"},
         {"state": "Approved", "doc_status": "1", "allow_edit": ""},
-        {"state": "Rejected", "doc_status": "0", "allow_edit": ""},
+        # Rejected only transitions from Pending Review (doc_status=1), so 2 = cancelled.
+        {"state": "Rejected", "doc_status": "2", "allow_edit": ""},
     ]
 
-    # Create workflow transitions
     transitions_data = [
         {"state": "Draft", "action": "Submit", "next_state": "Pending Review", "allowed": "Student"},
         {"state": "Pending Review", "action": "Approve", "next_state": "Approved", "allowed": "Instructor"},
         {"state": "Pending Review", "action": "Reject", "next_state": "Rejected", "allowed": "Instructor"},
     ]
 
-    # Create the workflow document
-    workflow = frappe.get_doc({
-        "doctype": "Workflow",
-        "workflow_name": "Student Leave Approval",
-        "document_type": "Student Leave Application",
-        "is_active": 1,
-        "override_status": 0,
-        "send_email_alert": 1,
-        "workflow_state_field": "workflow_state",
-        "states": states_data,
-        "transitions": transitions_data
-    })
-
-    try:
-        workflow.insert(ignore_permissions=True)
-        frappe.db.commit()
-    except Exception as e:
-        frappe.log_error(f"Failed to create Student Leave workflow: {str(e)}")
+    _install_workflow("Student Leave Approval", "Student Leave Application", states_data, transitions_data)

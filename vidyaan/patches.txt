@@ -7,3 +7,4 @@
 vidyaan.patches.link_instructors_to_employees
 vidyaan.patches.v0_create_assignment_doctype
 vidyaan.patches.v1_setup_vidyaan_website
+vidyaan.patches.v1_0.install_default_workflows

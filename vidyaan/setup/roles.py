@@ -10,7 +10,7 @@ def create_roles():
 
 def _ensure_roles_exist():
     """Create roles if they don't already exist."""
-    for role in ["System Administrator", "Institute Admin", "Instructor"]:
+    for role in ["System Administrator", "Institute Admin", "Instructor", "Librarian"]:
         if not frappe.db.exists("Role", role):
             frappe.get_doc({
                 "doctype": "Role",

@@ -96,3 +96,27 @@ def create_vidyaan_custom_fields():
         ]
     }
     create_custom_fields(student_group_room)
+
+    # Student Leave Application → workflow_state.
+    # ERPNext Education's Student Leave Application has no workflow_state or status
+    # field. We inject one so Frappe's Workflow engine (Student Leave Approval)
+    # can persist state transitions. Without this field, the workflow engine
+    # silently fails to save the state name, and every Leave doc looks identical.
+    student_leave_workflow_state = {
+        "Student Leave Application": [
+            {
+                "fieldname": "workflow_state",
+                "label": "Workflow State",
+                "fieldtype": "Link",
+                "options": "Workflow State",
+                "insert_after": "amended_from",
+                "read_only": 1,
+                "hidden": 1,
+                "no_copy": 1,
+                "print_hide": 1,
+                "report_hide": 1,
+                "allow_on_submit": 1,
+            }
+        ]
+    }
+    create_custom_fields(student_leave_workflow_state)

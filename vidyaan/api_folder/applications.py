@@ -517,10 +517,17 @@ def get_teacher_pending_applications():
 		"docstatus": 0,
 		"student": ["in", students]
 	}
-	if leave_states:
-		leave_filters["workflow_state"] = ["in", leave_states]
-	else:
-		leave_filters["workflow_state"] = "Pending Review"
+	# Only filter on workflow_state if the field actually exists on the doctype.
+	# ERPNext Education's Student Leave Application ships without it; Vidyaan
+	# injects it as a custom field. On sites where the custom field hasn't been
+	# applied yet (pre-migrate), a filter on workflow_state would raise a
+	# "Unknown column" error and break the pending applications query.
+	leave_meta = frappe.get_meta("Student Leave Application")
+	if leave_meta.has_field("workflow_state"):
+		if leave_states:
+			leave_filters["workflow_state"] = ["in", leave_states]
+		else:
+			leave_filters["workflow_state"] = "Pending Review"
 
 	leaves = frappe.get_all(
 		"Student Leave Application",
