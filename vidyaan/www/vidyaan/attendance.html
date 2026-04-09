@@ -1,0 +1,51 @@
+{% extends "templates/vidyaan_base.html" %}
+
+{% block vidyaan_content %}
+
+<div class="vd-grid cols-3">
+	<div class="vd-card"><div class="vd-kpi"><div class="vd-kpi-icon success"><span class="vd-nav-icon vd-icon-user-check" style="width:24px;height:24px;"></span></div><div><div class="vd-kpi-label">Present Today</div><div class="vd-kpi-value">{{ today_present }}</div></div></div></div>
+	<div class="vd-card"><div class="vd-kpi"><div class="vd-kpi-icon accent"><span class="vd-nav-icon vd-icon-users" style="width:24px;height:24px;"></span></div><div><div class="vd-kpi-label">Absent Today</div><div class="vd-kpi-value">{{ today_absent }}</div></div></div></div>
+	<div class="vd-card"><div class="vd-kpi"><div class="vd-kpi-icon"><span class="vd-nav-icon vd-icon-calendar" style="width:24px;height:24px;"></span></div><div><div class="vd-kpi-label">Today %</div><div class="vd-kpi-value">{{ today_percent }}%</div></div></div></div>
+</div>
+
+<div class="vd-section">
+	<div class="vd-section-title">Last 7 Days</div>
+	<div class="vd-card">
+		<div style="display:flex;align-items:flex-end;gap:14px;height:160px;">
+		{% for d in week %}
+			<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:8px;">
+				<div style="font-size:12px;font-weight:600;color:var(--vd-text-2);">{{ d.percent }}%</div>
+				<div style="width:100%;height:120px;background:var(--vd-bg);border-radius:8px;display:flex;align-items:flex-end;overflow:hidden;">
+					<div style="width:100%;height:{{ d.percent }}%;background:linear-gradient(180deg,var(--vd-primary),var(--vd-primary-d));"></div>
+				</div>
+				<div style="font-size:11px;color:var(--vd-muted);">{{ frappe.utils.formatdate(d.date, "dd MMM") }}</div>
+			</div>
+		{% endfor %}
+		</div>
+	</div>
+</div>
+
+<div class="vd-section">
+	<div class="vd-section-title">Recent Records</div>
+	<div class="vd-table-wrap">
+		<table class="vd-table">
+			<thead><tr><th>Date</th><th>Student</th><th>Status</th><th></th></tr></thead>
+			<tbody>
+			{% for r in recent %}
+				<tr>
+					<td>{{ frappe.utils.formatdate(r.date) }}</td>
+					<td><strong>{{ r.student_name or r.student }}</strong></td>
+					<td>
+						{% if r.status == "Present" %}<span class="vd-badge success">Present</span>
+						{% elif r.status == "Absent" %}<span class="vd-badge danger">Absent</span>
+						{% else %}<span class="vd-badge">{{ r.status or "—" }}</span>{% endif %}
+					</td>
+					<td><a class="vd-btn" href="/app/student-attendance/{{ r.name }}">Open</a></td>
+				</tr>
+			{% else %}<tr><td colspan="4" class="vd-empty">No attendance recorded yet.</td></tr>{% endfor %}
+			</tbody>
+		</table>
+	</div>
+</div>
+
+{% endblock %}

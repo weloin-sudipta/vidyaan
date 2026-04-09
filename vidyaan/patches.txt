@@ -6,3 +6,4 @@
 # Patches added in this section will be executed after doctypes are migrated
 vidyaan.patches.link_instructors_to_employees
 vidyaan.patches.v0_create_assignment_doctype
+vidyaan.patches.v1_setup_vidyaan_website

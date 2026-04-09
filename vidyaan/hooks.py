@@ -29,8 +29,15 @@ required_apps = ["erpnext", "hrms", "education"]
 app_include_js = "/assets/vidyaan/js/vidyaan_setup.js"
 
 # include js, css files in header of web template
-# web_include_css = "/assets/vidyaan/css/vidyaan.css"
-# web_include_js = "/assets/vidyaan/js/vidyaan.js"
+web_include_css = "/assets/vidyaan/css/vidyaan_web.css"
+web_include_js = "/assets/vidyaan/js/vidyaan_web.js"
+
+# Website context overrides — favicon + brand for the public site.
+website_context = {
+	"favicon": "/assets/education/edu-logo.svg",
+	"splash_image": "/assets/education/edu-logo.svg",
+	"brand_html": '<img src="/assets/education/edu-logo.svg" style="width:24px;height:24px;vertical-align:middle;margin-right:6px;"/> Vidyaan',
+}
 
 # include custom scss in every website theme (without file extension ".scss")
 # website_theme_scss = "vidyaan/public/scss/website"
@@ -61,8 +68,9 @@ app_include_js = "/assets/vidyaan/js/vidyaan_setup.js"
 
 # website user home page (by Role)
 role_home_page = {
-	"Institute Admin": "app/vidyaan-dashboard",
-	"System Manager": "app/vidyaan-dashboard",
+	"Institute Admin": "vidyaan/dashboard",
+	"System Manager": "vidyaan/dashboard",
+	"Administrator": "vidyaan/dashboard",
 }
 
 # Generators

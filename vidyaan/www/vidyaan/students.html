@@ -1,0 +1,39 @@
+{% extends "templates/vidyaan_base.html" %}
+
+{% block page_actions %}
+	<a class="vd-btn vd-btn-primary" href="/app/student/new">+ New Student</a>
+{% endblock %}
+
+{% block vidyaan_content %}
+
+<div class="vd-grid cols-3">
+	<div class="vd-card"><div class="vd-kpi"><div class="vd-kpi-icon"><span class="vd-nav-icon vd-icon-users" style="width:24px;height:24px;"></span></div><div><div class="vd-kpi-label">Total</div><div class="vd-kpi-value">{{ total }}</div></div></div></div>
+	<div class="vd-card"><div class="vd-kpi"><div class="vd-kpi-icon success"><span class="vd-nav-icon vd-icon-user-check" style="width:24px;height:24px;"></span></div><div><div class="vd-kpi-label">Active</div><div class="vd-kpi-value">{{ active }}</div></div></div></div>
+	<div class="vd-card"><div class="vd-kpi"><div class="vd-kpi-icon accent"><span class="vd-nav-icon vd-icon-users" style="width:24px;height:24px;"></span></div><div><div class="vd-kpi-label">Inactive</div><div class="vd-kpi-value">{{ inactive }}</div></div></div></div>
+</div>
+
+<div class="vd-section">
+	<div class="vd-section-title">All Students</div>
+	<div class="vd-table-wrap">
+		<table class="vd-table">
+			<thead><tr><th>ID</th><th>Name</th><th>Email</th><th>Mobile</th><th>Joined</th><th>Status</th><th></th></tr></thead>
+			<tbody>
+			{% for s in students %}
+				<tr>
+					<td>{{ s.name }}</td>
+					<td><strong>{{ s.student_name }}</strong></td>
+					<td>{{ s.student_email_id or "—" }}</td>
+					<td>{{ s.student_mobile_number or "—" }}</td>
+					<td>{{ frappe.utils.formatdate(s.joining_date) if s.joining_date else "—" }}</td>
+					<td>{% if s.enabled %}<span class="vd-badge success">Active</span>{% else %}<span class="vd-badge">Inactive</span>{% endif %}</td>
+					<td><a class="vd-btn" href="/app/student/{{ s.name }}">Open</a></td>
+				</tr>
+			{% else %}
+				<tr><td colspan="7" class="vd-empty">No students yet.</td></tr>
+			{% endfor %}
+			</tbody>
+		</table>
+	</div>
+</div>
+
+{% endblock %}

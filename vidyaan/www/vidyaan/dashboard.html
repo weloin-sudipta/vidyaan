@@ -1,0 +1,113 @@
+{% extends "templates/vidyaan_base.html" %}
+
+{% block vidyaan_content %}
+
+<!-- KPI grid -->
+<div class="vd-grid cols-4">
+	{% for kpi in kpis %}
+	<div class="vd-card">
+		<div class="vd-kpi">
+			<div class="vd-kpi-icon {{ kpi.tone }}">
+				<span class="vd-nav-icon vd-icon-{{ kpi.icon }}" style="width:24px;height:24px;"></span>
+			</div>
+			<div>
+				<div class="vd-kpi-label">{{ kpi.label }}</div>
+				<div class="vd-kpi-value">{{ kpi.value }}</div>
+			</div>
+		</div>
+	</div>
+	{% endfor %}
+</div>
+
+<!-- Today snapshot -->
+<div class="vd-section">
+	<div class="vd-grid cols-3">
+		<div class="vd-card">
+			<div class="vd-section-title">Attendance Today</div>
+			<div class="vd-kpi-value" style="font-size:34px;">{{ attendance_today.percent }}%</div>
+			<div style="margin-top:6px;">
+				<span class="vd-badge success">Present {{ attendance_today.present }}</span>
+				<span class="vd-badge danger" style="margin-left:6px;">Absent {{ attendance_today.absent }}</span>
+			</div>
+			<div style="margin-top:14px;height:8px;background:var(--vd-bg);border-radius:99px;overflow:hidden;">
+				<div style="width:{{ attendance_today.percent }}%;height:100%;background:linear-gradient(90deg,var(--vd-success),var(--vd-success-d));"></div>
+			</div>
+		</div>
+
+		<div class="vd-card">
+			<div class="vd-section-title">Fees Collected (30 days)</div>
+			<div class="vd-kpi-value" style="font-size:30px;">{{ currency }} {{ "{:,.0f}".format(fees_collected_30d) }}</div>
+			<p style="color:var(--vd-muted);margin:8px 0 0;font-size:13px;">Submitted invoices in the last 30 days.</p>
+		</div>
+
+		<div class="vd-card">
+			<div class="vd-section-title">Quick Actions</div>
+			<div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:8px;">
+				<a class="vd-btn vd-btn-primary" href="/app/student/new">+ Student</a>
+				<a class="vd-btn" href="/app/student-applicant/new">+ Admission</a>
+				<a class="vd-btn" href="/app/assignment/new">+ Assignment</a>
+				<a class="vd-btn" href="/app/fees/new">+ Fee</a>
+			</div>
+		</div>
+	</div>
+</div>
+
+<!-- Recent students -->
+<div class="vd-section">
+	<div class="vd-section-title">Recent Students</div>
+	<div class="vd-table-wrap">
+		<table class="vd-table">
+			<thead>
+				<tr><th>Name</th><th>Email</th><th>Joining Date</th><th>Status</th></tr>
+			</thead>
+			<tbody>
+			{% for s in recent_students %}
+				<tr>
+					<td><strong>{{ s.student_name or s.name }}</strong></td>
+					<td>{{ s.student_email_id or "—" }}</td>
+					<td>{{ frappe.utils.formatdate(s.joining_date) if s.joining_date else "—" }}</td>
+					<td>
+						{% if s.enabled %}
+							<span class="vd-badge success">Active</span>
+						{% else %}
+							<span class="vd-badge">Inactive</span>
+						{% endif %}
+					</td>
+				</tr>
+			{% else %}
+				<tr><td colspan="4" class="vd-empty">No students yet.</td></tr>
+			{% endfor %}
+			</tbody>
+		</table>
+	</div>
+</div>
+
+<!-- Recent admissions -->
+<div class="vd-section">
+	<div class="vd-section-title">Recent Admissions</div>
+	<div class="vd-table-wrap">
+		<table class="vd-table">
+			<thead>
+				<tr><th>Applicant</th><th>Program</th><th>Status</th></tr>
+			</thead>
+			<tbody>
+			{% for a in recent_applicants %}
+				<tr>
+					<td><strong>{{ (a.first_name or "") }} {{ (a.last_name or "") }}</strong></td>
+					<td>{{ a.program or "—" }}</td>
+					<td>
+						{% set st = (a.application_status or "Applied") %}
+						{% if st == "Approved" %}<span class="vd-badge success">{{ st }}</span>
+						{% elif st == "Rejected" %}<span class="vd-badge danger">{{ st }}</span>
+						{% else %}<span class="vd-badge warning">{{ st }}</span>{% endif %}
+					</td>
+				</tr>
+			{% else %}
+				<tr><td colspan="3" class="vd-empty">No applications yet.</td></tr>
+			{% endfor %}
+			</tbody>
+		</table>
+	</div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,54 @@
+{% extends "templates/vidyaan_base.html" %}
+
+{% block page_actions %}
+	<a class="vd-btn vd-btn-primary" href="/app/program/new">+ New Program</a>
+	<a class="vd-btn" href="/app/course/new" style="margin-left:8px;">+ New Course</a>
+{% endblock %}
+
+{% block vidyaan_content %}
+
+<div class="vd-grid cols-3">
+	<div class="vd-card"><div class="vd-kpi"><div class="vd-kpi-icon violet"><span class="vd-nav-icon vd-icon-book-open" style="width:24px;height:24px;"></span></div><div><div class="vd-kpi-label">Programs</div><div class="vd-kpi-value">{{ total_programs }}</div></div></div></div>
+	<div class="vd-card"><div class="vd-kpi"><div class="vd-kpi-icon teal"><span class="vd-nav-icon vd-icon-file-text" style="width:24px;height:24px;"></span></div><div><div class="vd-kpi-label">Courses</div><div class="vd-kpi-value">{{ total_courses }}</div></div></div></div>
+	<div class="vd-card"><div class="vd-kpi"><div class="vd-kpi-icon peach"><span class="vd-nav-icon vd-icon-file-text" style="width:24px;height:24px;"></span></div><div><div class="vd-kpi-label">Topics</div><div class="vd-kpi-value">{{ total_topics }}</div></div></div></div>
+</div>
+
+<div class="vd-section">
+	<div class="vd-section-title">Programs</div>
+	<div class="vd-table-wrap">
+		<table class="vd-table">
+			<thead><tr><th>Code</th><th>Name</th><th>Department</th><th></th></tr></thead>
+			<tbody>
+			{% for p in programs %}
+				<tr>
+					<td>{{ p.program_code or "—" }}</td>
+					<td><strong>{{ p.program_name or p.name }}</strong></td>
+					<td>{{ p.department or "—" }}</td>
+					<td><a class="vd-btn" href="/app/program/{{ p.name }}">Open</a></td>
+				</tr>
+			{% else %}<tr><td colspan="4" class="vd-empty">No programs yet.</td></tr>{% endfor %}
+			</tbody>
+		</table>
+	</div>
+</div>
+
+<div class="vd-section">
+	<div class="vd-section-title">Courses</div>
+	<div class="vd-table-wrap">
+		<table class="vd-table">
+			<thead><tr><th>Code</th><th>Name</th><th>Department</th><th></th></tr></thead>
+			<tbody>
+			{% for c in courses %}
+				<tr>
+					<td>{{ c.course_code or "—" }}</td>
+					<td><strong>{{ c.course_name or c.name }}</strong></td>
+					<td>{{ c.department or "—" }}</td>
+					<td><a class="vd-btn" href="/app/course/{{ c.name }}">Open</a></td>
+				</tr>
+			{% else %}<tr><td colspan="4" class="vd-empty">No courses yet.</td></tr>{% endfor %}
+			</tbody>
+		</table>
+	</div>
+</div>
+
+{% endblock %}

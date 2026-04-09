@@ -1,0 +1,35 @@
+{% extends "templates/vidyaan_base.html" %}
+
+{% block page_actions %}
+	<a class="vd-btn vd-btn-primary" href="/app/routine-generation/new">+ Generate Routine</a>
+{% endblock %}
+
+{% block vidyaan_content %}
+
+<div class="vd-grid cols-3">
+	<div class="vd-card"><div class="vd-kpi"><div class="vd-kpi-icon"><span class="vd-nav-icon vd-icon-clock" style="width:24px;height:24px;"></span></div><div><div class="vd-kpi-label">Generations</div><div class="vd-kpi-value">{{ generations }}</div></div></div></div>
+	<div class="vd-card"><div class="vd-kpi"><div class="vd-kpi-icon teal"><span class="vd-nav-icon vd-icon-calendar" style="width:24px;height:24px;"></span></div><div><div class="vd-kpi-label">Slots</div><div class="vd-kpi-value">{{ slots }}</div></div></div></div>
+	<div class="vd-card"><div class="vd-kpi"><div class="vd-kpi-icon warning"><span class="vd-nav-icon vd-icon-clock" style="width:24px;height:24px;"></span></div><div><div class="vd-kpi-label">Period Timings</div><div class="vd-kpi-value">{{ periods }}</div></div></div></div>
+</div>
+
+<div class="vd-section">
+	<div class="vd-section-title">Recent Routine Generations</div>
+	<div class="vd-table-wrap">
+		<table class="vd-table">
+			<thead><tr><th>ID</th><th>Academic Year</th><th>Term</th><th>Status</th><th></th></tr></thead>
+			<tbody>
+			{% for r in recent %}
+				<tr>
+					<td>{{ r.name }}</td>
+					<td>{{ r.academic_year or "—" }}</td>
+					<td>{{ r.academic_term or "—" }}</td>
+					<td><span class="vd-badge">{{ r.status or "—" }}</span></td>
+					<td><a class="vd-btn" href="/app/routine-generation/{{ r.name }}">Open</a></td>
+				</tr>
+			{% else %}<tr><td colspan="5" class="vd-empty">No routines generated yet.</td></tr>{% endfor %}
+			</tbody>
+		</table>
+	</div>
+</div>
+
+{% endblock %}
