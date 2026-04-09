@@ -264,7 +264,7 @@ const downloadHallTicket = async (type) => {
     return;
   }
 
-  const fileUrl = result.file_url; // e.g. /files/admit_card_xxx.pdf
+  const fileUrl = result.file_url.startsWith('http') ? result.file_url : `${config.public.apiBaseUrl}${result.file_url}`;
 
   // Fetch the PDF binary through our dev proxy (/files → Frappe).
   // Blob URLs bypass X-Frame-Options: deny — Frappe blocks direct iframes.

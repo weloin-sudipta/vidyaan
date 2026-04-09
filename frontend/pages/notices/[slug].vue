@@ -25,7 +25,7 @@
                  <i class="fa fa-file-pdf-o text-indigo-500 dark:text-indigo-400"></i>
                  <span class="text-xs font-bold text-slate-700 dark:text-slate-300 transition-colors">{{ file.file_name }}</span>
               </div>
-              <a :href="file.file_url" target="_blank" class="text-indigo-600 dark:text-indigo-400 text-xs font-black uppercase hover:underline transition-colors">View PDF</a>
+              <a :href="getFileUrl(file.file_url)" target="_blank" class="text-indigo-600 dark:text-indigo-400 text-xs font-black uppercase hover:underline transition-colors">View PDF</a>
            </div>
         </div>
       </div>
@@ -46,6 +46,8 @@ import { onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useNotices } from '~/composables/academics/useNotices'
 
+const config = useRuntimeConfig()
+
 const route = useRoute()
 const router = useRouter()
 
@@ -54,4 +56,15 @@ const { detail, fetchDetail } = useNotices()
 onMounted(() => {
   fetchDetail(route.params.slug)
 })
+
+const getFileUrl = (filePath, isDownload = false) => {
+  if (!filePath) return ''
+  if (filePath.startsWith('http')) return filePath
+
+  if (isDownload) {
+    return `${config.public.apiBaseUrl}/api/method/frappe.utils.file_manager.download_file?file_url=${encodeURIComponent(filePath)}`
+  }
+
+  return `${config.public.apiBaseUrl}${filePath}`
+}
 </script>

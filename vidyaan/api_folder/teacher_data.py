@@ -21,26 +21,35 @@ def get_my_profile():
     user = frappe.session.user
     user_doc = frappe.get_doc("User", user)
 
-    # Get courses taught (instructor_log for profile page)
+    # ----------------------------
+    # Courses (Instructor Log)
+    # ----------------------------
     courses = frappe.get_all(
         "Instructor Course Mapping",
         filters={"parent": instructor.name, "parenttype": "Instructor"},
         fields=["course", "course_name", "program", "is_preferred"],
         ignore_permissions=True,
     )
-    # Resolve course names
-    for c in courses:
-        if not c.course_name:
-            c["course_name"] = frappe.db.get_value("Course", c.course, "course_name") or c.course
 
-    # Get student groups assigned
+    # Resolve course names if missing
+    for c in courses:
+        if not c.get("course_name"):
+            c["course_name"] = (
+                frappe.db.get_value("Course", c.get("course"), "course_name")
+                or c.get("course")
+            )
+
+    # ----------------------------
+    # Student Groups
+    # ----------------------------
     groups = frappe.get_all(
         "Student Group Instructor",
         filters={"instructor": instructor.name},
         fields=["parent as student_group"],
         ignore_permissions=True,
     )
-    group_names = [g.student_group for g in groups]
+
+    group_names = [g.get("student_group") for g in groups if g.get("student_group")]
 
     group_details = []
     if group_names:
@@ -51,28 +60,39 @@ def get_my_profile():
             ignore_permissions=True,
         )
 
-    # Employee details
+    # ----------------------------
+    # Employee Details
+    # ----------------------------
     emp_data = {}
     if instructor.employee:
         emp_data = frappe.db.get_value(
-            "Employee", instructor.employee,
-            ["designation", "department", "cell_phone", "image"],
-            as_dict=True
+            "Employee",
+            instructor.employee,
+            ["designation", "department", "cell_number", "image"],
+            as_dict=True,
         ) or {}
 
+    # ----------------------------
+    # Response
+    # ----------------------------
     return {
-        # Top-level for backward compat
+        # Top-level (Backward Compatibility)
         "instructor_id": instructor.name,
         "instructor_name": instructor.instructor_name,
         "company": instructor.company or company or "",
         "designation": emp_data.get("designation", ""),
         "department": emp_data.get("department", instructor.get("department", "")),
-        "phone": emp_data.get("cell_phone", ""),
+
+        # ✅ FIXED HERE
+        "phone": emp_data.get("cell_number", ""),
+
         "image": emp_data.get("image", instructor.get("image", "")),
         "courses": courses,
         "student_groups": group_details,
 
-        # Nested "user" object for teacher profile page
+        # ----------------------------
+        # User Info
+        # ----------------------------
         "user": {
             "full_name": user_doc.full_name or "",
             "email": user_doc.email or "",
@@ -92,7 +112,9 @@ def get_my_profile():
             "roles": [{"role": r.role} for r in user_doc.get("roles", [])],
         },
 
-        # Nested "instructor" object for teacher profile page
+        # ----------------------------
+        # Instructor Info
+        # ----------------------------
         "instructor": {
             "name": instructor.name,
             "instructor_name": instructor.instructor_name,
@@ -100,11 +122,18 @@ def get_my_profile():
             "department": emp_data.get("department", instructor.get("department", "")),
             "institute": instructor.company or company or "",
             "status": instructor.status or "Active",
-            "image": instructor.get("image", "") or emp_data.get("image", "") or user_doc.user_image or "",
+
+            # Better fallback priority
+            "image": (
+                instructor.get("image")
+                or emp_data.get("image")
+                or user_doc.user_image
+                or ""
+            ),
+
             "instructor_log": courses,
         },
     }
-
 
 @frappe.whitelist()
 def get_teacher_pending_tasks():

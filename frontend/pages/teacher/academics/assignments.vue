@@ -101,7 +101,7 @@
 
                 <!-- Action buttons -->
                 <div class="flex flex-wrap gap-4 pt-4">
-                  <a v-if="assignment.assignment_file" :href="assignment.assignment_file" target="_blank"
+                  <a v-if="assignment.assignment_file" :href="getFileUrl(assignment.assignment_file)" target="_blank"
                     class="flex items-center gap-3 px-5 py-3 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl hover:bg-white dark:hover:bg-slate-700 hover:border-indigo-200 dark:hover:border-indigo-800 shadow-sm hover:shadow-md transition-all group/btn">
                     <div
                       class="w-8 h-8 bg-rose-50 dark:bg-rose-900/30 rounded-lg flex items-center justify-center text-rose-500 group-hover/btn:scale-110 transition-transform">
@@ -417,7 +417,7 @@
                     {{ sub.submitted_on ? formatDate(sub.submitted_on) : '—' }}
                   </td>
                   <td class="px-6 py-4">
-                    <a v-if="sub.submission_file" :href="sub.submission_file" target="_blank"
+                    <a v-if="sub.submission_file" :href="getFileUrl(sub.submission_file)" target="_blank"
                       class="flex items-center gap-1.5 text-indigo-500 dark:text-indigo-400 hover:text-indigo-700 text-[10px] font-bold">
                       <i class="fa fa-file-text-o"></i> View Work
                     </a>
@@ -553,6 +553,8 @@ import AppModal from '~/components/ui/AppModal.vue'
 import HeroHeader from '~/components/ui/HeroHeader.vue'
 import UiSkeleton from '~/components/ui/UiSkeleton.vue'
 import { call } from '~/composables/api/useFrappeFetch'
+
+const config = useRuntimeConfig()
 
 const { addToast } = useToast()
 const { confirm, setLoading: setConfirmLoading } = useConfirm()
@@ -920,11 +922,22 @@ const isDescriptionLong = (description) => {
   return stripHtmlTags(description).length > 150
 }
 
-const getShortDescription = (description) => {
-  if (!description) return ''
-  const plain = stripHtmlTags(description)
-  if (plain.length <= 150) return description
-  return plain.substring(0, 150) + '...'
+const getShortDescription = (desc) => {
+  if (!desc) return ''
+  const striped = desc.replace(/<[^>]*>?/gm, '')
+  if (striped.length <= 180) return desc
+  return striped.substring(0, 180) + '...'
+}
+
+const getFileUrl = (filePath, isDownload = false) => {
+  if (!filePath) return ''
+  if (filePath.startsWith('http')) return filePath
+
+  if (isDownload) {
+    return `${config.public.apiBaseUrl}/api/method/frappe.utils.file_manager.download_file?file_url=${encodeURIComponent(filePath)}`
+  }
+
+  return `${config.public.apiBaseUrl}${filePath}`
 }
 
 const isDescriptionExpanded = (name) => expandedDescription.value[name] || false

@@ -121,7 +121,7 @@
                   <div v-else class="text-[11px] text-gray-400 dark:text-zinc-500">Type: {{ item.noc_type }}</div>
                   <div class="text-[10px] text-gray-500 dark:text-zinc-400 mt-1 max-w-xs truncate flex items-center gap-1">
                     <span>Reason: {{ item.reason || 'Not specified' }}</span>
-                    <a v-if="item.supporting_document" :href="item.supporting_document" target="_blank" class="ml-2 text-indigo-500 hover:text-indigo-600 dark:text-indigo-400 dark:hover:text-indigo-300">
+                    <a v-if="item.supporting_document" :href="getFileUrl(item.supporting_document)" target="_blank" class="ml-2 text-indigo-500 hover:text-indigo-600 dark:text-indigo-400 dark:hover:text-indigo-300">
                       <i class="fas fa-paperclip"></i>
                     </a>
                   </div>
@@ -185,6 +185,8 @@
 import { ref, onMounted, computed } from 'vue'
 import { call } from '~/composables/api/useFrappeFetch'
 import { useToast } from '~/composables/ui/useToast'
+
+const config = useRuntimeConfig()
 
 const { addToast } = useToast()
 
@@ -283,6 +285,17 @@ const handleAction = async (name, action, app_type) => {
   } finally {
     processingId.value = null
   }
+}
+
+const getFileUrl = (filePath, isDownload = false) => {
+  if (!filePath) return ''
+  if (filePath.startsWith('http')) return filePath
+
+  if (isDownload) {
+    return `${config.public.apiBaseUrl}/api/method/frappe.utils.file_manager.download_file?file_url=${encodeURIComponent(filePath)}`
+  }
+
+  return `${config.public.apiBaseUrl}${filePath}`
 }
 
 onMounted(fetchApplications)

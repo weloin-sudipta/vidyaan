@@ -268,6 +268,8 @@ import TopicMaterialsModal from '~/components/TopicMaterialsModal.vue'
 import { useCourseTopics } from '~/composables/academics/useCourseTopics'
 import { useStudyMaterials } from '~/composables/academics/useStudyMaterials'
 
+const config = useRuntimeConfig()
+
 const { fetchCourseTopics } = useCourseTopics()
 const { materials, teacherMaterials, fetchMaterials, fetchMaterialsByTeacher, deleteMaterial: deleteMaterialAPI, loading: materialsLoading } = useStudyMaterials()
 
@@ -418,10 +420,10 @@ const getFileUrl = (filePath, isDownload = false) => {
   if (filePath.startsWith('http')) return filePath
 
   if (isDownload) {
-    return `/api/method/frappe.utils.file_manager.download_file?file_url=${encodeURIComponent(filePath)}`
+    return `${config.public.apiBaseUrl}/api/method/frappe.utils.file_manager.download_file?file_url=${encodeURIComponent(filePath)}`
   }
 
-  return filePath
+  return `${config.public.apiBaseUrl}${filePath}`
 }
 
 /**

@@ -102,7 +102,7 @@
 
             <div class="flex items-center gap-3 ml-auto lg:ml-0">
               <a v-if="task.assignment_file"
-                :href="safeUrl(task.assignment_file)"
+                :href="getFileUrl(task.assignment_file)"
                 target="_blank"
                 class="w-10 h-10 flex items-center justify-center rounded-xl border border-slate-200 dark:border-slate-800 text-slate-500 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
                 title="Download Resources">
@@ -225,6 +225,8 @@ import HeroHeader from '~/components/ui/HeroHeader.vue'
 import AppModal from '~/components/ui/AppModal.vue'
 import { useAssignments } from '~/composables/academics/useAssignments'
 
+const config = useRuntimeConfig()
+
 const { assignments, loading, error, fetchAssignments, submitAssignment, uploadFile } = useAssignments()
 
 const activeTab = ref('Active')
@@ -322,7 +324,16 @@ const formatDate = (d) => {
   return new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
 }
 
-const safeUrl = (url) => url ? (url.startsWith('http') ? url : 'https://' + url) : '#'
+const getFileUrl = (filePath, isDownload = false) => {
+  if (!filePath) return ''
+  if (filePath.startsWith('http')) return filePath
+
+  if (isDownload) {
+    return `${config.public.apiBaseUrl}/api/method/frappe.utils.file_manager.download_file?file_url=${encodeURIComponent(filePath)}`
+  }
+
+  return `${config.public.apiBaseUrl}${filePath}`
+}
 </script>
 
 <style scoped>

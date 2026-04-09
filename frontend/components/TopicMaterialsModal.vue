@@ -62,6 +62,8 @@
 <script setup>
 import AppModal from '~/components/ui/AppModal.vue'
 
+const config = useRuntimeConfig()
+
 defineProps({
   isOpen: {
     type: Boolean,
@@ -104,9 +106,9 @@ const getFileUrl = (filePath, isDownload = false) => {
   if (filePath.startsWith('http')) return filePath
 
   if (isDownload) {
-    return `/api/method/frappe.utils.file_manager.download_file?file_url=${encodeURIComponent(filePath)}`
+    return `${config.public.apiBaseUrl}/api/method/frappe.utils.file_manager.download_file?file_url=${encodeURIComponent(filePath)}`
   }
 
-  return filePath
+  return `${config.public.apiBaseUrl}${filePath}`
 }
 </script>
