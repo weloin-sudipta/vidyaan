@@ -176,9 +176,9 @@ def setup_student_noc_workflow():
         {"state": "Lab Clearance", "doc_status": "1", "allow_edit": "Instructor"},
         {"state": "Hostel Clearance", "doc_status": "1", "allow_edit": "Instructor"},
         {"state": "Final Approval", "doc_status": "1", "allow_edit": "Institute Admin"},
-        {"state": "Approved", "doc_status": "1", "allow_edit": ""},
+        {"state": "Approved", "doc_status": "1", "allow_edit": "Institute Admin"},
         # Rejected only transitions from submitted (doc_status=1) states, so 2 = cancelled.
-        {"state": "Rejected", "doc_status": "2", "allow_edit": ""},
+        {"state": "Rejected", "doc_status": "2", "allow_edit": "Institute Admin"},
     ]
 
     transitions_data = [
@@ -204,9 +204,9 @@ def setup_student_leave_workflow():
     states_data = [
         {"state": "Draft", "doc_status": "0", "allow_edit": "Student"},
         {"state": "Pending Review", "doc_status": "1", "allow_edit": "Instructor"},
-        {"state": "Approved", "doc_status": "1", "allow_edit": ""},
+        {"state": "Approved", "doc_status": "1", "allow_edit": "Institute Admin"},
         # Rejected only transitions from Pending Review (doc_status=1), so 2 = cancelled.
-        {"state": "Rejected", "doc_status": "2", "allow_edit": ""},
+        {"state": "Rejected", "doc_status": "2", "allow_edit": "Institute Admin"},
     ]
 
     transitions_data = [
