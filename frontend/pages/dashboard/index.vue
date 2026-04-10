@@ -1,10 +1,13 @@
 <template>
   <!-- Loading while we determine the role -->
-  <div v-if="isLoading" class="flex items-center justify-center h-screen bg-slate-50 dark:bg-slate-950 transition-colors duration-300">
+  <div v-if="isLoading"
+    class="flex items-center justify-center h-screen bg-slate-50 dark:bg-slate-950 transition-colors duration-300">
     <div class="relative text-center">
       <div class="w-24 h-24 mx-auto mb-6 relative">
         <div class="absolute inset-0 border-4 border-dashed border-indigo-300 rounded-full animate-spin"></div>
-        <div class="absolute inset-0 border-4 border-transparent border-t-indigo-600 border-r-indigo-600 rounded-full animate-spin"></div>
+        <div
+          class="absolute inset-0 border-4 border-transparent border-t-indigo-600 border-r-indigo-600 rounded-full animate-spin">
+        </div>
       </div>
       <p class="text-sm font-bold text-slate-600 dark:text-slate-300">
         Loading Dashboard…
@@ -33,7 +36,7 @@ const dashboardComponent = shallowRef<object | null>(null)
 // Lazy load each role's dashboard to avoid bundling all three together
 const StudentDashboard = defineAsyncComponent(() => import('~/components/dashboard/StudentDashboardView.vue'))
 const TeacherDashboard = defineAsyncComponent(() => import('~/components/dashboard/TeacherDashboardView.vue'))
-const AdminDashboard   = defineAsyncComponent(() => import('~/components/dashboard/AdminDashboardView.vue'))
+const AdminDashboard = defineAsyncComponent(() => import('~/components/dashboard/AdminDashboardView.vue'))
 
 onMounted(async () => {
   if (!isAuthenticated.value || !userRole.value) {
@@ -42,11 +45,11 @@ onMounted(async () => {
 
   const role = (userRole.value ?? '').toLowerCase()
 
-  if (role === 'Student') {
+  if (role === 'student') {
     dashboardComponent.value = StudentDashboard
-  } else if (role === 'Instructor') {
+  } else if (role === 'teacher') {
     dashboardComponent.value = TeacherDashboard
-  } else if (role === 'Institute Admin' || role === 'System Administrator') {
+  } else if (['admin', 'institute admin', 'system administrator'].includes(role)) {
     dashboardComponent.value = AdminDashboard
   } else {
     // Unknown role — fall back to student dashboard
