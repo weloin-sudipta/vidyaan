@@ -12,7 +12,7 @@
           <span class="text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-widest">{{ notices.length }} updates</span>
         </div>
       </div>
-      <NuxtLink to="/events"><button class="text-[10px] font-black text-indigo-600 dark:text-indigo-400 uppercase tracking-widest bg-indigo-50 dark:bg-indigo-900/20 hover:bg-indigo-100 dark:hover:bg-indigo-900/40 transition-colors px-3 py-1.5 rounded-full flex items-center gap-1.5">
+      <NuxtLink to="/notices"><button class="text-[10px] font-black text-indigo-600 dark:text-indigo-400 uppercase tracking-widest bg-indigo-50 dark:bg-indigo-900/20 hover:bg-indigo-100 dark:hover:bg-indigo-900/40 transition-colors px-3 py-1.5 rounded-full flex items-center gap-1.5">
         View all <i class="fa fa-arrow-right text-[9px]"></i>
       </button></NuxtLink>
     </div>

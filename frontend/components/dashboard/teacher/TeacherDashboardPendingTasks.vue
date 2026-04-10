@@ -114,20 +114,20 @@
                <i class="fa fa-search text-emerald-500"></i>
                <h3 class="text-xs font-black uppercase text-slate-700 dark:text-slate-300">Pending Reviews</h3>
             </div>
-            <span class="bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 text-[10px] font-bold px-2 py-0.5 rounded-lg">{{ pendingTasks.review_pending.length }}</span>
+            <span class="bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 text-[10px] font-bold px-2 py-0.5 rounded-lg">{{ allReviews.length }}</span>
         </div>
         
         <div v-if="loadingTasks" class="space-y-3">
            <div v-for="i in 3" :key="i" class="h-20 bg-slate-100 dark:bg-slate-800 animate-pulse rounded-2xl"></div>
         </div>
-        <div v-else-if="pendingTasks.review_pending.length === 0" class="h-full flex flex-col items-center justify-center p-6 text-center border border-dashed border-slate-200 dark:border-slate-800 rounded-2xl bg-slate-50/50 dark:bg-slate-800/20">
+        <div v-else-if="allReviews.length === 0" class="h-full flex flex-col items-center justify-center p-6 text-center border border-dashed border-slate-200 dark:border-slate-800 rounded-2xl bg-slate-50/50 dark:bg-slate-800/20">
             <div class="w-12 h-12 bg-slate-100 dark:bg-slate-800 rounded-full flex items-center justify-center mb-3">
                 <i class="fa fa-folder-open-o text-slate-400"></i>
             </div>
             <p class="text-[11px] font-bold text-slate-500 uppercase">Inbox Zero</p>
         </div>
         <div v-else class="flex flex-col gap-3">
-            <div v-for="item in pendingTasks.review_pending.slice(0, 3)" :key="item.submission_id" class="p-4 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-slate-700/50 hover:border-emerald-200 dark:hover:border-emerald-500/30 transition-all group">
+            <div v-for="item in allReviews.slice(0, 3)" :key="item.submission_id" class="p-4 bg-slate-50 dark:bg-slate-800/50 rounded-2xl border border-slate-100 dark:border-slate-700/50 hover:border-emerald-200 dark:hover:border-emerald-500/30 transition-all group">
                <div class="flex justify-between items-start mb-2">
                   <div>
                      <p class="text-[12px] leading-tight font-black text-slate-800 dark:text-slate-200 group-hover:text-emerald-600 dark:group-hover:text-emerald-400 transition-colors">{{ item.student_name }}</p>
@@ -139,9 +139,11 @@
                    <p class="text-[9px] font-bold text-slate-400 bg-white dark:bg-slate-900 px-2 py-1 rounded-lg border border-slate-100 dark:border-slate-800">
                        <i class="fa fa-clock-o text-emerald-400 mr-1"></i> {{ formatDate(item.submission_date) }}
                    </p>
-                   <NuxtLink to="teacher/academics/assignments"><button class="px-3 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-400 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 shadow-sm hover:bg-emerald-500 hover:text-white hover:border-transparent transition-all">
+                   <NuxtLink :to="item.isApplication ? '/teacher/applications' : '/teacher/academics/assignments'">
+                       <button class="px-3 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-widest text-slate-500 dark:text-slate-400 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 shadow-sm hover:bg-emerald-500 hover:text-white hover:border-transparent transition-all">
                        Review
-                   </button></NuxtLink>
+                       </button>
+                   </NuxtLink>
                </div>
             </div>
         </div>
@@ -151,12 +153,25 @@
 </template>
 
 <script setup>
-import { onMounted, onUnmounted } from 'vue'
+import { onMounted, onUnmounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { useTeacherDashboard } from '~/composables/teacher/useTeacherDashboard'
 
 const router = useRouter()
 const { pendingTasks, loadingTasks, tasksError, fetchPendingTasks } = useTeacherDashboard()
+
+const allReviews = computed(() => {
+    return [
+        ...(pendingTasks.value.review_pending || []),
+        ...(pendingTasks.value.application_pending || []).map(app => ({
+            ...app,
+            isApplication: true,
+            submission_id: app.name,
+            assignment_title: app.app_type + ' Application',
+            submission_date: app.creation
+        }))
+    ]
+})
 
 let refreshInterval = null
 

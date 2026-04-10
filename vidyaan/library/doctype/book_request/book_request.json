@@ -40,7 +40,6 @@
             "label": "Request Date",
             "default": "Today"
         },
-
         {
             "fieldname": "col_break_1",
             "fieldtype": "Column Break"
@@ -59,7 +58,6 @@
             "label": "Queue Priority",
             "read_only": 1
         },
-
         {
             "fieldname": "assignment_section",
             "fieldtype": "Section Break",
@@ -85,7 +83,6 @@
             "label": "Approval Date",
             "read_only": 1
         },
-
         {
             "fieldname": "remarks_section",
             "fieldtype": "Section Break",
@@ -96,7 +93,6 @@
             "fieldtype": "Small Text",
             "label": "Remarks"
         },
-
         {
             "fieldname": "tracking_section",
             "fieldtype": "Section Break",
@@ -109,7 +105,6 @@
             "read_only": 1
         }
     ],
-
     "permissions": [
         {
             "role": "System Manager",

@@ -14,6 +14,7 @@
           </span>
           <h1 class="text-4xl font-black text-slate-900 dark:text-slate-100 transition-colors">{{ detail.title }}</h1>
           <p class="text-slate-500 dark:text-slate-400 text-lg mt-2 transition-colors">{{ detail.description }}</p>
+          <div class="prose dark:prose-invert max-w-none" v-html="detail.content"></div>
           <span class="text-[10px] font-black text-slate-400 dark:text-slate-500 transition-colors">{{ detail.date }}</span>
         </div>
 

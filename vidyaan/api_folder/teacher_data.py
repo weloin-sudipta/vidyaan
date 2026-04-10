@@ -143,46 +143,31 @@ def get_teacher_pending_tasks():
         return {"success": False, "message": "No instructor record found",
                 "attendance_pending": [], "mark_entry_pending": [], "review_pending": []}
 
-    # Get instructor's student groups
-    group_names = frappe.get_all(
-        "Student Group Instructor",
-        filters={"instructor": instructor.name},
-        pluck="parent",
-        ignore_permissions=True,
-    )
-
-    # Also get groups from Course Schedule
-    schedule_groups = frappe.get_all(
-        "Course Schedule",
-        filters={"instructor": instructor.name},
-        pluck="student_group",
-        distinct=True,
-        ignore_permissions=True,
-    )
-    all_groups = list(set(group_names + schedule_groups))
-
-    # Attendance pending: groups with no attendance for today
+    # Attendance pending: course schedules for today without attendance
     attendance_pending = []
-    for gn in all_groups:
+    schedules_today = frappe.get_all(
+        "Course Schedule",
+        filters={
+            "instructor": instructor.name,
+            "schedule_date": frappe.utils.today()
+        },
+        fields=["name as schedule_id", "course", "student_group as batch", "schedule_date"],
+        ignore_permissions=True
+    )
+    
+    for sch in schedules_today:
+        sch["course_name"] = frappe.db.get_value("Course", sch["course"], "course_name") or sch["course"]
+        sch["total_students"] = frappe.db.count("Student Group Student", {"parent": sch["batch"], "active": 1})
+        # Check if attendance exists for this schedule
         has_attendance = frappe.db.exists("Student Attendance", {
-            "student_group": gn,
-            "date": frappe.utils.today(),
+            "course_schedule": sch["schedule_id"],
             "docstatus": 1
         })
+        # Also check if it's marked manually via tool (sometimes docstatus 1 is not the only check, but we rely on docstatus 1 student attendance)
         if not has_attendance:
-            group_info = frappe.db.get_value(
-                "Student Group", gn,
-                ["student_group_name", "program"],
-                as_dict=True
-            )
-            if group_info:
-                attendance_pending.append({
-                    "student_group": gn,
-                    "group_name": group_info.student_group_name,
-                    "program": group_info.program or ""
-                })
+            attendance_pending.append(sch)
 
-    # Mark entry pending: submitted assessment plans with no results yet
+    # Mark entry pending: submitted assessment plans with missing results
     mark_entry_pending = []
     plans = frappe.get_all(
         "Assessment Plan",
@@ -191,19 +176,25 @@ def get_teacher_pending_tasks():
             "docstatus": 1,
             "schedule_date": ["<=", frappe.utils.today()]
         },
-        fields=["name", "assessment_name", "course", "student_group", "schedule_date"],
+        fields=["name as assessment_id", "assessment_name as assessment_title", "course", "student_group", "schedule_date as assessment_date"],
         ignore_permissions=True,
     )
     for plan in plans:
-        result_count = frappe.db.count("Assessment Result", {
-            "assessment_plan": plan.name, "docstatus": 1
-        })
-        if result_count == 0:
+        total_students = frappe.db.count("Student Group Student", {"parent": plan.student_group, "active": 1})
+        marks_entered_count = frappe.db.count("Assessment Result", {"assessment_plan": plan.assessment_id, "docstatus": 1})
+        if marks_entered_count < total_students:
+            plan["total_students"] = total_students
+            plan["marks_entered_count"] = marks_entered_count
+            plan["pending_count"] = total_students - marks_entered_count
             mark_entry_pending.append(plan)
+
+    from vidyaan.api_folder.applications import get_teacher_pending_applications
+    applications_pending = get_teacher_pending_applications()
 
     return {
         "success": True,
         "attendance_pending": attendance_pending,
         "mark_entry_pending": mark_entry_pending,
-        "review_pending": []
+        "review_pending": [],
+        "application_pending": applications_pending
     }

@@ -21,6 +21,9 @@ export const fetchStudents = async (userEmail?: string): Promise<Student[]> => {
       userEmail ? { user_email: userEmail } : {}
     )
 
+    console.log("Student Response: ",response);
+    
+
     let list: unknown
     if (Array.isArray(response)) {
       list = response

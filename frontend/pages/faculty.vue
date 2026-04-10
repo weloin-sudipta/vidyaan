@@ -93,12 +93,16 @@
 
             <div class="mt-3 mb-4">
               <div class="flex items-center gap-2">
-                <div class="w-6 h-6 rounded-lg bg-slate-50 dark:bg-slate-700 flex items-center justify-center transition-colors">
-                  <i class="fa fa-calendar-o text-[11px] text-slate-400 dark:text-slate-300"></i>
+                <div class="w-4 h-4 rounded-lg bg-slate-50 dark:bg-slate-700 flex items-center justify-center transition-colors">
+                  <i class="fa fa-envelope text-[8px] text-slate-400 dark:text-slate-300"></i>
                 </div>
-                <span class="text-xs font-bold text-slate-500 dark:text-slate-400 transition-colors">
-                  {{ member.term }}
-                </span>
+
+                <a
+                  :href="`mailto:${member.email}`"
+                  class="text-xs font-bold text-slate-500 dark:text-slate-400 hover:text-blue-500 transition-colors"
+                >
+                  {{ member.email }}
+                </a>
               </div>
             </div>
           </div>
@@ -158,7 +162,7 @@ const mapMember = (item) => {
     name: ins.instructor_name || ins.name,
     role: ins.status === "Active" ? "Teacher" : "Staff",
     designation: logs[0]?.program || ins.naming_series || "—",
-    term: logs[0]?.academic_term || "—",
+    email: ins.email,
     subjects: [...new Set(logs.map((l) => l.course).filter(Boolean))],
   };
 };

@@ -26,6 +26,7 @@ export interface PendingTasksState {
   attendance_pending: PendingTaskItem[]
   mark_entry_pending: PendingTaskItem[]
   review_pending: PendingTaskItem[]
+  application_pending: PendingTaskItem[]
 }
 
 interface PendingTasksResponse {
@@ -33,6 +34,7 @@ interface PendingTasksResponse {
   attendance_pending?: PendingTaskItem[]
   mark_entry_pending?: PendingTaskItem[]
   review_pending?: PendingTaskItem[]
+  application_pending?: PendingTaskItem[]
 }
 
 export interface UseTeacherDashboardReturn {
@@ -56,6 +58,7 @@ export const useTeacherDashboard = (): UseTeacherDashboardReturn => {
     attendance_pending: [],
     mark_entry_pending: [],
     review_pending: [],
+    application_pending: [],
   })
   const loadingTasks = ref(false)
   const tasksError: Ref<string | null> = ref(null)
@@ -98,6 +101,7 @@ export const useTeacherDashboard = (): UseTeacherDashboardReturn => {
           attendance_pending: res.attendance_pending || [],
           mark_entry_pending: res.mark_entry_pending || [],
           review_pending: res.review_pending || [],
+          application_pending: res.application_pending || [],
         }
       }
       return res

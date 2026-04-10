@@ -149,6 +149,20 @@
               >
                 {{ enr.student_name }}
               </h3>
+
+                  <p
+                    class="text-[11px] text-slate-400 dark:text-slate-300 font-bold truncate"
+                    :title="enr.student_email_id"
+                  >
+                    <i class="fa fa-envelope mr-1"></i>
+                    <a
+                      :href="`mailto:${enr.student_email_id}`"
+                      class="hover:underline"
+                    >
+                      {{ enr.student_email_id || '—' }}
+                    </a>
+                  </p>
+
               <p
                 class="text-[11px] text-slate-400 dark:text-slate-300 font-black uppercase tracking-widest flex items-center gap-2 transition-colors truncate"
                 :title="enr.program"

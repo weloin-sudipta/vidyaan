@@ -8,11 +8,11 @@
       </div>
 
       <div class="flex gap-3 w-full md:w-auto">
-        <select class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest outline-none focus:ring-4 focus:ring-indigo-500/10 transition-colors shadow-sm dark:shadow-none">
+        <!-- <select class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-[10px] font-black text-slate-500 dark:text-slate-400 uppercase tracking-widest outline-none focus:ring-4 focus:ring-indigo-500/10 transition-colors shadow-sm dark:shadow-none">
           <option>All Semesters</option>
           <option>Semester 3</option>
           <option>Semester 2</option>
-        </select>
+        </select> -->
         <button class="bg-slate-900 dark:bg-indigo-600 text-white px-6 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-indigo-600 dark:hover:bg-indigo-500 transition-all shadow-lg dark:shadow-none active:scale-95">
           <i class="fa fa-filter mr-2"></i> Filter
         </button>
@@ -59,11 +59,11 @@
               </span>
             </td>
 
-            <td class="px-8 py-6 text-right">
+            <!-- <td class="px-8 py-6 text-right">
               <button class="w-10 h-10 rounded-xl bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-400 dark:text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 hover:border-indigo-200 dark:hover:border-indigo-500/50 hover:shadow-md dark:hover:shadow-none transition-all">
                 <i class="fa fa-download"></i>
               </button>
-            </td>
+            </td> -->
 
           </tr>
         </tbody>

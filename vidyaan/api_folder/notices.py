@@ -7,7 +7,7 @@ def get_approved_notices():
     """Get all approved publications (notices, news, announcements)."""
     publications = frappe.get_all(
         "Publication",
-        filters={"status": "Approved", "docstatus": 1},
+        filters={"docstatus": 1},
         fields=[
             "name", "title", "type", "content", "publish_date",
             "target_type", "target_student_group", "featured_image",
@@ -20,6 +20,8 @@ def get_approved_notices():
     news = []
     pin_notices = []
     tags = ["All"]
+    
+    recent_notice_count = 0
 
     for pub in publications:
         # Strip HTML tags for description preview
@@ -43,13 +45,18 @@ def get_approved_notices():
             "icon": "fa-bullhorn" if pub.type == "Notice" else ("fa-newspaper-o" if pub.type == "News" else "fa-bell"),
         }
 
+        # Add to regular notices based on type
         if pub.type == "News":
             news.append(item)
-        elif pub.type == "Notice":
+        else:  # Notice or other types
             notices.append(item)
-        else:
-            notices.append(item)
+        
+        # Also add top 2 recent notices to pin_notices (without removing from regular list)
+        if pub.type == "Notice" and recent_notice_count < 2:
+            pin_notices.append(item)
+            recent_notice_count += 1
 
+        # Add to tags
         if pub.type not in tags:
             tags.append(pub.type)
 
@@ -60,7 +67,6 @@ def get_approved_notices():
         "tags": tags,
         "topics": []
     }
-
 
 @frappe.whitelist()
 def get_notice(slug=None):

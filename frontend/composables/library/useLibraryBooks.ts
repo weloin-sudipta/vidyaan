@@ -81,7 +81,7 @@ export const useBooks = (): UseBooksReturn => {
         url: 'vidyaan.library.api.get_catalog',
       })
       const res = await resource.fetch()
-      console.log(res)
+      console.log("available catalog: ",res)
 
       allBooks.value = res ?? []
     } catch (err) {
@@ -100,7 +100,7 @@ export const useBooks = (): UseBooksReturn => {
         url: 'vidyaan.library.api.get_my_issues',
       })
       const res = await resource.fetch()
-      console.log(res)
+      console.log("all books: ",res)
 
       data.value = res ?? []
     } catch (err) {
@@ -119,7 +119,7 @@ export const useBooks = (): UseBooksReturn => {
         url: 'vidyaan.library.api.get_my_requests',
       })
       const res = await resource.fetch()
-      console.log(res)
+      console.log("my request list: ",res)
 
       requestedBook.value = res ?? []
     } catch (err) {

@@ -124,7 +124,6 @@ def _ensure_workflow_masters(states_data, transitions_data):
 def _install_workflow(workflow_name, document_type, states_data, transitions_data):
     """Create a workflow doc with role guarding and idempotency.
 
-    - Skips with a loud log if a required role is missing (fails loudly, not silently).
     - Skips if the target doctype does not exist.
     - Skips if the workflow is already installed.
     - Ensures Workflow State / Workflow Action Master masters exist first.
@@ -139,16 +138,7 @@ def _install_workflow(workflow_name, document_type, states_data, transitions_dat
     if frappe.db.exists("Workflow", workflow_name):
         return False
 
-    required_roles = _collect_workflow_roles(states_data, transitions_data)
-    missing = _missing_roles(required_roles)
-    if missing:
-        # Loud failure: log error row visible in Error Log, do NOT silently proceed.
-        frappe.log_error(
-            f"[vidyaan] Cannot install workflow '{workflow_name}' — missing roles: {missing}. "
-            f"Create these roles and re-run migrate.",
-            "vidyaan workflow install",
-        )
-        return False
+    # Role check removed - workflows will be created even if roles don't exist
 
     _ensure_workflow_masters(states_data, transitions_data)
 
