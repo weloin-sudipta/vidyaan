@@ -141,7 +141,8 @@ const getProgressWidth = (status) => {
     'Issued': '67%',
     'Returned': '100%',
     'Reserved': '50%',
-    'Cancel': '0%'
+    'Cancelled': '0%',
+    'Rejected': '0%'
   };
   return mapping[status] || '0%';
 };
@@ -155,14 +156,15 @@ const isStepReached = (currentStatus, stepKey) => {
 // ─── Status Theme ────────────────────────────────────────────────────────────
 const statusTheme = (status) => {
   const themes = {
-    'Pending': { bg: 'bg-amber-50 text-amber-600 border-amber-100' },
-    'Approved': { bg: 'bg-blue-50 text-blue-600 border-blue-100' },
-    'Issued': { bg: 'bg-indigo-50 text-indigo-600 border-indigo-100' },
-    'Returned': { bg: 'bg-emerald-50 text-emerald-600 border-emerald-100' },
-    'Reserved': { bg: 'bg-purple-50 text-purple-600 border-purple-100' },
-    'Cancel': { bg: 'bg-red-50 text-red-600 border-red-100' }
+    'Pending': { bg: 'bg-amber-50 text-amber-600 border-amber-100 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-800/50' },
+    'Approved': { bg: 'bg-blue-50 text-blue-600 border-blue-100 dark:bg-blue-900/20 dark:text-blue-400 dark:border-blue-800/50' },
+    'Issued': { bg: 'bg-indigo-50 text-indigo-600 border-indigo-100 dark:bg-indigo-900/20 dark:text-indigo-400 dark:border-indigo-800/50' },
+    'Returned': { bg: 'bg-emerald-50 text-emerald-600 border-emerald-100 dark:bg-emerald-900/20 dark:text-emerald-400 dark:border-emerald-800/50' },
+    'Reserved': { bg: 'bg-purple-50 text-purple-600 border-purple-100 dark:bg-purple-900/20 dark:text-purple-400 dark:border-purple-800/50' },
+    'Cancelled': { bg: 'bg-red-50 text-red-600 border-red-100 dark:bg-red-900/20 dark:text-red-400 dark:border-red-800/50' },
+    'Rejected': { bg: 'bg-red-50 text-red-600 border-red-100 dark:bg-red-900/20 dark:text-red-400 dark:border-red-800/50' }
   };
-  return themes[status] || { bg: 'bg-slate-50 text-slate-500 border-slate-100' };
+  return themes[status] || { bg: 'bg-slate-50 text-slate-500 border-slate-100 dark:bg-slate-800 dark:text-slate-400 dark:border-slate-700' };
 };
 
 // ─── Date Formatter ──────────────────────────────────────────────────────────

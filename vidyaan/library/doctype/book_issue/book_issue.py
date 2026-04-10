@@ -21,6 +21,13 @@ class BookIssue(Document):
 			copy_doc.status = "Issued"
 			copy_doc.save(ignore_permissions=True)
 
+			# Auto-link and fulfill pending book requests for this member/book if manually issued
+			if not self.book_request:
+				pending_request = frappe.db.get_value("Book Request", {"member": self.member, "book": self.book, "status": ["in", ["Pending", "Approved"]]}, "name")
+				if pending_request:
+					self.book_request = pending_request
+					frappe.db.set_value("Book Request", pending_request, "status", "Issued")
+
 		elif self.has_value_changed("status") and self.status == "Returned":
 			self.process_return()
 
@@ -37,6 +44,10 @@ class BookIssue(Document):
 			self.fine_amount = days_overdue * library_doc.fine_per_day
 		else:
 			self.fine_amount = 0
+
+		# Sync status back to the linked Book Request
+		if self.book_request:
+			frappe.db.set_value("Book Request", self.book_request, "status", "Returned")
 
 		self.assign_next_request_if_needed(library_doc)
 

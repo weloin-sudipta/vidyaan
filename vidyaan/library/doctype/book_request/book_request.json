@@ -48,7 +48,7 @@
             "fieldname": "status",
             "fieldtype": "Select",
             "label": "Status",
-            "options": "Pending\nApproved\nRejected\nIssued\nCancelled",
+            "options": "Pending\nApproved\nRejected\nIssued\nReturned\nCancelled",
             "default": "Pending",
             "in_list_view": 1
         },

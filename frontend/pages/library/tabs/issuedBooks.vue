@@ -86,9 +86,12 @@
 
             <!-- Days Left -->
             <td class="px-6 py-5">
-              <div v-if="book.is_overdue" class="flex items-center gap-2">
-                <span class="px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-tighter shadow-sm dark:shadow-none border bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 border-red-100 dark:border-red-900/30 transition-colors">
+              <div v-if="book.is_overdue" class="flex flex-col gap-1.5">
+                <span class="w-fit px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-tighter shadow-sm dark:shadow-none border bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 border-red-100 dark:border-red-900/30 transition-colors">
                   {{ book.days_overdue }} days overdue
+                </span>
+                <span v-if="book.fine_amount > 0" class="text-[10px] font-bold text-red-500 dark:text-red-400">
+                  Fine: ${{ book.fine_amount }}
                 </span>
               </div>
               <div v-else-if="book.days_left <= 3" class="flex items-center gap-2">
@@ -157,13 +160,17 @@
               {{ book.renew_requested ? 'Pending Approval' : 'Renew' }}
             </button>
           </div>
-          <div class="grid grid-cols-2 gap-2 text-[10px] font-bold">
+          <div class="grid grid-cols-2 gap-2 text-[10px] font-bold mt-2">
             <div><span class="text-slate-400">Issued:</span> {{ formatDate(book.issue_date) }}</div>
             <div><span class="text-slate-400">Due:</span> {{ formatDate(book.due_date) }}</div>
             <div :class="book.is_overdue ? 'text-red-600' : 'text-slate-700'">
-              <span class="text-slate-400">Days Left:</span> {{ book.is_overdue ? `${book.days_overdue} overdue` : `${book.days_left} days` }}
+              <span class="text-slate-400">Remaining:</span> {{ book.is_overdue ? `${book.days_overdue} days overdue` : `${book.days_left} days left` }}
             </div>
-            <div><span class="text-slate-400">Renewed:</span> {{ book.renewal_count || 0 }}x</div>
+            <div><span class="text-slate-400">Renewals:</span> {{ book.renewal_count || 0 }}x</div>
+            <div v-if="book.is_overdue && book.fine_amount > 0" class="col-span-2 text-red-500 mt-1 pb-1 border-t border-red-100 pt-2">
+              <i class="fa fa-exclamation-circle mr-1"></i>
+              Accrued Fine: ${{ book.fine_amount }}
+            </div>
           </div>
         </div>
       </div>

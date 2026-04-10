@@ -65,6 +65,7 @@ def get_my_issues():
 	)
 
 	current_date = getdate(today())
+	library_fines = {}
 	for issue in issues:
 		book_title, book_isbn = frappe.db.get_value("Book", issue["book"], ["title", "isbn"])
 		issue["book_title"] = book_title
@@ -74,8 +75,14 @@ def get_my_issues():
 		days_diff = date_diff(due_date, current_date)
 
 		issue["is_overdue"] = issue["status"] == "Issued" and days_diff < 0
-		issue["days_left"] = max(0, days_diff) if issue["status"] == "Issued" else 0
+		issue["days_left"] = max(0, days_diff) if not issue["is_overdue"] else 0
 		issue["days_overdue"] = max(0, abs(days_diff)) if issue["is_overdue"] else 0
+
+		if issue["is_overdue"] and issue["status"] == "Issued":
+			lib = issue["library"]
+			if lib not in library_fines:
+				library_fines[lib] = frappe.db.get_value("Library", lib, "fine_per_day") or 0
+			issue["fine_amount"] = issue["days_overdue"] * library_fines[lib]
 
 	return issues
 
@@ -765,12 +772,19 @@ def get_all_issues(status=None):
 def _enrich_issues(issues):
 	"""Add computed fields to issue records."""
 	current_date = getdate(today())
+	library_fines = {}
 	for issue in issues:
 		due = getdate(issue["due_date"])
 		days_diff = date_diff(due, current_date)
 		issue["is_overdue"] = issue["status"] == "Issued" and days_diff < 0
 		issue["days_left"] = max(0, days_diff) if not issue["is_overdue"] else 0
 		issue["days_overdue"] = abs(days_diff) if issue["is_overdue"] else 0
+
+		if issue["is_overdue"] and issue["status"] == "Issued":
+			lib = issue["library"]
+			if lib not in library_fines:
+				library_fines[lib] = frappe.db.get_value("Library", lib, "fine_per_day") or 0
+			issue["fine_amount"] = issue["days_overdue"] * library_fines[lib]
 
 
 @frappe.whitelist()
