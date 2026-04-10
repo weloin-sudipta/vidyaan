@@ -222,7 +222,7 @@ const fees = computed(() => {
     status: (Number(item.outstanding_amount) || 0) === 0 ? "Paid" : "Unpaid",
     date: item.due_date || item.posting_date || "N/A",
     words: item.remarks || "N/A",
-    breakout: [] // No breakdown in API
+    breakout: item.breakout || []
   }));
 });
 

@@ -198,6 +198,13 @@ def get_student_dashboard_data():
                 fee_structure_name = frappe.db.get_value("Fee Schedule", inv.fee_schedule, "fee_structure") or ""
             fee_structure = fee_structure_name or inv.get("remarks", "")[:50] if inv.get("remarks") else f"Fee for {inv.customer_name}" if inv.get("customer_name") else "Tuition Fee"
             
+            invoice_items = frappe.db.get_all(
+                "Sales Invoice Item",
+                filters={"parent": inv.name},
+                fields=["item_name", "amount"]
+            )
+            breakout = [{"label": row.item_name or row.item_code or "Fee Component", "value": float(row.amount or 0)} for row in invoice_items]
+            
             fee_list.append({
                 "name": inv.name,
                 "posting_date": inv.posting_date,
@@ -208,7 +215,8 @@ def get_student_dashboard_data():
                 "paid_amount": float(inv.grand_total or 0) - float(inv.outstanding_amount or 0),
                 "currency": inv.currency,
                 "fee_structure": fee_structure,
-                "remarks": inv.remarks or ""
+                "remarks": inv.remarks or "",
+                "breakout": breakout
             })
         
         fees_data = {
