@@ -41,7 +41,7 @@ def get_setup_data():
 @frappe.whitelist()
 def run_setup(setup_data):
 	"""Run the complete Vidyaan setup with provided data.
-	
+
 	Args:
 		setup_data: JSON string containing setup parameters:
 			{
@@ -53,7 +53,7 @@ def run_setup(setup_data):
 				"country": "India",
 				"currency": "INR"
 			}
-	
+
 	Returns:
 		Dictionary with setup result and user info
 	"""

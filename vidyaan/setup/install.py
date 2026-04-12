@@ -1,5 +1,6 @@
 # vidyaan/setup/install.py
 import frappe
+import click
 from vidyaan.setup.user import create_default_user
 from vidyaan.setup.roles import create_roles
 
@@ -38,6 +39,7 @@ def setup_vidyaan_settings():
 def after_install():
     # Call user and role creation scripts
     install()
+    click.secho("Thank you for installing Vidyaan !!",fg="green")
 
     # Vidyaan custom setup wizard is disabled — let the default Frappe/ERPNext
     # setup wizard run on first login. Do not force System Settings.setup_complete.

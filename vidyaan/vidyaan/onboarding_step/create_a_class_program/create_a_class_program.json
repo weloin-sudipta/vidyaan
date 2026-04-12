@@ -1,0 +1,20 @@
+{
+ "action": "Create Entry",
+ "creation": "2026-04-12 21:08:21.675727",
+ "description": "Programs are essentially Classes or Streams (e.g., 'Class 11 Science'). Let's create your first one to organize your subjects.",
+ "docstatus": 0,
+ "doctype": "Onboarding Step",
+ "idx": 0,
+ "is_complete": 0,
+ "is_single": 0,
+ "is_skipped": 0,
+ "modified": "2026-04-12 21:08:21.675727",
+ "modified_by": "Administrator",
+ "name": "Create a Class Program",
+ "owner": "Administrator",
+ "reference_document": "Program",
+ "show_form_tour": 0,
+ "show_full_form": 0,
+ "title": "Set up your first Class",
+ "validate_action": 1
+}

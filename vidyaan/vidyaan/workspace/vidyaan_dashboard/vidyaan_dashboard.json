@@ -1,6 +1,6 @@
 {
  "charts": [],
- "content": "[{\"id\":\"header_dash\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\">Vidyaan</span>\",\"col\":12}},{\"id\":\"header_institute\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\">\ud83c\udfdb\ufe0f Institute &amp; Staff Management</span>\",\"col\":12}},{\"id\":\"header_acad\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\">\ud83d\udcda Academic Plans (Classes &amp; Lessons)</span>\",\"col\":12}},{\"id\":\"header_stud\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h4\\\">\ud83e\uddd1\u200d\ud83c\udf93 Student Management</span>\",\"col\":12}}]",
+ "content": "[{\"id\":\"DglCIm90hj\",\"type\":\"onboarding\",\"data\":{\"onboarding_name\":\"Vidyaan\",\"col\":12}},{\"id\":\"2k55IIx3fD\",\"type\":\"number_card\",\"data\":{\"number_card_name\":\"Total Programmes\",\"col\":4}},{\"id\":\"TLW07a5rHQ\",\"type\":\"number_card\",\"data\":{\"number_card_name\":\"Total Employee\",\"col\":4}}]",
  "creation": "2026-03-31 16:08:22.864127",
  "custom_blocks": [],
  "docstatus": 0,
@@ -12,11 +12,20 @@
  "is_hidden": 0,
  "label": "Vidyaan Dashboard",
  "links": [],
- "modified": "2026-03-31 16:11:29.196582",
+ "modified": "2026-04-12 21:38:16.144938",
  "modified_by": "Administrator",
  "module": "Vidyaan",
  "name": "Vidyaan Dashboard",
- "number_cards": [],
+ "number_cards": [
+  {
+   "label": "Total Programmes",
+   "number_card_name": "Program"
+  },
+  {
+   "label": "Total Employee",
+   "number_card_name": "Employee Exits (This Year)"
+  }
+ ],
  "owner": "Administrator",
  "public": 1,
  "quick_lists": [],

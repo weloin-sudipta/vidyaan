@@ -13,3 +13,4 @@ frappe.realtime.on('server_restart', function() {
         }
     });
 });
+
