@@ -20,13 +20,35 @@ def _ensure_roles_exist():
 
 
 def _apply_all_permissions():
-    """Apply permissions for all Vidyaan roles across all required doctypes.
+    """Apply permissions for all Vidyaan roles.
 
-    This runs every time (not just on first install) to ensure permissions
-    are always correct even after reinstall or migration.
+    Institute Admin gets access ONLY to Vidyaan, Library, and Education
+    module doctypes — NOT ERPNext core or HRMS.
+
+    System Administrator retains full access across all modules.
     """
-    # ── System Administrator & Institute Admin: Full CRUD on education + vidyaan doctypes ──
-    admin_roles = ["System Administrator", "Institute Admin"]
+
+    # ──────────────────────────────────────────────────────────
+    # System Administrator: full access to everything
+    # ──────────────────────────────────────────────────────────
+    _apply_system_admin_permissions()
+
+    # ──────────────────────────────────────────────────────────
+    # Institute Admin: restricted to Vidyaan + Library + Education
+    # ──────────────────────────────────────────────────────────
+    _apply_institute_admin_permissions()
+
+    # ──────────────────────────────────────────────────────────
+    # Instructor: limited teaching permissions
+    # ──────────────────────────────────────────────────────────
+    _apply_instructor_permissions()
+
+    frappe.db.commit()
+
+
+def _apply_system_admin_permissions():
+    """System Administrator gets full CRUD on all education + ERPNext doctypes."""
+    role = "System Administrator"
 
     # Education doctypes — full CRUD
     education_crud = [
@@ -38,104 +60,145 @@ def _apply_all_permissions():
         "Student Leave Application", "Assessment Criteria",
         "Video", "Quiz", "Fee Category", "Fee Schedule",
     ]
-    for role in admin_roles:
-        for dt in education_crud:
-            _set_permission(dt, role, read=1, write=1, create=1, delete=1, select=1, share=1)
+    for dt in education_crud:
+        _set_permission(dt, role, read=1, write=1, create=1, delete=1, select=1, share=1)
 
-    # Education doctypes — CRUD + submit/cancel (submittable)
-    education_submittable = [
-        "Assessment Plan", "Assessment Result", "Fee Structure", "Fees",
-    ]
-    for role in admin_roles:
-        for dt in education_submittable:
-            _set_permission(dt, role, read=1, write=1, create=1, delete=1,
-                            submit=1, cancel=1, amend=1, select=1, share=1)
+    # Education — submittable
+    for dt in ["Assessment Plan", "Assessment Result", "Fee Structure", "Fees"]:
+        _set_permission(dt, role, read=1, write=1, create=1, delete=1,
+                        submit=1, cancel=1, amend=1, select=1, share=1)
 
-    # Education read-only doctypes
-    education_readonly = [
-        "Assessment Group", "Course Enrollment", "Course Activity", "Quiz Activity",
-    ]
-    for role in admin_roles:
-        for dt in education_readonly:
-            _set_permission(dt, role, read=1, select=1)
+    # Education read-only
+    for dt in ["Assessment Group", "Course Enrollment", "Course Activity", "Quiz Activity"]:
+        _set_permission(dt, role, read=1, select=1)
 
     # Education tools
-    education_tools = [
+    for dt in [
         "Assessment Result Tool", "Student Attendance Tool",
         "Student Report Generation Tool", "Course Scheduling Tool",
         "Student Group Creation Tool", "Program Enrollment Tool",
+    ]:
+        _set_permission(dt, role, read=1, write=1, create=1)
+
+    # ERPNext / HR
+    for dt in ["Company", "Employee"]:
+        _set_permission(dt, role, read=1, write=1, create=1, delete=1, select=1, share=1)
+
+    # Frappe core (desk access)
+    for dt in ["Page", "Workspace", "DocType", "Module Def", "Print Format",
+               "Report", "Dashboard", "Dashboard Chart", "Number Card"]:
+        _set_permission(dt, role, read=1, select=1)
+
+    # User management
+    _set_permission("User", role, read=1, write=1, create=1, select=1, share=1)
+
+    # Settings
+    _set_permission("Education Settings", role, read=1, write=1, create=1, select=1)
+    _set_permission("Vidyaan Settings", role, read=1, write=1, create=1, select=1)
+    _set_permission("Routine Generation", role, read=1, write=1, create=1, delete=1,
+                    submit=1, cancel=1, amend=1, select=1, share=1)
+    _set_permission("Publication", role, read=1, write=1, create=1, delete=1,
+                    submit=1, cancel=1, amend=1, select=1, share=1)
+
+
+def _apply_institute_admin_permissions():
+    """Institute Admin: ONLY Vidyaan + Library + Education module access.
+
+    No ERPNext core (Company, Employee), no System Manager, no User management.
+    """
+    role = "Institute Admin"
+
+    # ── Education module doctypes (the school data this admin manages) ──
+    education_crud = [
+        "Student", "Instructor", "Program", "Course", "Topic", "Article",
+        "Program Enrollment", "Student Group", "Student Attendance", "Course Schedule",
+        "Room", "Academic Year", "Academic Term", "Grading Scale",
+        "Guardian", "Student Category", "Student Batch Name",
+        "Student Applicant", "Student Admission", "Student Log",
+        "Student Leave Application", "Assessment Criteria",
+        "Video", "Quiz", "Fee Category", "Fee Schedule",
     ]
-    for role in admin_roles:
-        for dt in education_tools:
-            _set_permission(dt, role, read=1, write=1, create=1)
+    for dt in education_crud:
+        _set_permission(dt, role, read=1, write=1, create=1, delete=1, select=1, share=1)
 
-    # ERPNext/HR doctypes needed by admin
-    erpnext_crud = ["Company", "Employee"]
-    for role in admin_roles:
-        for dt in erpnext_crud:
-            _set_permission(dt, role, read=1, write=1, create=1, delete=1, select=1, share=1)
+    # Education — submittable
+    for dt in ["Assessment Plan", "Assessment Result", "Fee Structure", "Fees"]:
+        _set_permission(dt, role, read=1, write=1, create=1, delete=1,
+                        submit=1, cancel=1, amend=1, select=1, share=1)
 
-    # Frappe core doctypes needed for desk access
-    frappe_read = [
-        "Page", "Workspace", "DocType", "Module Def", "Print Format", "Report",
-        "Dashboard", "Dashboard Chart", "Number Card",
+    # Education read-only
+    for dt in ["Assessment Group", "Course Enrollment", "Course Activity", "Quiz Activity"]:
+        _set_permission(dt, role, read=1, select=1)
+
+    # Education tools
+    for dt in [
+        "Assessment Result Tool", "Student Attendance Tool",
+        "Student Report Generation Tool", "Course Scheduling Tool",
+        "Student Group Creation Tool", "Program Enrollment Tool",
+    ]:
+        _set_permission(dt, role, read=1, write=1, create=1)
+
+    # Education Settings (read + write so admin can configure academic settings)
+    _set_permission("Education Settings", role, read=1, write=1, create=1, select=1)
+
+    # ── Vidyaan module doctypes ──
+    _set_permission("Vidyaan Settings", role, read=1, write=1, create=1, select=1)
+    _set_permission("Routine Generation", role, read=1, write=1, create=1, delete=1,
+                    submit=1, cancel=1, amend=1, select=1, share=1)
+    _set_permission("Publication", role, read=1, write=1, create=1, delete=1,
+                    submit=1, cancel=1, amend=1, select=1, share=1)
+    _set_permission("Assignment", role, read=1, write=1, create=1, delete=1, select=1, share=1)
+    _set_permission("Assignment Submission", role, read=1, write=1, create=1, delete=1, select=1)
+    _set_permission("Student NOC", role, read=1, write=1, create=1, delete=1,
+                    submit=1, cancel=1, amend=1, select=1, share=1)
+    _set_permission("Student Request", role, read=1, write=1, create=1, delete=1, select=1, share=1)
+
+    # ── Library module doctypes ──
+    library_doctypes = [
+        "Book", "Book Category", "Book Copy", "Book Issue",
+        "Book Request", "Book Tag", "Library", "Library Member",
     ]
-    for role in admin_roles:
-        for dt in frappe_read:
-            _set_permission(dt, role, read=1, select=1)
+    for dt in library_doctypes:
+        _set_permission(dt, role, read=1, write=1, create=1, delete=1, select=1, share=1)
 
-    # User management (admin only)
-    for role in admin_roles:
-        _set_permission("User", role, read=1, write=1, create=1, select=1, share=1)
+    # ── Minimal Frappe core for desk access (read-only) ──
+    for dt in ["Page", "Workspace", "Module Def", "Print Format", "Report"]:
+        _set_permission(dt, role, read=1, select=1)
 
-    # Education Settings
-    for role in admin_roles:
-        _set_permission("Education Settings", role, read=1, write=1, create=1, select=1)
 
-    # Vidyaan custom doctypes (already have permissions in JSON, but ensure consistency)
-    for role in admin_roles:
-        _set_permission("Vidyaan Settings", role, read=1, write=1, create=1, select=1)
-        _set_permission("Routine Generation", role, read=1, write=1, create=1, delete=1,
-                        submit=1, cancel=1, amend=1, select=1, share=1)
-        _set_permission("Publication", role, read=1, write=1, create=1, delete=1,
-                        submit=1, cancel=1, amend=1, select=1, share=1)
+def _apply_instructor_permissions():
+    """Instructor: limited teaching permissions."""
+    role = "Instructor"
 
-    # ── Instructor: Limited permissions ──
-    instructor_role = "Instructor"
-
-    # Read-only for instructors
-    instructor_read = [
+    # Read-only
+    for dt in [
         "Student", "Instructor", "Student Group", "Program", "Course Schedule",
         "Assessment Group", "Academic Year", "Academic Term", "Grading Scale",
         "Room", "Program Enrollment",
-    ]
-    for dt in instructor_read:
-        _set_permission(dt, instructor_role, read=1, select=1)
+    ]:
+        _set_permission(dt, role, read=1, select=1)
 
-    # Instructors can create/edit content
-    instructor_crud = ["Topic", "Article", "Course"]
-    for dt in instructor_crud:
-        _set_permission(dt, instructor_role, read=1, write=1, create=1, delete=1, select=1)
+    # Content creation
+    for dt in ["Topic", "Article", "Course"]:
+        _set_permission(dt, role, read=1, write=1, create=1, delete=1, select=1)
 
-    # Instructors can manage attendance
-    _set_permission("Student Attendance", instructor_role, read=1, write=1, create=1, select=1)
-    _set_permission("Student Attendance Tool", instructor_role, read=1, write=1, create=1)
+    # Attendance
+    _set_permission("Student Attendance", role, read=1, write=1, create=1, select=1)
+    _set_permission("Student Attendance Tool", role, read=1, write=1, create=1)
 
-    # Instructors can view and create assessment plans, enter results
-    _set_permission("Assessment Plan", instructor_role, read=1, write=1, create=1,
+    # Assessment
+    _set_permission("Assessment Plan", role, read=1, write=1, create=1,
                     submit=1, cancel=1, select=1)
-    _set_permission("Assessment Result", instructor_role, read=1, write=1, create=1,
+    _set_permission("Assessment Result", role, read=1, write=1, create=1,
                     submit=1, select=1)
-    _set_permission("Assessment Result Tool", instructor_role, read=1, write=1, create=1)
+    _set_permission("Assessment Result Tool", role, read=1, write=1, create=1)
 
-    # Instructors can read publications
-    _set_permission("Publication", instructor_role, read=1, select=1)
+    # Read publications
+    _set_permission("Publication", role, read=1, select=1)
 
-    # Instructors need desk access
+    # Desk access
     for dt in ["Page", "Workspace", "Module Def"]:
-        _set_permission(dt, instructor_role, read=1, select=1)
-
-    frappe.db.commit()
+        _set_permission(dt, role, read=1, select=1)
 
 
 def _set_permission(doctype, role, **perms):
@@ -147,12 +210,10 @@ def _set_permission(doctype, role, **perms):
         return
 
     try:
-        # Ensure the role has a permission row on this doctype
         add_permission(doctype, role, 0)
     except Exception:
         pass
 
-    # Apply each permission flag
     for perm_type, value in perms.items():
         try:
             update_permission_property(doctype, role, 0, perm_type, value)

@@ -167,8 +167,12 @@ def validate_setup_data(data):
 	if not password:
 		frappe.throw(_("Admin password is required"))
 
-	if len(password) < 6:
-		frappe.throw(_("Password must be at least 6 characters long"))
+	if len(password) < 8:
+		frappe.throw(_("Password must be at least 8 characters long"))
+
+	# Reject reserved usernames
+	if admin_email.lower() in ("administrator", "guest"):
+		frappe.throw(_("'{0}' cannot be used as an admin email").format(admin_email))
 
 	# Validate country and currency if provided
 	country = data.get("country", "India")

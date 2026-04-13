@@ -127,7 +127,10 @@ def create_company(name):
 
 
 def create_admin_user(email, first_name, password):
-	"""Create an admin user - for backward compatibility."""
+	"""Create an admin user - for backward compatibility.
+
+	The admin gets ONLY the 'Institute Admin' role (no System Manager).
+	"""
 	if not frappe.db.exists("User", email):
 		user = frappe.get_doc({
 			"doctype": "User",
@@ -143,11 +146,10 @@ def create_admin_user(email, first_name, password):
 
 	update_password(email, password)
 
-	roles = ["System Manager", "Institute Admin"]
-	for role in roles:
-		if not frappe.db.exists("Role", role):
-			frappe.get_doc({"doctype": "Role", "role_name": role, "desk_access": 1}).insert(ignore_permissions=True)
-		user.add_roles(role)
+	if not frappe.db.exists("Role", "Institute Admin"):
+		frappe.get_doc({"doctype": "Role", "role_name": "Institute Admin", "desk_access": 1}).insert(ignore_permissions=True)
 
+	user.set("roles", [])
+	user.add_roles("Institute Admin")
 	user.save(ignore_permissions=True)
 	return user

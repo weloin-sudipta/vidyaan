@@ -26,7 +26,7 @@ required_apps = ["erpnext", "hrms", "education"]
 
 # include js, css files in header of desk.html
 # app_include_css = "/assets/vidyaan/css/vidyaan.css"
-app_include_js = "/assets/vidyaan/js/vidyaan_setup.js"
+# app_include_js = "/assets/vidyaan/js/vidyaan.js"
 
 # include js, css files in header of web template
 web_include_css = "/assets/vidyaan/css/vidyaan_web.css"
@@ -93,6 +93,12 @@ role_home_page = {
 
 # before_install = "vidyaan.install.before_install"
 after_install = "vidyaan.setup.install.after_install"
+
+# Setup Wizard
+# ------------
+setup_wizard_requires = "assets/vidyaan/js/vidyaan_setup.js"
+setup_wizard_stages = "vidyaan.setup.setup_stages.get_setup_stages"
+setup_wizard_complete = "vidyaan.setup.setup_stages.on_setup_complete"
 
 # Uninstallation
 # ------------

@@ -2,10 +2,9 @@ import frappe
 from frappe import _
 
 def extend_bootinfo(bootinfo):
-    # Legacy flag — the custom Vidyaan setup wizard has been removed in favor of
-    # the default Frappe/ERPNext wizard. Kept as 1 so any stale client code treats
-    # setup as complete and does not trigger the old overlay.
-    bootinfo.vidyaan_setup_complete = 1
+    bootinfo.vidyaan_setup_complete = frappe.defaults.get_global_default(
+        "vidyaan_setup_complete"
+    ) or 0
 
 def create_assessment_publication(doc, method):
     """
