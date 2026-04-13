@@ -273,7 +273,7 @@ const upcomingExams = computed(() => {
     const today = new Date();
     const upcommingExamination = dashboardData.value?.assessments || [];
 
-    return upcommingExamination
+    const filtered = upcommingExamination
         .map((a) => ({
             id: a.id,
             subject: a.title,
@@ -282,9 +282,18 @@ const upcomingExams = computed(() => {
             day: a.day,
             month: a.month,
         }))
-        .filter((a) => new Date(a.date) >= today)
+        .filter((a) => {
+            const examDate = new Date(a.date);
+            const today = new Date();
+            const examDateOnly = new Date(examDate.getFullYear(), examDate.getMonth(), examDate.getDate());
+            const todayOnly = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+            console.log('Exam date only:', examDateOnly, 'Today only:', todayOnly, 'Compare:', examDateOnly >= todayOnly);
+            return examDateOnly >= todayOnly;
+        })
         .sort((a, b) => new Date(a.date) - new Date(b.date))
         .slice(0, 3);
+    console.log('Filtered upcoming exams:', filtered);
+    return filtered;
 });
 
 /* BOOKS */

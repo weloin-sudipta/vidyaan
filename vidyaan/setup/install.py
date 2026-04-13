@@ -185,7 +185,7 @@ def setup_student_noc_workflow():
 
     transitions_data = [
         {"state": "Draft", "action": "Submit", "next_state": "Pending Review", "allowed": "Student"},
-        {"state": "Pending Review", "action": "Send to Library", "next_state": "Library Clearance", "allowed": "Instructor"},
+        {"state": "Pending Review", "action": "Approve", "next_state": "Library Clearance", "allowed": "Instructor"},
         {"state": "Library Clearance", "action": "Clear", "next_state": "Accounts Clearance", "allowed": "Librarian"},
         {"state": "Library Clearance", "action": "Reject", "next_state": "Rejected", "allowed": "Librarian"},
         {"state": "Accounts Clearance", "action": "Clear", "next_state": "Lab Clearance", "allowed": "Institute Admin"},

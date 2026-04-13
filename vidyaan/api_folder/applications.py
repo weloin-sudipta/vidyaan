@@ -123,7 +123,7 @@ def get_my_applications():
 	if frappe.db.exists("DocType", "Student NOC"):
 		for noc in frappe.get_all(
 			"Student NOC",
-			filters={"student": student, "docstatus": ["<", 2]},
+			filters={"student": student, "docstatus": ["<", 3]}, # Include docstatus 2 (Cancelled/Rejected)
 			fields=["name", "noc_type", "purpose", "status", "application_date", "workflow_state", "docstatus", "creation"],
 			order_by="creation desc",
 			ignore_permissions=True,
@@ -145,7 +145,7 @@ def get_my_applications():
 	if frappe.db.exists("DocType", "Student Request"):
 		for req in frappe.get_all(
 			"Student Request",
-			filters={"student": student, "docstatus": ["<", 2]},
+			filters={"student": student, "docstatus": ["<", 3]}, # Include docstatus 2
 			fields=["name", "subject", "category", "status", "priority", "request_date", "workflow_state", "docstatus", "creation"],
 			order_by="creation desc",
 			ignore_permissions=True,
@@ -173,7 +173,7 @@ def get_my_applications():
 			leave_fields.append("workflow_state")
 		for leave in frappe.get_all(
 			"Student Leave Application",
-			filters={"student": student, "docstatus": ["<", 2]},
+			filters={"student": student, "docstatus": ["<", 3]}, # Include docstatus 2
 			fields=leave_fields,
 			order_by="creation desc",
 			ignore_permissions=True,
@@ -194,13 +194,30 @@ def get_my_applications():
 
 	applications.sort(key=lambda x: x.get("creation", ""), reverse=True)
 
-	# Attach workflow steps to each application
+	# Attach workflow steps and latest comment for rejected apps to each application
 	wf_cache = {}
 	for app in applications:
 		dt = app["doctype"]
 		if dt not in wf_cache:
 			wf_cache[dt] = _get_workflow_steps(dt)
 		app["workflow_steps"] = wf_cache[dt]
+
+		# Fetch rejection reason if rejected or cancelled
+		if app["status"] in ["Rejected", "Cancelled"] or "Reject" in str(app["status"]):
+			latest_comment = frappe.get_all(
+				"Comment",
+				filters={
+					"reference_doctype": dt,
+					"reference_name": app["name"],
+					"comment_type": "Comment"
+				},
+				fields=["content"],
+				order_by="creation desc",
+				limit=1
+			)
+			if latest_comment:
+				from frappe.utils import strip_html
+				app["rejection_reason"] = strip_html(latest_comment[0].content)
 
 	return applications
 
@@ -514,7 +531,6 @@ def get_teacher_pending_applications():
 	# Leaves
 	leave_states = _get_allowed_workflow_states("Student Leave Application")
 	leave_filters = {
-		"docstatus": 0,
 		"student": ["in", students]
 	}
 	# Only filter on workflow_state if the field actually exists on the doctype.
@@ -528,6 +544,8 @@ def get_teacher_pending_applications():
 			leave_filters["workflow_state"] = ["in", leave_states]
 		else:
 			leave_filters["workflow_state"] = "Pending Review"
+	else:
+		leave_filters["docstatus"] = 0
 
 	leaves = frappe.get_all(
 		"Student Leave Application",
@@ -563,13 +581,16 @@ def get_teacher_pending_applications():
 	if frappe.db.exists("DocType", "Student NOC"):
 		noc_states = _get_allowed_workflow_states("Student NOC")
 		noc_filters = {
-			"docstatus": 0,
 			"student": ["in", students]
 		}
-		if noc_states:
-			noc_filters["workflow_state"] = ["in", noc_states]
+		noc_meta = frappe.get_meta("Student NOC")
+		if noc_meta.has_field("workflow_state"):
+			if noc_states:
+				noc_filters["workflow_state"] = ["in", noc_states]
+			else:
+				noc_filters["workflow_state"] = ["in", ["Pending Review"]]
 		else:
-			noc_filters["workflow_state"] = ["in", ["Pending Review"]]
+			noc_filters["docstatus"] = 0
 
 		nocs = frappe.get_all(
 			"Student NOC",
@@ -636,10 +657,17 @@ def get_teacher_leave_statistics():
 		return {"pending": 0, "approved": 0, "rejected": 0, "total": 0}
 
 	# Leaves
-	total_pending = frappe.db.count(
-		"Student Leave Application",
-		filters={"workflow_state": "Pending Review", "docstatus": 0, "student": ["in", students]}
-	)
+	leave_meta = frappe.get_meta("Student Leave Application")
+	if leave_meta.has_field("workflow_state"):
+		total_pending = frappe.db.count(
+			"Student Leave Application",
+			filters={"workflow_state": "Pending Review", "student": ["in", students]}
+		)
+	else:
+		total_pending = frappe.db.count(
+			"Student Leave Application",
+			filters={"docstatus": 0, "student": ["in", students]}
+		)
 	total_approved = frappe.db.count(
 		"Student Leave Application",
 		filters={"workflow_state": "Approved", "docstatus": 1, "student": ["in", students]}
@@ -652,15 +680,22 @@ def get_teacher_leave_statistics():
 	# NOCs
 	if frappe.db.exists("DocType", "Student NOC"):
 		noc_states = _get_allowed_workflow_states("Student NOC")
-		if noc_states:
-			total_pending += frappe.db.count(
-				"Student NOC",
-				filters={"workflow_state": ["in", noc_states], "docstatus": 0, "student": ["in", students]}
-			)
+		noc_meta = frappe.get_meta("Student NOC")
+		if noc_meta.has_field("workflow_state"):
+			if noc_states:
+				total_pending += frappe.db.count(
+					"Student NOC",
+					filters={"workflow_state": ["in", noc_states], "student": ["in", students]}
+				)
+			else:
+				total_pending += frappe.db.count(
+					"Student NOC",
+					filters={"workflow_state": ["in", ["Pending Review"]], "student": ["in", students]}
+				)
 		else:
 			total_pending += frappe.db.count(
 				"Student NOC",
-				filters={"workflow_state": ["in", ["Pending Review"]], "docstatus": 0, "student": ["in", students]}
+				filters={"docstatus": 0, "student": ["in", students]}
 			)
 		total_approved += frappe.db.count(
 			"Student NOC",
@@ -710,7 +745,7 @@ def get_teacher_leave_statistics():
 # 	return {"success": True, "state": doc.workflow_state}
 
 @frappe.whitelist()
-def review_application(name, action, app_type="Leave"):
+def review_application(name, action, app_type="Leave", reason=None):
     from vidyaan.api_folder.profile import _get_instructor_for_user
     if not _get_instructor_for_user():
         frappe.throw("You must be an instructor to perform this action")
@@ -730,5 +765,9 @@ def review_application(name, action, app_type="Leave"):
     # Let Frappe resolve the correct next state from the workflow definition
     from frappe.model.workflow import apply_workflow
     apply_workflow(doc, action)  # "Approve" or "Reject"
+
+    # Save rejection reason as a comment if provided
+    if action == "Reject" and reason:
+        doc.add_comment("Comment", text=reason)
 
     return {"success": True, "state": doc.workflow_state}

@@ -68,6 +68,16 @@
             <p v-if="app.description" class="text-xs text-slate-500 dark:text-slate-400 mt-2 line-clamp-2 transition-colors">
               {{ stripHtml(app.description) }}
             </p>
+
+            <!-- Rejection Reason -->
+            <div v-if="app.status === 'Rejected' && app.rejection_reason" 
+              class="mt-4 p-4 bg-red-50 dark:bg-red-900/10 rounded-2xl border border-red-100 dark:border-red-800/30 animate-in fade-in slide-in-from-top-2 duration-300">
+              <div class="flex items-center gap-2 mb-1.5">
+                <i class="fa fa-info-circle text-red-500 text-[10px]"></i>
+                <p class="text-[10px] font-black text-red-600 dark:text-red-400 uppercase tracking-widest">Rejection Reason</p>
+              </div>
+              <p class="text-xs font-bold text-red-800 dark:text-red-200 leading-relaxed">{{ app.rejection_reason }}</p>
+            </div>
           </div>
 
           <!-- Workflow timeline -->

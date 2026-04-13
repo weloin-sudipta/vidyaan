@@ -236,13 +236,21 @@ const fetchApplications = async () => {
 
 /* ------------------ ACTION HANDLER ------------------ */
 const handleAction = async (name, action, app_type) => {
+  let reason = null
+  
+  if (action === 'Reject') {
+    reason = window.prompt('Please enter the reason for rejection:')
+    if (reason === null) return // User cancelled the prompt
+  }
+
   processingId.value = name
 
   try {
     await call('vidyaan.api_folder.applications.review_application', {
       name,
       action,
-      app_type
+      app_type,
+      reason
     })
 
     addToast(`Application ${action.toLowerCase()}d`, 'success')
