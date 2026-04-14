@@ -871,9 +871,20 @@ const handleGrade = async () => {
   if (gradeInput.value < 0 || gradeInput.value > max) return
 
   grading.value = true
+  
+  // Find the latest submission ID for this student from the details
+  const latestSub = currentAssignment.value.all_submissions?.find(
+    (s) => s.student === gradingSubmission.value.student
+  )
+
+  if (!latestSub) {
+    addToast('No submission record found to grade.', 'error')
+    grading.value = false
+    return
+  }
+
   const res = await gradeSubmission(
-    currentAssignment.value.name,
-    gradingSubmission.value.student,
+    latestSub.id,
     gradeInput.value,
     remarksInput.value
   )

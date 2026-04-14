@@ -112,8 +112,7 @@ export interface UseTeacherAssignmentsReturn {
   deleteAssignment: (name: string) => Promise<AssignmentMutationResult>
   closeAssignment: (name: string) => Promise<AssignmentMutationResult>
   gradeSubmission: (
-    assignment: string,
-    student: string,
+    submissionId: string,
     score: number | string,
     remarks?: string
   ) => Promise<AssignmentMutationResult>
@@ -262,8 +261,7 @@ export const useTeacherAssignments = (): UseTeacherAssignmentsReturn => {
   }
 
   const gradeSubmission = async (
-    assignment: string,
-    student: string,
+    submissionId: string,
     score: number | string,
     remarks: string = ''
   ): Promise<AssignmentMutationResult> => {
@@ -271,8 +269,7 @@ export const useTeacherAssignments = (): UseTeacherAssignmentsReturn => {
       const res = await call<AssignmentMutationSuccess>(
         'vidyaan.api_folder.assignments.grade_submission',
         {
-          assignment,
-          student,
+          submission_id: submissionId,
           score,
           remarks,
         }

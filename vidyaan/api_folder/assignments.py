@@ -536,6 +536,7 @@ def get_assignment_detail(name=None):
 		filters={"reference_doctype": "Assignment", "reference_name": msg_ref, "comment_type": "Comment"},
 		fields=["name", "content", "comment_by", "creation", "comment_email"],
 		order_by="creation asc",
+		ignore_permissions=True,
 	)
 
 	# Resolve names and format message list for frontend
@@ -561,13 +562,13 @@ def get_assignment_detail(name=None):
 
 
 @frappe.whitelist()
-def add_assignment_comment(name, content):
+def add_assignment_comment(name, content, student_id=None):
 	"""Add a message (Comment) to an assignment, possibly student-specific."""
 	if not name or not content:
 		frappe.throw(_("Assignment name and content are required."))
 
 	# We use the internal helper for consistency
-	comment = _add_private_comment(name, content)
+	comment = _add_private_comment(name, content, student_id)
 
 	return {
 		"success": True,
@@ -617,13 +618,15 @@ def request_resubmission(assignment, student_id, message=None):
 
 def _add_private_comment(name, content, student_id=None):
 	"""Internal helper to add a comment to a student-specific assignment thread."""
-	# If student_id is provided or session is student, use student-specific reference
+	# If student_id is provided, use it (instructor session).
+	# Otherwise, if session is student, use student-specific reference.
 	msg_ref = name
-	student = _get_student_for_user()
-	if student:
-		msg_ref = f"{name}-{student.name}"
-	elif student_id:
+	if student_id:
 		msg_ref = f"{name}-{student_id}"
+	else:
+		student = _get_student_for_user()
+		if student:
+			msg_ref = f"{name}-{student.name}"
 
 	# We manually create the comment to use our custom reference_name
 	comment = frappe.get_doc(
@@ -645,13 +648,22 @@ def _add_private_comment(name, content, student_id=None):
 
 
 @frappe.whitelist()
-def grade_submission(submission_id=None, score=None, remarks=""):
+def grade_submission(submission_id=None, score=None, remarks="", assignment=None, student=None):
 	"""Grade a specific Assignment Submission document.
 
 	Owner instructor only. score must be between 0 and max_score.
 	Updates the submission and the student's overall grade in the assignment.
 	Returns: {success}
 	"""
+	if not submission_id and assignment and student:
+		# Fallback: find the latest submission for this student on this assignment
+		submission_id = frappe.db.get_value(
+			"Assignment Submission",
+			{"assignment": assignment, "student": student},
+			"name",
+			order_by="submitted_on desc",
+		)
+
 	if not submission_id:
 		frappe.throw(_("Submission ID is required."))
 	if score is None:
