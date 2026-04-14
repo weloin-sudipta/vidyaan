@@ -57,11 +57,13 @@ export interface UseAssignmentsReturn {
   loading: Ref<boolean>
   error: Ref<string | null>
   fetchAssignments: () => Promise<StudentAssignment[] | undefined>
+  fetchAssignmentDetail: (name: string) => Promise<StudentAssignment | undefined>
   submitAssignment: (
     assignmentName: string,
     submissionFile: string,
     submissionText?: string | null
   ) => Promise<SubmitAssignmentReturn>
+  addComment: (name: string, content: string) => Promise<{ success: boolean; comment: any } | undefined>
   uploadFile: (file: File) => Promise<UploadFileReturn>
 }
 
@@ -74,15 +76,47 @@ export const useAssignments = (): UseAssignmentsReturn => {
     loading.value = true
     error.value = null
     try {
+      console.log('useAssignments: Calling get_student_assignments API')
       const res = await call<StudentAssignment[]>(
         'vidyaan.api_folder.assignments.get_student_assignments'
       )
+      console.log('useAssignments: API response:', res)
       assignments.value = res || []
+      console.log('useAssignments: Set assignments to:', assignments.value)
       return res
     } catch (err) {
+      console.error('useAssignments: Error fetching assignments:', err)
       error.value = (err as Error).message ?? 'Failed to load assignments'
     } finally {
       loading.value = false
+    }
+  }
+
+  const fetchAssignmentDetail = async (name: string): Promise<StudentAssignment | undefined> => {
+    loading.value = true
+    error.value = null
+    try {
+      const res = await call<StudentAssignment>(
+        'vidyaan.api_folder.assignments.get_assignment_detail',
+        { name }
+      )
+      return res
+    } catch (err) {
+      error.value = (err as Error).message ?? 'Failed to load assignment detail'
+    } finally {
+      loading.value = false
+    }
+  }
+
+  const addComment = async (name: string, content: string) => {
+    try {
+      const res = await call<{ success: boolean; comment: any }>(
+        'vidyaan.api_folder.assignments.add_assignment_comment',
+        { name, content }
+      )
+      return res
+    } catch (err) {
+      error.value = (err as Error).message ?? 'Failed to add comment'
     }
   }
 
@@ -120,5 +154,5 @@ export const useAssignments = (): UseAssignmentsReturn => {
     }
   }
 
-  return { assignments, loading, error, fetchAssignments, submitAssignment, uploadFile }
+  return { assignments, loading, error, fetchAssignments, fetchAssignmentDetail, addComment, submitAssignment, uploadFile }
 }

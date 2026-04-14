@@ -103,8 +103,8 @@
   {
    "fieldname": "submissions",
    "fieldtype": "Table",
-   "label": "Submissions",
-   "options": "Assignment Submission"
+   "label": "Students",
+   "options": "Assignment Student"
   }
  ],
  "links": [],

@@ -94,12 +94,14 @@
 
             <!-- Graded score display -->
             <div v-if="task.my_submission?.status === 'Graded'" class="flex flex-col items-center">
-              <p class="text-[10px] text-slate-400 uppercase font-bold tracking-tighter">Score</p>
+              <p class="text-[10px] text-slate-400 uppercase font-bold tracking-tighter">Latest Score</p>
               <p class="text-sm font-black text-green-600 dark:text-green-400">
                 {{ task.my_submission.score }} / {{ task.max_score }}
               </p>
+              <p v-if="task.my_submissions && task.my_submissions.length > 1" class="text-[10px] text-slate-400 mt-1">
+                {{ task.my_submissions.length }} submissions
+              </p>
             </div>
-
             <div class="flex items-center gap-3 ml-auto lg:ml-0">
               <a v-if="task.assignment_file"
                 :href="getFileUrl(task.assignment_file)"
@@ -112,7 +114,7 @@
               <button v-if="resolvedStatus(task) === 'Active'"
                 @click.stop="handleSubmit(task)"
                 class="px-6 py-2.5 bg-slate-900 dark:bg-indigo-600 hover:bg-indigo-600 dark:hover:bg-indigo-500 text-white text-sm font-bold rounded-xl transition-all shadow-md active:scale-95">
-                Submit Task
+                {{ task.my_submissions && task.my_submissions.length > 0 ? 'Submit Another' : 'Submit Task' }}
               </button>
 
               <div v-else
@@ -136,11 +138,14 @@
     </div>
 
     <!-- Submit Modal -->
-    <AppModal v-model="showSubmitModal" title="Upload Submission">
+    <AppModal v-model="showSubmitModal" :title="activeTask?.my_submissions?.length > 0 ? 'Submit Another Version' : 'Upload Submission'">
       <div v-if="activeTask" class="p-2 space-y-6">
         <div class="bg-indigo-50 dark:bg-indigo-500/5 p-4 rounded-2xl border border-indigo-100 dark:border-indigo-500/10">
           <h3 class="font-bold text-slate-800 dark:text-white">{{ activeTask.title }}</h3>
           <p class="text-xs text-indigo-600 dark:text-indigo-400 font-medium">{{ activeTask.course_name }}</p>
+          <p v-if="activeTask.my_submissions && activeTask.my_submissions.length > 0" class="text-xs text-slate-500 dark:text-slate-400 mt-2">
+            You have already submitted {{ activeTask.my_submissions.length }} version{{ activeTask.my_submissions.length > 1 ? 's' : '' }}
+          </p>
         </div>
 
         <div class="relative group">
@@ -195,13 +200,64 @@
         <!-- Submission result if graded -->
         <div v-if="selectedAssignment.my_submission?.status === 'Graded'"
           class="p-4 rounded-2xl bg-green-50 dark:bg-green-900/20 border border-green-100 dark:border-green-800/40">
-          <p class="text-[10px] font-black text-green-600 dark:text-green-400 uppercase mb-2">Your Result</p>
+          <p class="text-[10px] font-black text-green-600 dark:text-green-400 uppercase mb-2">Latest Result</p>
           <p class="text-lg font-black text-green-700 dark:text-green-300">
             {{ selectedAssignment.my_submission.score }} / {{ selectedAssignment.max_score }} pts
           </p>
           <p v-if="selectedAssignment.my_submission.remarks" class="text-xs text-green-600 dark:text-green-400 mt-2 font-medium">
             {{ selectedAssignment.my_submission.remarks }}
           </p>
+        </div>
+
+        <!-- Submission History -->
+        <div v-if="selectedAssignment.my_submissions && selectedAssignment.my_submissions.length > 0"
+          class="space-y-3">
+          <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Your Submissions ({{ selectedAssignment.my_submissions.length }})</p>
+          <div class="space-y-2 max-h-64 overflow-y-auto">
+            <div v-for="submission in selectedAssignment.my_submissions.slice().reverse()"
+              :key="submission.id"
+              class="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700/50">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                  <div :class="[
+                    'w-8 h-8 rounded-lg flex items-center justify-center text-xs font-black',
+                    submission.status === 'Graded' ? 'bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400' :
+                    submission.status === 'Submitted' ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400' :
+                    'bg-slate-100 dark:bg-slate-800 text-slate-400'
+                  ]">
+                    <i v-if="submission.status === 'Graded'" class="fa fa-check-circle"></i>
+                    <i v-else-if="submission.status === 'Submitted'" class="fa fa-clock-o"></i>
+                    <i v-else class="fa fa-file-o"></i>
+                  </div>
+                  <div>
+                    <p class="text-xs font-bold text-slate-700 dark:text-slate-200">
+                      Submitted {{ formatDate(submission.submitted_on) }}
+                    </p>
+                    <p v-if="submission.status === 'Graded'" class="text-[10px] text-green-600 dark:text-green-400 font-medium">
+                      Score: {{ submission.score }}/{{ selectedAssignment.max_score }} pts
+                    </p>
+                  </div>
+                </div>
+                <div class="flex items-center gap-2">
+                  <a v-if="submission.submission_file" :href="getFileUrl(submission.submission_file)" target="_blank"
+                    class="text-indigo-500 dark:text-indigo-400 hover:text-indigo-700 text-xs font-bold">
+                    <i class="fa fa-file-text-o"></i> View
+                  </a>
+                  <span :class="[
+                    'px-2 py-1 rounded text-[10px] font-black uppercase',
+                    submission.status === 'Graded' ? 'bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400' :
+                    submission.status === 'Submitted' ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400' :
+                    'bg-slate-100 dark:bg-slate-800 text-slate-400'
+                  ]">
+                    {{ submission.status }}
+                  </span>
+                </div>
+              </div>
+              <div v-if="submission.remarks" class="mt-2 p-2 rounded bg-white dark:bg-slate-700/50 border border-slate-200 dark:border-slate-600">
+                <p class="text-[10px] text-slate-600 dark:text-slate-300 font-medium">{{ submission.remarks }}</p>
+              </div>
+            </div>
+          </div>
         </div>
 
         <div class="space-y-2">
@@ -249,6 +305,9 @@ const resolvedStatus = (task) => {
     return submissionStatus
   }
   if (task.is_overdue) return 'Overdue'
+  // Map API statuses to display tabs
+  const apiStatus = task.status?.toLowerCase()
+  if (apiStatus === 'published' || apiStatus === 'active') return 'Active'
   return task.status || 'Active'
 }
 
@@ -265,15 +324,12 @@ const completionRate = computed(() => {
 })
 
 const handleSubmit = (task) => {
-  activeTask.value = task
-  submitError.value = null
-  selectedFile.value = null
-  showSubmitModal.value = true
+  // Navigate to details where submission is handled with full context
+  navigateTo(`/academics/assignments/${task.name}`)
 }
 
 const openDetails = (task) => {
-  selectedAssignment.value = task
-  showDetailsModal.value = true
+  navigateTo(`/academics/assignments/${task.name}`)
 }
 
 const onFileChange = (e) => { selectedFile.value = e.target.files[0] }

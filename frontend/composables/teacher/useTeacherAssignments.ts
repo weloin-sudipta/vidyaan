@@ -117,6 +117,8 @@ export interface UseTeacherAssignmentsReturn {
     score: number | string,
     remarks?: string
   ) => Promise<AssignmentMutationResult>
+  addComment: (name: string, content: string) => Promise<{ success: boolean; comment: any } | undefined>
+  requestResubmission: (name: string, studentId: string, message?: string) => Promise<AssignmentMutationResult>
 }
 
 export const useTeacherAssignments = (): UseTeacherAssignmentsReturn => {
@@ -171,14 +173,17 @@ export const useTeacherAssignments = (): UseTeacherAssignmentsReturn => {
   }
 
   const fetchAssignmentDetail = async (
-    name: string
+    name: string,
+    studentId: string | null = null
   ): Promise<AssignmentDetail | AssignmentMutationError | undefined> => {
     loading.value = true
     error.value = null
     try {
+      const params: Record<string, string> = { name }
+      if (studentId) params.student_id = studentId
       const res = await call<AssignmentDetail>(
         'vidyaan.api_folder.assignments.get_assignment_detail',
-        { name }
+        params
       )
       currentAssignment.value = res || null
       return res
@@ -278,6 +283,32 @@ export const useTeacherAssignments = (): UseTeacherAssignmentsReturn => {
     }
   }
 
+  const addComment = async (name: string, content: string, studentId?: string) => {
+    try {
+      const params: Record<string, string> = { name, content }
+      if (studentId) params.student_id = studentId
+      const res = await call<{ success: boolean; comment: any }>(
+        'vidyaan.api_folder.assignments.add_assignment_comment',
+        params
+      )
+      return res
+    } catch (err) {
+      error.value = (err as Error).message ?? 'Failed to add comment'
+    }
+  }
+
+  const requestResubmission = async (name: string, studentId: string, message?: string) => {
+    try {
+      const res = await call<AssignmentMutationSuccess>(
+        'vidyaan.api_folder.assignments.request_resubmission',
+        { assignment: name, student_id: studentId, message }
+      )
+      return res
+    } catch (err) {
+      return { error: (err as Error).message ?? 'Failed to request resubmission' }
+    }
+  }
+
   return {
     courses,
     studentGroups,
@@ -295,5 +326,7 @@ export const useTeacherAssignments = (): UseTeacherAssignmentsReturn => {
     deleteAssignment,
     closeAssignment,
     gradeSubmission,
+    addComment,
+    requestResubmission,
   }
 }

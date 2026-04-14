@@ -848,10 +848,7 @@ const handleDelete = async (assignment) => {
 // ─── Submissions ──────────────────────────────────────────────────────────
 
 const handleViewSubmissions = async (assignment) => {
-  showSubmissionsModal.value = true
-  detailLoading.value = true
-  await fetchAssignmentDetail(assignment.name)
-  detailLoading.value = false
+  navigateTo(`/teacher/academics/assignments/${assignment.name}`)
 }
 
 // ─── Grading ──────────────────────────────────────────────────────────────

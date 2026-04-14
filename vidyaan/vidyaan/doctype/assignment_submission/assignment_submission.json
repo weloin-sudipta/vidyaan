@@ -5,19 +5,32 @@
  "editable_grid": 1,
  "engine": "InnoDB",
  "field_order": [
+  "assignment",
   "student",
   "student_name",
   "student_group",
+  "column_break_4",
   "submitted_on",
+  "status",
+  "section_break_7",
   "submission_file",
   "submission_text",
+  "section_break_10",
   "score",
   "remarks",
+  "column_break_13",
   "graded_by",
-  "graded_on",
-  "status"
+  "graded_on"
  ],
  "fields": [
+  {
+   "fieldname": "assignment",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Assignment",
+   "options": "Assignment",
+   "reqd": 1
+  },
   {
    "fieldname": "student",
    "fieldtype": "Link",
@@ -42,9 +55,26 @@
    "options": "Student Group"
   },
   {
+   "fieldname": "column_break_4",
+   "fieldtype": "Column Break"
+  },
+  {
    "fieldname": "submitted_on",
    "fieldtype": "Datetime",
    "label": "Submitted On"
+  },
+  {
+   "default": "Pending",
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Status",
+   "options": "Pending\nSubmitted\nLate\nGraded",
+   "reqd": 1
+  },
+  {
+   "fieldname": "section_break_7",
+   "fieldtype": "Section Break"
   },
   {
    "fieldname": "submission_file",
@@ -53,19 +83,26 @@
   },
   {
    "fieldname": "submission_text",
-   "fieldtype": "Small Text",
+   "fieldtype": "Text Editor",
    "label": "Submission Text"
+  },
+  {
+   "fieldname": "section_break_10",
+   "fieldtype": "Section Break"
   },
   {
    "fieldname": "score",
    "fieldtype": "Float",
-   "in_list_view": 1,
    "label": "Score"
   },
   {
    "fieldname": "remarks",
    "fieldtype": "Small Text",
    "label": "Remarks"
+  },
+  {
+   "fieldname": "column_break_13",
+   "fieldtype": "Column Break"
   },
   {
    "fieldname": "graded_by",
@@ -79,25 +116,54 @@
    "fieldtype": "Datetime",
    "label": "Graded On",
    "read_only": 1
-  },
-  {
-   "default": "Pending",
-   "fieldname": "status",
-   "fieldtype": "Select",
-   "in_list_view": 1,
-   "label": "Status",
-   "options": "Pending\nSubmitted\nGraded\nLate"
   }
  ],
- "istable": 1,
+ "index_web_pages_for_search": 1,
  "links": [],
  "modified": "2026-04-07 00:00:00.000000",
  "modified_by": "Administrator",
  "module": "Vidyaan",
  "name": "Assignment Submission",
  "owner": "Administrator",
- "permissions": [],
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Instructor",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Student",
+   "share": 1,
+   "write": 1
+  }
+ ],
  "sort_field": "modified",
  "sort_order": "DESC",
- "states": []
+ "title_field": "assignment"
 }
