@@ -207,7 +207,7 @@ watch(selectedDate, async (d) => {
     loadStudents()
   } catch (e) {
     console.error(e)
-    addToast('Error', 'Failed to load classes for that date.', 'error')
+    addToast('Failed to load classes for that date.', 'error')
   } finally {
     loading.value = false
   }
@@ -259,13 +259,13 @@ function toggleStatus(student) {
 // Mark all students as Present or Absent
 function markAll(status) {
   students.value.forEach(s => (s.status = status))
-  addToast('Success', `All students marked as ${status}.`, 'success')
+  addToast(`All students marked as ${status}.`, 'success')
 }
 
 // Save attendance using bulk API
 async function saveAttendance() {
   if (!selectedClass.value || students.value.length === 0) {
-    addToast('Error', 'No students to mark attendance for.', 'error')
+    addToast('No students to mark attendance for.', 'error')
     return
   }
 
@@ -279,25 +279,30 @@ async function saveAttendance() {
     const res = await saveAttendanceBulk(selectedClass.value.name, students.value)
 
     if (res?.success?.length) {
-      let message = `Attendance saved for ${res.success.length} student(s) on ${formatHumanDate(res.date || selectedDate.value)}.`
-      if (res?.failed?.length) {
-        message += ` ${res.failed.length} student(s) failed.`
-        console.warn('Failed attendance:', res.failed)
+      const uniqueErrors = [...new Set((res.failed || []).map(f => f.error))].filter(Boolean)
+      let message = `Attendance saved for ${res.success.length} student(s).`
+      
+      if (uniqueErrors.length) {
+        message += ` Issues: ${uniqueErrors.join('. ')}`
+        addToast(message, 'warning')
+      } else {
+        addToast(message, 'success')
       }
-      addToast('Success', message, 'success')
 
       // Refetch the same date so badges update
       const data = await fetchclassSchedule(selectedDate.value)
       classes.value = data?.classes || []
       loadStudents()
     } else if (res?.failed?.length) {
-      addToast('Error', `Failed to save attendance for ${res.failed.length} student(s).`, 'error')
+      const uniqueErrors = [...new Set(res.failed.map(f => f.error))].filter(Boolean)
+      const errorMsg = uniqueErrors.length ? uniqueErrors.join('. ') : `Failed to save attendance for ${res.failed.length} student(s).`
+      addToast(errorMsg, 'error')
     } else {
-      addToast('Error', 'Attendance not saved.', 'error')
+      addToast('Attendance not saved.', 'error')
     }
   } catch (err) {
     console.error(err)
-    addToast('Error', 'Failed to save attendance.', 'error')
+    addToast('Failed to save attendance.', 'error')
   } finally {
     saving.value = false
   }
@@ -311,7 +316,7 @@ onMounted(async () => {
     loadStudents()
   } catch (e) {
     console.error(e)
-    addToast('Error', 'Failed to load classes.', 'error')
+    addToast('Failed to load classes.', 'error')
   } finally {
     loading.value = false
   }

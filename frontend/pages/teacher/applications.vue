@@ -1,6 +1,14 @@
 <template>
   <div class="p-6 lg:p-10 max-w-7xl mx-auto custom-scrollbar animate-in fade-in slide-in-from-bottom-4 duration-500">
     
+    <!-- Reject Modal -->
+    <RejectModal 
+      v-if="showRejectModal" 
+      :submitting="rejectSubmitting"
+      @close="closeRejectModal"
+      @confirm="handleRejectConfirm"
+    />
+    
     <header class="mb-10 flex flex-col md:flex-row md:items-end justify-between gap-6">
       <div>
         <div class="flex items-center gap-3 mb-2">
@@ -168,6 +176,7 @@
 import { ref, onMounted, computed } from 'vue'
 import { call } from '~/composables/api/useFrappeFetch'
 import { useToast } from '~/composables/ui/useToast'
+import RejectModal from '~/pages/teacher/RejectModal.vue'
 
 const config = useRuntimeConfig()
 
@@ -176,6 +185,10 @@ const { addToast } = useToast()
 const applications = ref([])
 const loading = ref(true)
 const processingId = ref(null)
+const showRejectModal = ref(false)
+const rejectSubmitting = ref(false)
+const pendingAppName = ref(null)
+const pendingAppType = ref(null)
 
 const stats = ref({
   pending: 0,
@@ -236,13 +249,18 @@ const fetchApplications = async () => {
 
 /* ------------------ ACTION HANDLER ------------------ */
 const handleAction = async (name, action, app_type) => {
-  let reason = null
-  
   if (action === 'Reject') {
-    reason = window.prompt('Please enter the reason for rejection:')
-    if (reason === null) return // User cancelled the prompt
+    pendingAppName.value = name
+    pendingAppType.value = app_type
+    showRejectModal.value = true
+    return
   }
 
+  processingId.value = name
+  await processApplication(name, action, app_type, null)
+}
+
+const processApplication = async (name, action, app_type, reason) => {
   processingId.value = name
 
   try {
@@ -255,10 +273,8 @@ const handleAction = async (name, action, app_type) => {
 
     addToast(`Application ${action.toLowerCase()}d`, 'success')
 
-    // ⚡ Optimistic UI update (no full reload)
     applications.value = applications.value.filter(app => app.name !== name)
 
-    // update stats locally
     stats.value.pending--
     if (action === 'Approve') stats.value.approved++
     if (action === 'Reject') stats.value.rejected++
@@ -276,6 +292,24 @@ const handleAction = async (name, action, app_type) => {
   } finally {
     processingId.value = null
   }
+}
+
+const closeRejectModal = () => {
+  showRejectModal.value = false
+  pendingAppName.value = null
+  pendingAppType.value = null
+  rejectSubmitting.value = false
+}
+
+const handleRejectConfirm = async (reason) => {
+  rejectSubmitting.value = true
+  const appName = pendingAppName.value
+  const appType = pendingAppType.value
+  await processApplication(appName, 'Reject', appType, reason)
+  showRejectModal.value = false
+  rejectSubmitting.value = false
+  pendingAppName.value = null
+  pendingAppType.value = null
 }
 
 const getFileUrl = (filePath, isDownload = false) => {
