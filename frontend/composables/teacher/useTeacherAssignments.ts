@@ -22,6 +22,18 @@ export interface AssignmentTargetGroup {
   [key: string]: unknown
 }
 
+export interface AcademicYear {
+  name: string
+  academic_year_name?: string
+  [key: string]: unknown
+}
+
+export interface Program {
+  name: string
+  program_name?: string
+  [key: string]: unknown
+}
+
 export interface AssignmentListItem {
   name: string
   title?: string
@@ -32,6 +44,7 @@ export interface AssignmentListItem {
   max_score?: number
   total_submissions?: number
   graded_count?: number
+  creation?: string
   [key: string]: unknown
 }
 
@@ -60,6 +73,8 @@ export interface AssignmentDetail {
   assignment_file?: string
   target_groups?: AssignmentTargetGroup[]
   submissions?: AssignmentSubmissionRow[]
+  all_submissions?: any[]
+  messages?: any[]
   [key: string]: unknown
 }
 
@@ -93,15 +108,20 @@ export type AssignmentMutationResult =
 export interface UseTeacherAssignmentsReturn {
   courses: Ref<Course[]>
   studentGroups: Ref<StudentGroup[]>
+  academicYears: Ref<AcademicYear[]>
+  programs: Ref<Program[]>
   assignments: Ref<AssignmentListItem[]>
   currentAssignment: Ref<AssignmentDetail | null>
   loading: Ref<boolean>
   error: Ref<string | null>
   fetchCourses: () => Promise<void>
   fetchStudentGroups: (course?: string | null) => Promise<void>
-  fetchAssignments: (course?: string | null, status?: string | null) => Promise<void>
+  fetchAcademicYears: () => Promise<void>
+  fetchPrograms: () => Promise<void>
+  fetchAssignments: (course?: string | null, status?: string | null, academicYear?: string | null, program?: string | null) => Promise<void>
   fetchAssignmentDetail: (
-    name: string
+    name: string,
+    studentId?: string | null
   ) => Promise<AssignmentDetail | AssignmentMutationError | undefined>
   createAssignment: (payload: CreateAssignmentPayload) => Promise<AssignmentMutationResult>
   updateAssignment: (
@@ -116,13 +136,15 @@ export interface UseTeacherAssignmentsReturn {
     score: number | string,
     remarks?: string
   ) => Promise<AssignmentMutationResult>
-  addComment: (name: string, content: string) => Promise<{ success: boolean; comment: any } | undefined>
+  addComment: (name: string, content: string, studentId?: string) => Promise<{ success: boolean; comment: any } | undefined>
   requestResubmission: (name: string, studentId: string, message?: string) => Promise<AssignmentMutationResult>
 }
 
 export const useTeacherAssignments = (): UseTeacherAssignmentsReturn => {
   const courses: Ref<Course[]> = ref([])
   const studentGroups: Ref<StudentGroup[]> = ref([])
+  const academicYears: Ref<AcademicYear[]> = ref([])
+  const programs: Ref<Program[]> = ref([])
   const assignments: Ref<AssignmentListItem[]> = ref([])
   const currentAssignment: Ref<AssignmentDetail | null> = ref(null)
   const loading = ref(false)
@@ -149,9 +171,29 @@ export const useTeacherAssignments = (): UseTeacherAssignmentsReturn => {
     }
   }
 
+  const fetchAcademicYears = async (): Promise<void> => {
+    try {
+      const res = await call<AcademicYear[]>('vidyaan.api_folder.assignments.get_instructor_academic_years')
+      academicYears.value = res || []
+    } catch (err) {
+      error.value = (err as Error).message ?? 'Failed to load academic years'
+    }
+  }
+
+  const fetchPrograms = async (): Promise<void> => {
+    try {
+      const res = await call<Program[]>('vidyaan.api_folder.assignments.get_instructor_programs')
+      programs.value = res || []
+    } catch (err) {
+      error.value = (err as Error).message ?? 'Failed to load programs'
+    }
+  }
+
   const fetchAssignments = async (
     course: string | null = null,
-    status: string | null = null
+    status: string | null = null,
+    academicYear: string | null = null,
+    program: string | null = null
   ): Promise<void> => {
     loading.value = true
     error.value = null
@@ -159,6 +201,8 @@ export const useTeacherAssignments = (): UseTeacherAssignmentsReturn => {
       const params: Record<string, string> = {}
       if (course) params.course = course
       if (status) params.status = status
+      if (academicYear) params.academic_year = academicYear
+      if (program) params.program = program
       const res = await call<AssignmentListItem[]>(
         'vidyaan.api_folder.assignments.get_instructor_assignments',
         params
@@ -309,12 +353,16 @@ export const useTeacherAssignments = (): UseTeacherAssignmentsReturn => {
   return {
     courses,
     studentGroups,
+    academicYears,
+    programs,
     assignments,
     currentAssignment,
     loading,
     error,
     fetchCourses,
     fetchStudentGroups,
+    fetchAcademicYears,
+    fetchPrograms,
     fetchAssignments,
     fetchAssignmentDetail,
     createAssignment,

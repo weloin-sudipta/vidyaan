@@ -226,7 +226,11 @@ import { useNotices } from "~/composables/academics/useNotices";
 
 const { dashboardData, loading, error, loadDashboard } = useStudentDashboard();
 const { assignments: allAssignments, fetchAssignments } = useAssignments();
-const assignments = computed(() => allAssignments.value.slice(0, 3));
+const assignments = computed(() => {
+    return (allAssignments.value || [])
+        .filter((a) => ["Active", "Overdue"].includes(a.calculated_status))
+        .slice(0, 3);
+});
 const showModal = ref(false);
 
 // class schedule data

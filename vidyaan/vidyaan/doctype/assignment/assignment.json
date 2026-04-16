@@ -10,6 +10,8 @@
     "field_order": [
         "title",
         "course",
+        "program",
+        "academic_year",
         "topic",
         "instructor",
         "due_date",
@@ -35,6 +37,19 @@
             "label": "Course",
             "options": "Course",
             "reqd": 1
+        },
+        {
+            "fieldname": "program",
+            "fieldtype": "Link",
+            "label": "Program",
+            "options": "Program"
+        },
+        {
+            "default": "",
+            "fieldname": "academic_year",
+            "fieldtype": "Link",
+            "label": "Academic Year",
+            "options": "Academic Year"
         },
         {
             "fieldname": "topic",

@@ -210,7 +210,7 @@ const updateNavItems = () => {
           { name: 'Assignments', route: '/teacher/academics/assignments' },
           { name: 'Lesson Planning', route: '/teacher/academics/lesson-planning' },
           { name: 'My Classes', route: '/teacher/academics/my-classes' },
-          // { name: 'Study Materials', route: '/academics/study-materials' }
+          { name: 'Assignment History', route: '/teacher/academics/assignments/history' }
         ]
       },
 

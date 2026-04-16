@@ -152,7 +152,7 @@ def _resolve_target_groups(assign_to, student_groups_list, course, instructor):
 def create_assignment(data=None):
 	"""Create a new Assignment document (status remains Draft).
 
-	data keys: title, course, topic, due_date, max_score, assign_to,
+	data keys: title, course, program, academic_year, topic, due_date, max_score, assign_to,
 	           student_groups (list), description, assignment_file
 	Returns: {success, name}
 	"""
@@ -174,6 +174,8 @@ def create_assignment(data=None):
 	description = data.get("description") or ""
 	assignment_file = data.get("assignment_file") or ""
 	topic = data.get("topic") or None
+	academic_year = data.get("academic_year") or None
+	program = data.get("program") or None
 
 	if not title:
 		frappe.throw(_("Title is required."))
@@ -193,6 +195,8 @@ def create_assignment(data=None):
 			"doctype": "Assignment",
 			"title": title,
 			"course": course,
+			"program": program,
+			"academic_year": academic_year,
 			"topic": topic,
 			"instructor": instructor.name,
 			"due_date": due_date,
@@ -296,7 +300,7 @@ def update_assignment(name=None, data=None):
 	if doc.status != "Draft":
 		frappe.throw(_("Only Draft assignments can be updated. Current status: {0}.").format(doc.status))
 
-	editable = ["title", "topic", "due_date", "max_score", "description", "assignment_file"]
+	editable = ["title", "topic", "due_date", "max_score", "description", "assignment_file", "academic_year", "program"]
 	for field in editable:
 		if field in data and data[field] is not None:
 			doc.set(field, data[field])
@@ -364,7 +368,7 @@ def close_assignment(name=None):
 
 
 @frappe.whitelist()
-def get_instructor_assignments(course=None, status=None):
+def get_instructor_assignments(course=None, status=None, academic_year=None, program=None):
 	"""Get all assignments belonging to the current instructor.
 
 	Optional filters: course, status
@@ -377,6 +381,10 @@ def get_instructor_assignments(course=None, status=None):
 		filters["course"] = course
 	if status:
 		filters["status"] = status
+	if academic_year:
+		filters["academic_year"] = academic_year
+	if program:
+		filters["program"] = program
 
 	assignments = frappe.get_all(
 		"Assignment",
@@ -385,6 +393,8 @@ def get_instructor_assignments(course=None, status=None):
 			"name",
 			"title",
 			"course",
+			"program",
+			"academic_year",
 			"topic",
 			"instructor",
 			"due_date",
@@ -394,8 +404,9 @@ def get_instructor_assignments(course=None, status=None):
 			"published_on",
 			"description",
 			"assignment_file",
+			"creation",
 		],
-		order_by="due_date desc",
+		order_by="creation desc",
 	)
 
 	if not assignments:
@@ -1100,6 +1111,38 @@ def get_instructor_courses():
 			courses.append({"name": m.course, "course_name": course_name, "program": m.program})
 
 	return courses
+
+
+@frappe.whitelist()
+def get_instructor_programs():
+	"""Get programs the logged-in instructor teaches."""
+	instructor = _get_instructor_for_user()
+	if not instructor:
+		return []
+
+	mappings = frappe.get_all(
+		"Instructor Course Mapping",
+		filters={"parent": instructor.name, "parenttype": "Instructor"},
+		fields=["program"],
+		distinct=1
+	)
+	
+	program_names = [m.program for m in mappings if m.program]
+	if not program_names:
+		return []
+
+	return frappe.get_all(
+		"Program",
+		filters={"name": ["in", program_names]},
+		fields=["name", "program_name"],
+		ignore_permissions=True
+	)
+
+
+@frappe.whitelist()
+def get_instructor_academic_years():
+	"""Get all active academic years."""
+	return frappe.get_all("Academic Year", fields=["name", "academic_year_name"], order_by="year_start_date desc", ignore_permissions=True)
 
 
 @frappe.whitelist()

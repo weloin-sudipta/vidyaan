@@ -22,6 +22,11 @@
             <span class="hidden sm:inline">New Assignment</span>
             <span class="sm:hidden">New</span>
           </button>
+          <NuxtLink to="/teacher/academics/assignments/history">
+            <button class="bg-slate-200 dark:bg-slate-700 text-slate-700 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-600 px-4 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all">
+              History
+            </button>
+          </NuxtLink>
         </div>
       </HeroHeader>
 
@@ -219,6 +224,30 @@
                   class="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-sm font-bold focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all dark:text-white">
                   <option value="" disabled>Select Course</option>
                   <option v-for="c in courses" :key="c.name" :value="c.name">{{ c.course_name }}</option>
+                </select>
+              </div>
+
+              <div>
+                <label class="block text-xs font-black uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-2">
+                  Program <span class="text-slate-400 text-[10px] font-normal">(optional)</span>
+                </label>
+                <select v-model="form.program"
+                  class="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-sm font-bold focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all dark:text-white">
+                  <option value="">None</option>
+                  <option v-for="p in programs" :key="p.name" :value="p.name">{{ p.program_name }}</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="block text-xs font-black uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-2">
+                  Academic Year <span class="text-slate-400 text-[10px] font-normal">(optional)</span>
+                </label>
+                <select v-model="form.academic_year"
+                  class="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-sm font-bold focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all dark:text-white">
+                  <option value="">None</option>
+                  <option v-for="y in academicYears" :key="y.name" :value="y.name">{{ y.academic_year_name }}</option>
                 </select>
               </div>
 
@@ -562,12 +591,16 @@ const { confirm, setLoading: setConfirmLoading } = useConfirm()
 const {
   courses,
   studentGroups,
+  academicYears,
+  programs,
   assignments,
   currentAssignment,
   loading,
   error,
   fetchCourses,
   fetchStudentGroups,
+  fetchAcademicYears,
+  fetchPrograms,
   fetchAssignments,
   fetchAssignmentDetail,
   createAssignment,
@@ -602,6 +635,8 @@ const editingAssignment = ref(null)
 const form = ref({
   title: '',
   course: '',
+  program: '',
+  academic_year: '',
   topic: '',
   due_date: '',
   max_score: 100,
@@ -622,13 +657,22 @@ const gradingSubmission = ref(null)
 const gradeInput = ref(0)
 const remarksInput = ref('')
 
+const currentAcademicYear = ref('')
+
 onMounted(async () => {
-  await fetchCourses()
+  const { $frappe } = useNuxtApp()
+  currentAcademicYear.value = $frappe?.boot?.default_academic_year || ''
+
+  await Promise.all([
+    fetchCourses(),
+    fetchAcademicYears(),
+    fetchPrograms()
+  ])
   await loadAssignments()
 })
 
 const loadAssignments = async () => {
-  await fetchAssignments(selectedCourse.value || null)
+  await fetchAssignments(selectedCourse.value || null, null, currentAcademicYear.value || null)
 }
 
 const loadGroups = async () => {
@@ -644,6 +688,8 @@ const resetForm = () => {
   form.value = {
     title: '',
     course: '',
+    program: '',
+    academic_year: '',
     topic: '',
     due_date: '',
     max_score: 100,
@@ -670,6 +716,8 @@ const openEditModal = async (assignment) => {
   // Pre-fill from the list item (full detail has target_groups)
   form.value.title = assignment.title
   form.value.course = assignment.course
+  form.value.program = assignment.program || ''
+  form.value.academic_year = assignment.academic_year || ''
   form.value.topic = assignment.topic || ''
   form.value.due_date = assignment.due_date
   form.value.max_score = assignment.max_score

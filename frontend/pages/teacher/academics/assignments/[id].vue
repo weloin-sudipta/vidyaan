@@ -11,7 +11,7 @@
           </NuxtLink>
           <div class="flex items-center gap-3">
             <h1 class="text-3xl font-black text-slate-800 dark:text-white">{{ assignment?.title || 'Loading...' }}</h1>
-            <span v-if="assignment" :class="statusBadgeClass(assignment.status)" class="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border">
+            <span v-if="assignment" :class="statusBadgeClass(assignment.status || '')" class="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest border">
               {{ assignment.status }}
             </span>
           </div>
@@ -148,7 +148,7 @@
                 <i class="fa fa-spinner fa-spin text-indigo-500 text-2xl"></i>
               </div>
               <AssignmentChat 
-                :messages="assignment.messages || []" 
+                :messages="assignment?.messages || []" 
                 :sending="sendingComment"
                 @send="postComment"
                 @refresh="loadData(selectedStudent.student)"
@@ -218,6 +218,7 @@ import { useToast } from '~/composables/ui/useToast'
 import { useConfirm } from '~/composables/ui/useConfirm'
 
 const route = useRoute()
+const config = useRuntimeConfig()
 const assignmentId = route.params.id as string
 const { addToast } = useToast()
 const { confirm } = useConfirm()
@@ -288,7 +289,7 @@ const postComment = async (content: string) => {
   sendingComment.value = true
   try {
     const res = await addComment(assignmentId, content, selectedStudent.value.student)
-    if (res?.success) {
+    if (res?.success && assignment.value) {
       if (!assignment.value.messages) assignment.value.messages = []
       assignment.value.messages.push(res.comment)
     }
@@ -322,7 +323,7 @@ const submitGrade = async () => {
       showGradeModal.value = false
       await loadData(selectedStudent.value.student)
     } else if (res && 'error' in res) {
-      addToast(res.error, 'error')
+      addToast(String(res.error), 'error')
     }
   } finally {
     grading.value = false
@@ -360,7 +361,6 @@ const formatDateTime = (d: string) => d ? new Date(d).toLocaleString('en-US', { 
 const getFileUrl = (path: string) => {
   if (!path) return ''
   if (path.startsWith('http')) return path
-  const config = useRuntimeConfig()
   return `${config.public.apiBaseUrl}${path}`
 }
 </script>

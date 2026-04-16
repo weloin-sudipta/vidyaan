@@ -33,8 +33,8 @@
 
         <!-- STATUS BADGE -->
         <span class="text-[9px] font-black uppercase tracking-widest px-2 py-1 rounded-full flex-shrink-0"
-          :class="getStatusBadgeClass(assignment.status)">
-          {{ assignment.status || 'Pending' }}
+          :class="getStatusBadgeClass(assignment.calculated_status)">
+          {{ assignment.calculated_status || 'Pending' }}
         </span>
 
       </div>
@@ -71,10 +71,11 @@ const getDotColor = (status) => {
 
 const getStatusBadgeClass = (status) => {
   switch ((status || '').toLowerCase()) {
-    case 'submitted': return 'bg-green-100 dark:bg-green-900/20 text-green-600 dark:text-green-400'
-    case 'active': return 'bg-yellow-100 dark:bg-yellow-900/20 text-yellow-600 dark:text-yellow-400'
-    case 'pending': return 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
-    default: return 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
+    case 'submitted': return 'bg-blue-100 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400'
+    case 'graded':    return 'bg-green-100 dark:bg-green-900/20 text-green-600 dark:text-green-400'
+    case 'overdue':   return 'bg-rose-100 dark:bg-rose-900/20 text-rose-600 dark:text-rose-400'
+    case 'active':    return 'bg-yellow-100 dark:bg-yellow-900/20 text-yellow-600 dark:text-yellow-400'
+    default:          return 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400'
   }
 }
 </script>

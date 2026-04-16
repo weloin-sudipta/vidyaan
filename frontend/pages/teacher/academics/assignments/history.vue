@@ -16,6 +16,16 @@
           </div>
 
           <div class="relative">
+            <i class="fa fa-layer-group absolute left-4 top-1/2 -translate-y-1/2 text-indigo-500 text-xs"></i>
+            <select v-model="selectedProgram" @change="loadAssignments"
+              class="pl-10 pr-8 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold uppercase tracking-wider focus:ring-2 focus:ring-indigo-500 appearance-none outline-none cursor-pointer transition-all hover:border-indigo-300 dark:hover:border-indigo-500">
+              <option value="">All Programs</option>
+              <option v-for="program in programs" :key="program.name" :value="program.name">{{ program.program_name }}</option>
+            </select>
+            <i class="fa fa-chevron-down absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-xs"></i>
+          </div>
+
+          <div class="relative">
             <i class="fa fa-book absolute left-4 top-1/2 -translate-y-1/2 text-indigo-500 text-xs"></i>
             <select v-model="selectedCourse" @change="loadAssignments"
               class="pl-10 pr-8 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold uppercase tracking-wider focus:ring-2 focus:ring-indigo-500 appearance-none outline-none cursor-pointer transition-all hover:border-indigo-300 dark:hover:border-indigo-500">
@@ -235,6 +245,30 @@
                   class="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-sm font-bold focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all dark:text-white">
                   <option value="" disabled>Select Course</option>
                   <option v-for="c in courses" :key="c.name" :value="c.name">{{ c.course_name }}</option>
+                </select>
+              </div>
+
+              <div>
+                <label class="block text-xs font-black uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-2">
+                  Program <span class="text-slate-400 text-[10px] font-normal">(optional)</span>
+                </label>
+                <select v-model="form.program"
+                  class="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-sm font-bold focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all dark:text-white">
+                  <option value="">None</option>
+                  <option v-for="p in programs" :key="p.name" :value="p.name">{{ p.program_name }}</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="block text-xs font-black uppercase tracking-wider text-slate-600 dark:text-slate-400 mb-2">
+                  Academic Year <span class="text-slate-400 text-[10px] font-normal">(optional)</span>
+                </label>
+                <select v-model="form.academic_year"
+                  class="w-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-3 text-sm font-bold focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none transition-all dark:text-white">
+                  <option value="">None</option>
+                  <option v-for="y in academicYears" :key="y.name" :value="y.name">{{ y.academic_year_name }}</option>
                 </select>
               </div>
 
@@ -578,6 +612,7 @@ const { confirm, setLoading: setConfirmLoading } = useConfirm()
 const {
   courses,
   academicYears,
+  programs,
   studentGroups,
   assignments,
   currentAssignment,
@@ -585,6 +620,7 @@ const {
   error,
   fetchCourses,
   fetchAcademicYears,
+  fetchPrograms,
   fetchStudentGroups,
   fetchAssignments,
   fetchAssignmentDetail,
@@ -598,6 +634,7 @@ const {
 
 const selectedCourse = ref('')
 const selectedYear = ref('')
+const selectedProgram = ref('')
 const expandedCard = ref(null)
 const expandedDescription = ref({})
 
@@ -621,6 +658,8 @@ const editingAssignment = ref(null)
 const form = ref({
   title: '',
   course: '',
+  program: '',
+  academic_year: '',
   topic: '',
   due_date: '',
   max_score: 100,
@@ -644,17 +683,18 @@ const remarksInput = ref('')
 onMounted(async () => {
   const { $frappe } = useNuxtApp()
   // Default to system academic year
-  selectedYear.value = $frappe.boot?.default_academic_year || ''
+  selectedYear.value = $frappe?.boot?.default_academic_year || ''
 
   await Promise.all([
     fetchCourses(),
-    fetchAcademicYears()
+    fetchAcademicYears(),
+    fetchPrograms()
   ])
   await loadAssignments()
 })
 
 const loadAssignments = async () => {
-  await fetchAssignments(selectedCourse.value || null, null, selectedYear.value || null)
+  await fetchAssignments(selectedCourse.value || null, null, selectedYear.value || null, selectedProgram.value || null)
 }
 
 const loadGroups = async () => {
@@ -670,6 +710,8 @@ const resetForm = () => {
   form.value = {
     title: '',
     course: '',
+    program: '',
+    academic_year: '',
     topic: '',
     due_date: '',
     max_score: 100,
@@ -696,6 +738,8 @@ const openEditModal = async (assignment) => {
   // Pre-fill from the list item (full detail has target_groups)
   form.value.title = assignment.title
   form.value.course = assignment.course
+  form.value.program = assignment.program || ''
+  form.value.academic_year = assignment.academic_year || ''
   form.value.topic = assignment.topic || ''
   form.value.due_date = assignment.due_date
   form.value.max_score = assignment.max_score

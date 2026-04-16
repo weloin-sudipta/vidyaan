@@ -86,7 +86,7 @@
                    class="bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800 p-6 flex items-center justify-between group hover:shadow-lg transition-all duration-300">
                 <div class="flex items-center gap-6">
                   <div class="w-12 h-12 rounded-2xl bg-slate-50 dark:bg-slate-800 flex items-center justify-center text-slate-400 group-hover:bg-indigo-50 dark:group-hover:bg-indigo-900/40 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
-                    <span class="text-xs font-black">v{{ assignment.all_submissions.length - index }}</span>
+                    <span class="text-xs font-black">v{{ (assignment.all_submissions?.length || 0) - Number(index) }}</span>
                   </div>
                   <div>
                     <p class="text-sm font-bold text-slate-700 dark:text-slate-200">
@@ -251,7 +251,7 @@ const performSubmit = async () => {
         showSubmitModal.value = false
         await loadData()
       } else if (res && 'error' in res) {
-        addToast(res.error, 'error')
+        addToast(String(res.error), 'error')
       }
     }
   } finally {
