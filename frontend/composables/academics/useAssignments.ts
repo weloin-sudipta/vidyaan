@@ -64,6 +64,8 @@ export interface UseAssignmentsReturn {
     submissionText?: string | null
   ) => Promise<SubmitAssignmentReturn>
   addComment: (name: string, content: string) => Promise<{ success: boolean; comment: any } | undefined>
+  updateComment: (commentName: string, content: string) => Promise<{ success: boolean; content: string } | undefined>
+  deleteComment: (commentName: string) => Promise<{ success: boolean } | undefined>
   uploadFile: (file: File) => Promise<UploadFileReturn>
 }
 
@@ -120,6 +122,30 @@ export const useAssignments = (): UseAssignmentsReturn => {
     }
   }
 
+  const updateComment = async (commentName: string, content: string) => {
+    try {
+      const res = await call<{ success: boolean; content: string }>(
+        'vidyaan.api_folder.assignments.update_assignment_comment',
+        { comment_name: commentName, content }
+      )
+      return res
+    } catch (err) {
+      error.value = (err as Error).message ?? 'Failed to update comment'
+    }
+  }
+
+  const deleteComment = async (commentName: string) => {
+    try {
+      const res = await call<{ success: boolean }>(
+        'vidyaan.api_folder.assignments.delete_assignment_comment',
+        { comment_name: commentName }
+      )
+      return res
+    } catch (err) {
+      error.value = (err as Error).message ?? 'Failed to delete comment'
+    }
+  }
+
   const submitAssignment = async (
     assignmentName: string,
     submissionFile: string,
@@ -154,5 +180,5 @@ export const useAssignments = (): UseAssignmentsReturn => {
     }
   }
 
-  return { assignments, loading, error, fetchAssignments, fetchAssignmentDetail, addComment, submitAssignment, uploadFile }
+  return { assignments, loading, error, fetchAssignments, fetchAssignmentDetail, addComment, updateComment, deleteComment, submitAssignment, uploadFile }
 }

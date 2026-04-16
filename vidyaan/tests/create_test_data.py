@@ -212,6 +212,67 @@ def _ensure_genders():
     frappe.db.commit()
 
 
+def _ensure_uom():
+    """Ensure basic UOMs exist."""
+    print("Ensuring UOMs...")
+    for uom in ["Unit", "Nos", "Each"]:
+        if not frappe.db.exists("UOM", uom):
+            try:
+                frappe.get_doc({
+                    "doctype": "UOM",
+                    "uom_name": uom,
+                    "name": uom
+                }).insert(ignore_permissions=True, ignore_if_duplicate=True)
+            except Exception:
+                pass
+    frappe.db.commit()
+    print("  UOMs ensured.")
+
+
+def _ensure_item_group():
+    """Ensure 'Fee Component' Item Group exists."""
+    print("Ensuring Item Group...")
+    if not frappe.db.exists("Item Group", "Fee Component"):
+        try:
+            # Check for root item group
+            root = frappe.db.get_value("Item Group", {"is_group": 1, "lft": 1}, "name")
+            if not root:
+                # Create a default root if missing
+                root = "All Item Groups"
+                if not frappe.db.exists("Item Group", root):
+                    frappe.get_doc({
+                        "doctype": "Item Group",
+                        "item_group_name": root,
+                        "is_group": 1,
+                        "parent_item_group": ""
+                    }).insert(ignore_permissions=True)
+
+            frappe.get_doc({
+                "doctype": "Item Group",
+                "item_group_name": "Fee Component",
+                "parent_item_group": root,
+                "is_group": 0
+            }).insert(ignore_permissions=True)
+        except Exception as e:
+            print(f"  Warning: Could not create Item Group: {e}")
+    frappe.db.commit()
+    print("  Item Groups ensured.")
+
+
+def _ensure_income_account():
+    """Ensure a default income account exists or set one."""
+    # This is often needed by Fee Category -> Item logic
+    account = frappe.db.get_value("Account", {"account_type": "Income Account", "company": COMPANY_NAME}, "name")
+    if not account:
+        # Try to find any income account
+        account = frappe.db.get_value("Account", {"root_type": "Income", "company": COMPANY_NAME, "is_group": 0}, "name")
+
+    if account:
+        # Optionally set it on the Item Group if needed, but for now we just want to know it exists
+        pass
+    return account
+
+
 def create_company():
     """Create the demo school company."""
     print("Creating Company...")
@@ -1027,11 +1088,38 @@ def create_fee_structure_and_fees(students):
 
     # Fee categories
     for cat_name in ["Tuition Fee", "Library Fee", "Lab Fee", "Transport Fee", "Activity Fee"]:
+        # Pre-create Item to avoid MandatoryError: stock_uom in Education app's Fee Category logic
+        if not frappe.db.exists("Item", cat_name):
+            try:
+                # Ensure UOM exists again just in case
+                stock_uom = "Unit"
+                if not frappe.db.exists("UOM", stock_uom):
+                    frappe.get_doc({"doctype": "UOM", "uom_name": stock_uom, "name": stock_uom}).insert(ignore_permissions=True)
+
+                item = frappe.get_doc({
+                    "doctype": "Item",
+                    "item_code": cat_name,
+                    "item_name": cat_name,
+                    "item_group": "Fee Component",
+                    "is_sales_item": 1,
+                    "is_service_item": 1,
+                    "is_stock_item": 0,
+                    "stock_uom": stock_uom
+                })
+                item.insert(ignore_permissions=True)
+                frappe.db.commit()  # Commit each item to be sure
+            except Exception as e:
+                print(f"  Warning: Could not pre-create Item {cat_name}: {e}")
+
         if not frappe.db.exists("Fee Category", cat_name):
-            frappe.get_doc({
-                "doctype": "Fee Category",
-                "category_name": cat_name,
-            }).insert(ignore_permissions=True, ignore_if_duplicate=True)
+            try:
+                frappe.get_doc({
+                    "doctype": "Fee Category",
+                    "category_name": cat_name,
+                }).insert(ignore_permissions=True, ignore_if_duplicate=True)
+                frappe.db.commit()
+            except Exception as e:
+                print(f"  Error creating Fee Category {cat_name}: {e}")
 
     # Fee structure
     for prog in PROGRAMS[:6]:
@@ -1719,6 +1807,8 @@ def create_all(fresh=True):
     programs = create_programs()
     rooms = create_rooms()
     _ensure_genders()
+    _ensure_uom()
+    _ensure_item_group()
     instructors = create_instructors()
 
     # People

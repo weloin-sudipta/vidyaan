@@ -138,6 +138,8 @@
             :messages="assignment.messages || []" 
             :sending="sendingComment"
             @send="postComment"
+            @update="handleUpdateComment"
+            @delete="handleDeleteComment"
             @refresh="loadData"
             class="flex-1"
           />
@@ -188,12 +190,14 @@ import { useAssignments } from '~/composables/academics/useAssignments'
 import AssignmentChat from '~/components/academics/AssignmentChat.vue'
 import AppModal from '~/components/ui/AppModal.vue'
 import { useToast } from '~/composables/ui/useToast'
+import { useConfirm } from '~/composables/ui/useConfirm'
 
 const route = useRoute()
 const assignmentId = route.params.id as string
 const { addToast } = useToast()
+const { confirm } = useConfirm()
 
-const { fetchAssignmentDetail, addComment, submitAssignment, uploadFile, loading, error } = useAssignments()
+const { fetchAssignmentDetail, addComment, updateComment, deleteComment, submitAssignment, uploadFile, loading, error } = useAssignments()
 
 const assignment = ref<any>(null)
 const sendingComment = ref(false)
@@ -227,6 +231,30 @@ const postComment = async (content: string) => {
     }
   } finally {
     sendingComment.value = false
+  }
+}
+
+const handleUpdateComment = async (id: string, content: string) => {
+  const res = await updateComment(id, content)
+  if (res?.success) {
+    const msg = assignment.value.messages.find((m: any) => m.id === id)
+    if (msg) msg.content = res.content
+    addToast('Comment updated', 'success')
+  }
+}
+
+const handleDeleteComment = async (id: string) => {
+  const ok = await confirm({
+    title: 'Delete Comment',
+    message: 'Are you sure you want to delete this message?',
+    variant: 'danger'
+  })
+  if (!ok) return
+
+  const res = await deleteComment(id)
+  if (res?.success) {
+    assignment.value.messages = assignment.value.messages.filter((m: any) => m.id !== id)
+    addToast('Comment deleted', 'success')
   }
 }
 

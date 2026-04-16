@@ -137,6 +137,8 @@ export interface UseTeacherAssignmentsReturn {
     remarks?: string
   ) => Promise<AssignmentMutationResult>
   addComment: (name: string, content: string, studentId?: string) => Promise<{ success: boolean; comment: any } | undefined>
+  updateComment: (commentName: string, content: string) => Promise<{ success: boolean; content: string } | undefined>
+  deleteComment: (commentName: string) => Promise<{ success: boolean } | undefined>
   requestResubmission: (name: string, studentId: string, message?: string) => Promise<AssignmentMutationResult>
 }
 
@@ -338,6 +340,30 @@ export const useTeacherAssignments = (): UseTeacherAssignmentsReturn => {
     }
   }
 
+  const updateComment = async (commentName: string, content: string) => {
+    try {
+      const res = await call<{ success: boolean; content: string }>(
+        'vidyaan.api_folder.assignments.update_assignment_comment',
+        { comment_name: commentName, content }
+      )
+      return res
+    } catch (err) {
+      error.value = (err as Error).message ?? 'Failed to update comment'
+    }
+  }
+
+  const deleteComment = async (commentName: string) => {
+    try {
+      const res = await call<{ success: boolean }>(
+        'vidyaan.api_folder.assignments.delete_assignment_comment',
+        { comment_name: commentName }
+      )
+      return res
+    } catch (err) {
+      error.value = (err as Error).message ?? 'Failed to delete comment'
+    }
+  }
+
   const requestResubmission = async (name: string, studentId: string, message?: string) => {
     try {
       const res = await call<AssignmentMutationSuccess>(
@@ -372,6 +398,8 @@ export const useTeacherAssignments = (): UseTeacherAssignmentsReturn => {
     closeAssignment,
     gradeSubmission,
     addComment,
+    updateComment,
+    deleteComment,
     requestResubmission,
   }
 }

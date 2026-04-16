@@ -151,6 +151,8 @@
                 :messages="assignment?.messages || []" 
                 :sending="sendingComment"
                 @send="postComment"
+                @update="handleUpdateComment"
+                @delete="handleDeleteComment"
                 @refresh="loadData(selectedStudent.student)"
                 class="flex-1"
               />
@@ -227,6 +229,8 @@ const {
   fetchAssignmentDetail, 
   gradeSubmission, 
   addComment, 
+  updateComment,
+  deleteComment,
   requestResubmission,
   loading, 
   currentAssignment: assignment 
@@ -295,6 +299,30 @@ const postComment = async (content: string) => {
     }
   } finally {
     sendingComment.value = false
+  }
+}
+
+const handleUpdateComment = async (id: string, content: string) => {
+  const res = await updateComment(id, content)
+  if (res?.success && assignment.value) {
+    const msg = assignment.value.messages.find((m: any) => m.id === id)
+    if (msg) msg.content = res.content
+    addToast('Comment updated', 'success')
+  }
+}
+
+const handleDeleteComment = async (id: string) => {
+  const ok = await confirm({
+    title: 'Delete Comment',
+    message: 'Are you sure you want to delete this message?',
+    variant: 'danger'
+  })
+  if (!ok) return
+
+  const res = await deleteComment(id)
+  if (res?.success && assignment.value) {
+    assignment.value.messages = assignment.value.messages.filter((m: any) => m.id !== id)
+    addToast('Comment deleted', 'success')
   }
 }
 

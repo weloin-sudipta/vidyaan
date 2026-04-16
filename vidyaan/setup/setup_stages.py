@@ -96,7 +96,7 @@ def on_setup_complete(args):
 
 	# Log in as the newly created admin
 	admin_email = args.get("admin_email")
-	if admin_email and hasattr(frappe.local, "login_manager"):
+	if admin_email and frappe.db.exists("User", admin_email) and hasattr(frappe.local, "login_manager"):
 		frappe.local.login_manager.login_as(admin_email)
 
 

@@ -676,6 +676,46 @@ def add_assignment_comment(name, content, student_id=None):
 
 
 @frappe.whitelist()
+def update_assignment_comment(comment_name, content):
+	"""Update an existing assignment comment. Only the author can update."""
+	if not comment_name or not content:
+		frappe.throw(_("Comment name and content are required."))
+
+	comment = frappe.get_doc("Comment", comment_name)
+
+	# Security: only the author can update
+	if comment.comment_email != frappe.session.user:
+		frappe.throw(_("You do not have permission to edit this comment."), frappe.PermissionError)
+
+	# Optional: block editing if assignment is closed?
+	# doc = frappe.get_doc("Assignment", comment.reference_name)
+	# if doc.status == "Closed":
+	# 	frappe.throw(_("Assignment is closed. Cannot edit messages."), frappe.ValidationError)
+
+	comment.content = content
+	comment.save(ignore_permissions=True)
+
+	return {"success": True, "content": comment.content}
+
+
+@frappe.whitelist()
+def delete_assignment_comment(comment_name):
+	"""Delete an existing assignment comment. Only the author can delete."""
+	if not comment_name:
+		frappe.throw(_("Comment name is required."))
+
+	comment = frappe.get_doc("Comment", comment_name)
+
+	# Security: only the author can delete
+	if comment.comment_email != frappe.session.user:
+		frappe.throw(_("You do not have permission to delete this comment."), frappe.PermissionError)
+
+	frappe.delete_doc("Comment", comment_name, ignore_permissions=True)
+
+	return {"success": True}
+
+
+@frappe.whitelist()
 def request_resubmission(assignment, student_id, message=None):
 	"""Teacher requests a resubmission for a student."""
 	if not assignment or not student_id:
