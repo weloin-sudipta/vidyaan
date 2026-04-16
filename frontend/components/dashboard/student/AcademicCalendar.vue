@@ -94,12 +94,20 @@ import { useExamination } from '~/composables/academics/useExaminations'
 import { useEvents } from '~/composables/academics/useEvents'
 import { useHolidays } from '~/composables/academics/useHolidays'
 import { useAssignments } from '~/composables/academics/useAssignments'
+import { useTeacherAssignments } from '~/composables/teacher/useTeacherAssignments'
+import { useUserRole, formatDateString } from '~/composables/auth/useUserRole'
 
 // Composables
 const { fetchExams, exams } = useExamination()
 const { loadEvents, events: frappeEvents } = useEvents()
-const { assignments, fetchAssignments } = useAssignments()
 const { holidays, fetchHolidays } = useHolidays()
+const { userRole, isStudent, isTeacher, initialized, refreshUserRole } = useUserRole()
+
+// Conditional assignment loading based on role
+const studentAssignmentsLoader = ref(null)
+const teacherAssignmentsLoader = ref(null)
+const assignments = ref([])
+const assignmentsFetchError = ref(null)
 
 // State
 const today = new Date()
@@ -108,14 +116,20 @@ const currentYear = ref(today.getFullYear())
 const selectedDate = ref(null)
 const selectedEvents = ref([])
 
-// Helper
+// Helper - normalize dates and format events
 const formatEvents = (items, type, icon, dateField = 'date') => 
-  (items.value || []).map(item => ({
-    date: item[dateField],
-    title: item.title || item.subject,
-    type,
-    icon
-  }))
+  (items.value || [])
+    .map(item => {
+      const rawDate = item[dateField]
+      const normalizedDate = formatDateString(rawDate)
+      return {
+        date: normalizedDate,
+        title: item.title || item.subject,
+        type,
+        icon
+      }
+    })
+    .filter(e => e.date !== null) // Remove events with invalid dates
 
 // Events
 const examEvents = computed(() => formatEvents(exams, 'exam', 'fa fa-pencil', 'date'))
@@ -202,11 +216,59 @@ const getTypeStyles = (type) => {
 }
 
 // Lifecycle
-onMounted(() => {
-  fetchExams()
-  loadEvents()
-  fetchAssignments()
-  fetchHolidays(currentYear.value)
+onMounted(async () => {
+  try {
+    // Load common events first (no role dependency)
+    await fetchExams()
+    loadEvents()
+    await fetchHolidays(currentYear.value)
+
+    // Wait for role detection if not already initialized
+    if (!initialized.value) {
+      console.log('[AcademicCalendar] Waiting for role detection...')
+      // Give role detection a moment, check every 100ms for up to 5 seconds
+      let waitCount = 0
+      while (!initialized.value && waitCount < 50) {
+        await new Promise(resolve => setTimeout(resolve, 100))
+        waitCount++
+      }
+      if (!initialized.value) {
+        console.warn('[AcademicCalendar] Role detection timeout, defaulting to student')
+      }
+    }
+
+    console.log('[AcademicCalendar] Detected role:', userRole.value)
+
+    // Load assignments based on detected role
+    if (isStudent.value) {
+      try {
+        const studentComposable = useAssignments()
+        await studentComposable.fetchAssignments()
+        assignments.value = studentComposable.assignments?.value || []
+        console.log('[AcademicCalendar] Loaded student assignments:', assignments.value)
+      } catch (err) {
+        console.warn('[AcademicCalendar] Failed to load student assignments:', err)
+        assignmentsFetchError.value = 'Could not load assignments'
+        assignments.value = []
+      }
+    } else if (isTeacher.value) {
+      try {
+        const teacherComposable = useTeacherAssignments()
+        await teacherComposable.fetchAssignments() // Get all teacher assignments
+        assignments.value = teacherComposable.assignments?.value || []
+        console.log('[AcademicCalendar] Loaded teacher assignments:', assignments.value)
+      } catch (err) {
+        console.warn('[AcademicCalendar] Failed to load teacher assignments:', err)
+        assignmentsFetchError.value = 'Could not load assignments'
+        assignments.value = []
+      }
+    } else {
+      console.warn('[AcademicCalendar] Unknown role:', userRole.value, ' - skipping assignments')
+      assignments.value = []
+    }
+  } catch (err) {
+    console.error('[AcademicCalendar] Error in lifecycle hook:', err)
+  }
 })
 
 watch(currentYear, (year) => fetchHolidays(year))
