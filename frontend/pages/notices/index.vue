@@ -228,7 +228,19 @@ import { useNotices } from '~/composables/academics/useNotices'
 const router = useRouter()
 const loading = ref(true)
 
+const config = useRuntimeConfig()
 const { pinNotices, tags, news, topics, selectedTag, filteredNotices, fetchNotices } = useNotices()
+
+const getFileUrl = (filePath, isDownload = false) => {
+  if (!filePath) return ''
+  if (filePath.startsWith('http')) return filePath
+
+  if (isDownload) {
+    return `${config.public.apiBaseUrl}/api/method/frappe.utils.file_manager.download_file?file_url=${encodeURIComponent(filePath)}`
+  }
+
+  return `${config.public.apiBaseUrl}${filePath}`
+}
 
 const currentIndex = ref(0)
 const progressBarWidth = ref(0)
