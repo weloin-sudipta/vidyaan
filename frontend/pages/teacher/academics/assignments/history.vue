@@ -6,6 +6,16 @@
       <HeroHeader title="Assignment Hub" subtitle="Create, Manage & Grade Student Assignments" icon="fa fa-layer-group">
         <div class="flex flex-wrap items-center gap-3">
           <div class="relative">
+            <i class="fa fa-calendar absolute left-4 top-1/2 -translate-y-1/2 text-indigo-500 text-xs"></i>
+            <select v-model="selectedYear" @change="loadAssignments"
+              class="pl-10 pr-8 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold uppercase tracking-wider focus:ring-2 focus:ring-indigo-500 appearance-none outline-none cursor-pointer transition-all hover:border-indigo-300 dark:hover:border-indigo-500">
+              <option value="">All Years</option>
+              <option v-for="year in academicYears" :key="year.name" :value="year.name">{{ year.academic_year_name }}</option>
+            </select>
+            <i class="fa fa-chevron-down absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-xs"></i>
+          </div>
+
+          <div class="relative">
             <i class="fa fa-book absolute left-4 top-1/2 -translate-y-1/2 text-indigo-500 text-xs"></i>
             <select v-model="selectedCourse" @change="loadAssignments"
               class="pl-10 pr-8 py-2.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-xs font-bold uppercase tracking-wider focus:ring-2 focus:ring-indigo-500 appearance-none outline-none cursor-pointer transition-all hover:border-indigo-300 dark:hover:border-indigo-500">
@@ -14,6 +24,12 @@
             </select>
             <i class="fa fa-chevron-down absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-xs"></i>
           </div>
+
+          <NuxtLink to="/teacher/academics/assignments/history"
+            class="group bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 px-5 py-2.5 rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-slate-200 dark:hover:bg-slate-700 transition-all flex items-center gap-2 whitespace-nowrap">
+            <i class="fa fa-history text-indigo-500 group-hover:rotate-[-20deg] transition-transform"></i>
+            <span>History</span>
+          </NuxtLink>
 
           <button @click="openCreateModal"
             :disabled="courses.length === 0"
@@ -561,12 +577,14 @@ const { confirm, setLoading: setConfirmLoading } = useConfirm()
 
 const {
   courses,
+  academicYears,
   studentGroups,
   assignments,
   currentAssignment,
   loading,
   error,
   fetchCourses,
+  fetchAcademicYears,
   fetchStudentGroups,
   fetchAssignments,
   fetchAssignmentDetail,
@@ -579,6 +597,7 @@ const {
 } = useTeacherAssignments()
 
 const selectedCourse = ref('')
+const selectedYear = ref('')
 const expandedCard = ref(null)
 const expandedDescription = ref({})
 
@@ -623,12 +642,19 @@ const gradeInput = ref(0)
 const remarksInput = ref('')
 
 onMounted(async () => {
-  await fetchCourses()
+  const { $frappe } = useNuxtApp()
+  // Default to system academic year
+  selectedYear.value = $frappe.boot?.default_academic_year || ''
+
+  await Promise.all([
+    fetchCourses(),
+    fetchAcademicYears()
+  ])
   await loadAssignments()
 })
 
 const loadAssignments = async () => {
-  await fetchAssignments(selectedCourse.value || null)
+  await fetchAssignments(selectedCourse.value || null, null, selectedYear.value || null)
 }
 
 const loadGroups = async () => {

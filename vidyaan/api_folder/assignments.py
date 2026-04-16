@@ -41,6 +41,78 @@ def _check_instructor_owns(assignment_doc, instructor):
 		)
 
 
+def _validate_comment_access(doc, student_id=None):
+	"""Validate that the current user has permission to comment on this assignment.
+
+	- Teachers: Must own the assignment.
+	- Students: Must be enrolled in the assignment and only access their own thread.
+	            Cannot comment if assignment is Closed.
+	"""
+	instructor = _get_instructor_for_user()
+	student = _get_student_for_user()
+
+	if instructor:
+		_check_instructor_owns(doc, instructor)
+		return instructor
+
+	if student:
+		# Check enrollment in the doc.submissions child table
+		enrolled = False
+		for s in doc.submissions or []:
+			if s.student == student.name:
+				enrolled = True
+				break
+
+		if not enrolled:
+			frappe.throw(_("You are not enrolled in this assignment."), frappe.PermissionError)
+
+		if student_id and student_id != student.name:
+			frappe.throw(_("You can only access your own conversation."), frappe.PermissionError)
+
+		if doc.status == "Closed":
+			frappe.throw(_("Assignment is closed. No more messages allowed."), frappe.ValidationError)
+
+		return student
+
+	frappe.throw(_("You do not have permission to access these messages."), frappe.PermissionError)
+
+
+def _validate_comment_access(doc, student_id=None):
+	"""Validate that the current user has permission to comment on this assignment.
+
+	- Teachers: Must own the assignment.
+	- Students: Must be enrolled in the assignment and only access their own thread.
+	            Cannot comment if assignment is Closed.
+	"""
+	instructor = _get_instructor_for_user()
+	student = _get_student_for_user()
+
+	if instructor:
+		_check_instructor_owns(doc, instructor)
+		return instructor
+
+	if student:
+		# Check enrollment in the doc.submissions child table
+		enrolled = False
+		for s in doc.submissions or []:
+			if s.student == student.name:
+				enrolled = True
+				break
+
+		if not enrolled:
+			frappe.throw(_("You are not enrolled in this assignment."), frappe.PermissionError)
+
+		if student_id and student_id != student.name:
+			frappe.throw(_("You can only access your own conversation."), frappe.PermissionError)
+
+		if doc.status == "Closed":
+			frappe.throw(_("Assignment is closed. No more messages allowed."), frappe.ValidationError)
+
+		return student
+
+	frappe.throw(_("You do not have permission to access these messages."), frappe.PermissionError)
+
+
 def _resolve_target_groups(assign_to, student_groups_list, course, instructor):
 	"""Return a validated list of Student Group names for the assignment.
 
@@ -519,21 +591,27 @@ def get_assignment_detail(name=None):
 
 	# Get Assignment Comments (Messaging)
 	# We use a unique reference name to keep student-teacher chats private per student
-	msg_ref = name
-	student_id_for_msg = frappe.form_dict.get("student_id")
+	# Step 4: Validate access
+	_validate_comment_access(doc, student_id_context)
 
+	msg_filters = {
+		"reference_doctype": "Assignment",
+		"reference_name": name,
+		"comment_type": "Comment"
+	}
+
+	# Identify the private thread via 'subject'
 	if student:
-		# Student session: always use student-specific reference
-		msg_ref = f"{name}-{student.name}"
-	elif instructor:
-		# Instructor session: use student_id if provided, otherwise use general reference
-		if student_id_for_msg:
-			msg_ref = f"{name}-{student_id_for_msg}"
-		# else keeps msg_ref as name (general thread)
+		msg_filters["subject"] = student.name
+	elif instructor and student_id_context:
+		msg_filters["subject"] = student_id_context
+	else:
+		# General thread (no subject)
+		msg_filters["subject"] = ["in", [None, "", "_general_"]]
 
 	comments = frappe.get_all(
 		"Comment",
-		filters={"reference_doctype": "Assignment", "reference_name": msg_ref, "comment_type": "Comment"},
+		filters=msg_filters,
 		fields=["name", "content", "comment_by", "creation", "comment_email"],
 		order_by="creation asc",
 		ignore_permissions=True,
@@ -566,6 +644,9 @@ def add_assignment_comment(name, content, student_id=None):
 	"""Add a message (Comment) to an assignment, possibly student-specific."""
 	if not name or not content:
 		frappe.throw(_("Assignment name and content are required."))
+
+	doc = frappe.get_doc("Assignment", name)
+	_validate_comment_access(doc, student_id)
 
 	# We use the internal helper for consistency
 	comment = _add_private_comment(name, content, student_id)
@@ -618,23 +699,22 @@ def request_resubmission(assignment, student_id, message=None):
 
 def _add_private_comment(name, content, student_id=None):
 	"""Internal helper to add a comment to a student-specific assignment thread."""
-	# If student_id is provided, use it (instructor session).
-	# Otherwise, if session is student, use student-specific reference.
-	msg_ref = name
-	if student_id:
-		msg_ref = f"{name}-{student_id}"
-	else:
+	# We use the real assignment name to avoid LinkValidationError.
+	# The private thread is identified by the 'subject' field.
+	target_student = student_id
+	if not target_student:
 		student = _get_student_for_user()
 		if student:
-			msg_ref = f"{name}-{student.name}"
+			target_student = student.name
 
-	# We manually create the comment to use our custom reference_name
+	# We manually create the comment to use our custom fields
 	comment = frappe.get_doc(
 		{
 			"doctype": "Comment",
 			"comment_type": "Comment",
 			"reference_doctype": "Assignment",
-			"reference_name": msg_ref,
+			"reference_name": name,
+			"subject": target_student or "_general_",
 			"content": content,
 			"comment_by": frappe.session.user,
 			"comment_email": frappe.session.user,
@@ -1453,5 +1533,7 @@ def grade_assignment_legacy(assignment_name=None, score=None, remarks=""):
 	result.total_score = float(score) if score else 0
 	result.comment = remarks
 	result.save()
+
+	return {"success": True, "name": result.name}
 
 	return {"success": True, "name": result.name}

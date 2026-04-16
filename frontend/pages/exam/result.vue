@@ -8,6 +8,11 @@
         :subtitle="`${studentMeta.academic_term || 'Consolidated Result'}`" 
         icon="fa fa-pie-chart"
       >
+        <button @click="$router.push('/exam/history')"
+          class="px-5 py-3 bg-indigo-600 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest shadow-lg hover:bg-indigo-700 flex items-center gap-2">
+          <i class="fa fa-history"></i> History
+        </button>
+
         <!-- <button @click="openDownloadModal('Semester Result')"
           class="px-5 py-3 bg-slate-900 text-white rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-slate-800 flex items-center gap-2">
           <i class="fa fa-file-pdf-o"></i> Result PDF

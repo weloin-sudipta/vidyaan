@@ -103,12 +103,14 @@
    "label": "Approval"
   },
   {
+   "default": "By Role",
    "fieldname": "approval_type",
    "fieldtype": "Select",
    "label": "Approval Type",
    "options": "By Role\nBy User"
   },
   {
+   "default": "Institute Admin",
    "depends_on": "eval:doc.approval_type=='By Role'",
    "fieldname": "approver_role",
    "fieldtype": "Link",

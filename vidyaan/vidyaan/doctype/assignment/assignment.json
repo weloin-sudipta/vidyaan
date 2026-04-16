@@ -1,157 +1,158 @@
 {
- "actions": [],
- "allow_events_in_timeline": 1,
- "autoname": "format:ASN-{YYYY}-{#####}",
- "creation": "2026-04-07 00:00:00.000000",
- "doctype": "DocType",
- "editable_grid": 1,
- "engine": "InnoDB",
- "field_order": [
-  "title",
-  "course",
-  "topic",
-  "instructor",
-  "due_date",
-  "max_score",
-  "assign_to",
-  "status",
-  "published_on",
-  "target_groups",
-  "description",
-  "assignment_file",
-  "submissions"
- ],
- "fields": [
-  {
-   "fieldname": "title",
-   "fieldtype": "Data",
-   "label": "Title",
-   "reqd": 1
-  },
-  {
-   "fieldname": "course",
-   "fieldtype": "Link",
-   "label": "Course",
-   "options": "Course",
-   "reqd": 1
-  },
-  {
-   "fieldname": "topic",
-   "fieldtype": "Link",
-   "label": "Topic",
-   "options": "Topic"
-  },
-  {
-   "fieldname": "instructor",
-   "fieldtype": "Link",
-   "label": "Instructor",
-   "options": "Instructor",
-   "reqd": 1
-  },
-  {
-   "fieldname": "due_date",
-   "fieldtype": "Date",
-   "label": "Due Date",
-   "reqd": 1
-  },
-  {
-   "default": "100",
-   "fieldname": "max_score",
-   "fieldtype": "Float",
-   "label": "Max Score",
-   "reqd": 1
-  },
-  {
-   "default": "All Enrolled",
-   "fieldname": "assign_to",
-   "fieldtype": "Select",
-   "label": "Assign To",
-   "options": "All Enrolled\nSpecific Groups",
-   "reqd": 1
-  },
-  {
-   "default": "Draft",
-   "fieldname": "status",
-   "fieldtype": "Select",
-   "in_list_view": 1,
-   "label": "Status",
-   "options": "Draft\nPublished\nClosed",
-   "reqd": 1
-  },
-  {
-   "fieldname": "published_on",
-   "fieldtype": "Datetime",
-   "label": "Published On",
-   "read_only": 1
-  },
-  {
-   "fieldname": "target_groups",
-   "fieldtype": "Table",
-   "label": "Target Groups",
-   "options": "Assignment Target Group"
-  },
-  {
-   "fieldname": "description",
-   "fieldtype": "Text Editor",
-   "label": "Description"
-  },
-  {
-   "fieldname": "assignment_file",
-   "fieldtype": "Attach",
-   "label": "Assignment File"
-  },
-  {
-   "fieldname": "submissions",
-   "fieldtype": "Table",
-   "label": "Students",
-   "options": "Assignment Student"
-  }
- ],
- "links": [],
- "modified": "2026-04-07 00:00:00.000000",
- "modified_by": "Administrator",
- "module": "Vidyaan",
- "name": "Assignment",
- "owner": "Administrator",
- "permissions": [
-  {
-   "create": 1,
-   "delete": 1,
-   "email": 1,
-   "export": 1,
-   "print": 1,
-   "read": 1,
-   "report": 1,
-   "role": "System Manager",
-   "share": 1,
-   "write": 1
-  },
-  {
-   "create": 1,
-   "delete": 1,
-   "email": 1,
-   "export": 1,
-   "print": 1,
-   "read": 1,
-   "report": 1,
-   "role": "Institute Admin",
-   "share": 1,
-   "write": 1
-  },
-  {
-   "create": 1,
-   "delete": 1,
-   "read": 1,
-   "role": "Instructor",
-   "write": 1
-  },
-  {
-   "read": 1,
-   "role": "Student"
-  }
- ],
- "sort_field": "modified",
- "sort_order": "DESC",
- "states": [],
- "track_changes": 1
+    "actions": [],
+    "allow_comments": 1,
+    "allow_events_in_timeline": 1,
+    "autoname": "format:ASN-{YYYY}-{#####}",
+    "creation": "2026-04-07 00:00:00.000000",
+    "doctype": "DocType",
+    "editable_grid": 1,
+    "engine": "InnoDB",
+    "field_order": [
+        "title",
+        "course",
+        "topic",
+        "instructor",
+        "due_date",
+        "max_score",
+        "assign_to",
+        "status",
+        "published_on",
+        "target_groups",
+        "description",
+        "assignment_file",
+        "submissions"
+    ],
+    "fields": [
+        {
+            "fieldname": "title",
+            "fieldtype": "Data",
+            "label": "Title",
+            "reqd": 1
+        },
+        {
+            "fieldname": "course",
+            "fieldtype": "Link",
+            "label": "Course",
+            "options": "Course",
+            "reqd": 1
+        },
+        {
+            "fieldname": "topic",
+            "fieldtype": "Link",
+            "label": "Topic",
+            "options": "Topic"
+        },
+        {
+            "fieldname": "instructor",
+            "fieldtype": "Link",
+            "label": "Instructor",
+            "options": "Instructor",
+            "reqd": 1
+        },
+        {
+            "fieldname": "due_date",
+            "fieldtype": "Date",
+            "label": "Due Date",
+            "reqd": 1
+        },
+        {
+            "default": "100",
+            "fieldname": "max_score",
+            "fieldtype": "Float",
+            "label": "Max Score",
+            "reqd": 1
+        },
+        {
+            "default": "All Enrolled",
+            "fieldname": "assign_to",
+            "fieldtype": "Select",
+            "label": "Assign To",
+            "options": "All Enrolled\nSpecific Groups",
+            "reqd": 1
+        },
+        {
+            "default": "Draft",
+            "fieldname": "status",
+            "fieldtype": "Select",
+            "in_list_view": 1,
+            "label": "Status",
+            "options": "Draft\nPublished\nClosed",
+            "reqd": 1
+        },
+        {
+            "fieldname": "published_on",
+            "fieldtype": "Datetime",
+            "label": "Published On",
+            "read_only": 1
+        },
+        {
+            "fieldname": "target_groups",
+            "fieldtype": "Table",
+            "label": "Target Groups",
+            "options": "Assignment Target Group"
+        },
+        {
+            "fieldname": "description",
+            "fieldtype": "Text Editor",
+            "label": "Description"
+        },
+        {
+            "fieldname": "assignment_file",
+            "fieldtype": "Attach",
+            "label": "Assignment File"
+        },
+        {
+            "fieldname": "submissions",
+            "fieldtype": "Table",
+            "label": "Students",
+            "options": "Assignment Student"
+        }
+    ],
+    "links": [],
+    "modified": "2026-04-07 00:00:00.000000",
+    "modified_by": "Administrator",
+    "module": "Vidyaan",
+    "name": "Assignment",
+    "owner": "Administrator",
+    "permissions": [
+        {
+            "create": 1,
+            "delete": 1,
+            "email": 1,
+            "export": 1,
+            "print": 1,
+            "read": 1,
+            "report": 1,
+            "role": "System Manager",
+            "share": 1,
+            "write": 1
+        },
+        {
+            "create": 1,
+            "delete": 1,
+            "email": 1,
+            "export": 1,
+            "print": 1,
+            "read": 1,
+            "report": 1,
+            "role": "Institute Admin",
+            "share": 1,
+            "write": 1
+        },
+        {
+            "create": 1,
+            "delete": 1,
+            "read": 1,
+            "role": "Instructor",
+            "write": 1
+        },
+        {
+            "read": 1,
+            "role": "Student"
+        }
+    ],
+    "sort_field": "modified",
+    "sort_order": "DESC",
+    "states": [],
+    "track_changes": 1
 }

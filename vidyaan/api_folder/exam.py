@@ -56,15 +56,42 @@ def get_exams():
 
 
 @frappe.whitelist()
-def get_results():
-    """Get all assessment results for the logged-in student."""
+def get_results(academic_year=None, course=None, assessment_group=None):
+    """Get all assessment results for the logged-in student.
+
+    Optional filters:
+    - academic_year: Filter by specific academic year (e.g., "2024-2025")
+    - course: Filter by course name
+    - assessment_group: Filter by exam type (e.g., "Midterm", "Final")
+    """
     student = _get_student_for_user()
     if not student:
         return []
 
+    # Build filters
+    filters = {"student": student.name, "docstatus": 1}
+
+    # Validate and apply filters
+    if academic_year:
+        if not frappe.db.exists("Academic Year", academic_year):
+            frappe.throw(_("Academic Year '{0}' not found.").format(academic_year))
+        filters["academic_year"] = academic_year
+
+    if course:
+        if not frappe.db.exists("Course", course):
+            frappe.throw(_("Course '{0}' not found.").format(course))
+        filters["course"] = course
+
+    if assessment_group:
+        # Assessment group is a string field, no need to validate existence
+        # as it might be custom values, but we can check if it's reasonable
+        if len(assessment_group.strip()) == 0:
+            frappe.throw(_("Assessment group cannot be empty."))
+        filters["assessment_group"] = assessment_group
+
     results = frappe.get_all(
         "Assessment Result",
-        filters={"student": student.name, "docstatus": 1},
+        filters=filters,
         fields=[
             "name", "assessment_plan", "student", "student_name",
             "course", "assessment_group", "academic_year", "academic_term",

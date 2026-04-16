@@ -108,6 +108,10 @@
 
                         </div>
 
+                        <div v-if="notice.featured_image" class="w-full h-40 overflow-hidden rounded-2xl mb-4">
+                            <img :src="getFileUrl(notice.featured_image)" class="w-full h-full object-cover" :alt="notice.title">
+                        </div>
+
                         <h3 class="text-xl font-black text-slate-900 dark:text-slate-100 mb-2 transition-colors">
                             {{ notice.title }}
                         </h3>
@@ -138,24 +142,26 @@
                     </h3>
 
                     <div v-for="item in news" :key="item.id"
-                        class="bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800 rounded-[2.5rem] p-6 shadow-sm dark:shadow-none hover:shadow-md dark:hover:shadow-none transition-all border-b-4 border-b-indigo-500">
+                        class="bg-white dark:bg-slate-900 border border-slate-200/60 dark:border-slate-800 rounded-[2.5rem] p-6 shadow-sm dark:shadow-none hover:shadow-md dark:hover:shadow-none transition-all border-b-4 border-b-indigo-500 flex flex-col md:flex-row gap-6">
 
-                        <div class="flex items-center gap-4 mb-3">
-
-                            <div
-                                class="w-10 h-10 bg-slate-50 dark:bg-slate-800 rounded-xl flex items-center justify-center text-indigo-600 dark:text-indigo-400 transition-colors">
-                                <i class="fa fa-newspaper-o"></i>
-                            </div>
-
-                            <h3 class="text-sm font-black text-slate-800 dark:text-slate-200 transition-colors">
-                                {{ item.title }}
-                            </h3>
-
+                        <div v-if="item.featured_image" class="w-full md:w-32 h-32 overflow-hidden rounded-2xl shrink-0">
+                            <img :src="getFileUrl(item.featured_image)" class="w-full h-full object-cover" :alt="item.title">
                         </div>
 
-                        <p class="text-xs text-slate-500">
-                            {{ item.description }}
-                        </p>
+                        <div class="flex-1">
+                            <div class="flex items-center gap-4 mb-3">
+                                <div
+                                    class="w-10 h-10 bg-slate-50 dark:bg-slate-800 rounded-xl flex items-center justify-center text-indigo-600 dark:text-indigo-400 transition-colors">
+                                    <i class="fa fa-newspaper-o"></i>
+                                </div>
+                                <h3 class="text-sm font-black text-slate-800 dark:text-slate-200 transition-colors">
+                                    {{ item.title }}
+                                </h3>
+                            </div>
+                            <p class="text-xs text-slate-500">
+                                {{ item.description }}
+                            </p>
+                        </div>
 
                     </div>
 
@@ -167,7 +173,7 @@
             <div class="lg:col-span-4 space-y-6">
 
                 <!-- TRENDING -->
-                <div class="bg-white dark:bg-slate-900 rounded-[2.5rem] p-8 border border-slate-200/60 dark:border-slate-800 shadow-sm dark:shadow-none transition-colors">
+                <!-- <div class="bg-white dark:bg-slate-900 rounded-[2.5rem] p-8 border border-slate-200/60 dark:border-slate-800 shadow-sm dark:shadow-none transition-colors">
 
                     <h3 class="text-xs font-black uppercase tracking-widest text-slate-400 dark:text-slate-500 mb-6 transition-colors">
                         Trending Topics
@@ -188,7 +194,7 @@
 
                     </div>
 
-                </div>
+                </div> -->
 
                 <!-- SUBMIT NOTICE -->
                 <div class="bg-slate-900 dark:bg-slate-800/50 border border-transparent dark:border-slate-800 rounded-[2.5rem] p-8 text-white transition-colors">

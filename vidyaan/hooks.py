@@ -144,9 +144,9 @@ setup_wizard_complete = "vidyaan.setup.setup_stages.on_setup_complete"
 # ---------------
 # Override standard doctype classes
 
-# override_doctype_class = {
-# 	"ToDo": "custom_app.overrides.CustomToDo"
-# }
+override_doctype_class = {
+	"Assessment Plan": "vidyaan.overrides.assessment_plan.VidyaanAssessmentPlan"
+}
 
 # Document Events
 # ---------------

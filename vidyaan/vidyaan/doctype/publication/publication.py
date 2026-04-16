@@ -48,6 +48,11 @@ class Publication(Document):
         if self.approval_type == "By User" and not self.approver_user:
             frappe.throw("Approver User is required")
 
+        # Validate that approver_user exists if specified
+        if self.approval_type == "By User" and self.approver_user:
+            if not frappe.db.exists("User", self.approver_user):
+                frappe.throw(f"Approver User '{self.approver_user}' does not exist")
+
     # -----------------------------
     # SUBMIT LOGIC
     # -----------------------------
@@ -79,8 +84,11 @@ class Publication(Document):
                 pluck="parent"
             )
 
+            # Filter to only existing users
+            users = [u for u in users if frappe.db.exists("User", u)]
+
             if not users:
-                return
+                frappe.throw(f"No valid users found with role '{self.approver_role}'")
 
             # Get company from Student Group (if applicable)
             company = None
@@ -110,11 +118,16 @@ class Publication(Document):
 
                 users = list(set(permitted_users + system_managers))
 
+            # Filter to only existing users
+            users = [u for u in users if frappe.db.exists("User", u)]
+
             # Final assignment
-            if users:
-                add({
-                    "assign_to": users,
-                    "doctype": self.doctype,
-                    "name": self.name,
-                    "description": f"Action Required: Approve {self.type} - {self.title}"
-                })
+            if not users:
+                frappe.throw(f"No permitted valid users found with role '{self.approver_role}' for the specified company")
+
+            add({
+                "assign_to": users,
+                "doctype": self.doctype,
+                "name": self.name,
+                "description": f"Action Required: Approve {self.type} - {self.title}"
+            })

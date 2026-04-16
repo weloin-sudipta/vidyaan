@@ -41,6 +41,25 @@ export const useExamResults = async (): Promise<ExamResultRecord[] | undefined> 
   return results
 }
 
+export const useFilteredExamResults = async (filters?: {
+  academic_year?: string
+  course?: string
+  assessment_group?: string
+}): Promise<ExamResultRecord[] | undefined> => {
+  const params = new URLSearchParams()
+  if (filters?.academic_year) params.append('academic_year', filters.academic_year)
+  if (filters?.course) params.append('course', filters.course)
+  if (filters?.assessment_group) params.append('assessment_group', filters.assessment_group)
+
+  const url = `vidyaan.api_folder.exam.get_results${params.toString() ? '?' + params.toString() : ''}`
+
+  const resultResource = createResource<ExamResultRecord[]>({
+    url,
+  })
+  const results = await resultResource.submit()
+  return results
+}
+
 export interface UseExaminationReturn {
   loading: Ref<boolean>
   error: Ref<string | null>

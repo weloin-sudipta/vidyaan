@@ -12,6 +12,11 @@
                 class="px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-widest transition-colors">
             {{ detail.category || detail.type }}
           </span>
+
+          <div v-if="detail.featured_image" class="w-full h-80 overflow-hidden rounded-[2.5rem] mb-8">
+            <img :src="getFileUrl(detail.featured_image)" class="w-full h-full object-cover" :alt="detail.title">
+          </div>
+
           <h1 class="text-4xl font-black text-slate-900 dark:text-slate-100 transition-colors">{{ detail.title }}</h1>
           <p class="text-slate-500 dark:text-slate-400 text-lg mt-2 transition-colors">{{ detail.description }}</p>
           <div class="prose dark:prose-invert max-w-none" v-html="detail.content"></div>

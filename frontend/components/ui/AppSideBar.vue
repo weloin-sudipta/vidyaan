@@ -256,6 +256,7 @@ const updateNavItems = () => {
         children: [
           { name: 'Schedule', route: '/exam/schedule' },
           { name: 'Results', route: '/exam/result' },
+          { name: 'History', route: '/exam/history' },
         ]
       },
 

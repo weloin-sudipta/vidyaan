@@ -43,6 +43,10 @@ export default defineNuxtConfig({
         target: `http://localhost:${webserver_port}`,
         changeOrigin: true,
       },
+      '/private/files': {
+        target: `http://localhost:${webserver_port}`,
+        changeOrigin: true,
+      },
     },
   },
 
@@ -58,6 +62,10 @@ export default defineNuxtConfig({
           changeOrigin: true,
         },
         '/files': {
+          target: `http://localhost:${webserver_port}`,
+          changeOrigin: true,
+        },
+        '/private/files': {
           target: `http://localhost:${webserver_port}`,
           changeOrigin: true,
         },
