@@ -54,20 +54,24 @@ export default defineNuxtConfig({
     server: {
       proxy: {
         '/api': {
-          target: `http://localhost:${webserver_port}`,
+          target: `http://127.0.0.1:${webserver_port}`,
           changeOrigin: true,
+          secure: false,
         },
         '/assets': {
-          target: `http://localhost:${webserver_port}`,
+          target: `http://127.0.0.1:${webserver_port}`,
           changeOrigin: true,
+          secure: false,
         },
         '/files': {
-          target: `http://localhost:${webserver_port}`,
+          target: `http://127.0.0.1:${webserver_port}`,
           changeOrigin: true,
+          secure: false,
         },
         '/private/files': {
-          target: `http://localhost:${webserver_port}`,
+          target: `http://127.0.0.1:${webserver_port}`,
           changeOrigin: true,
+          secure: false,
         },
       },
     },

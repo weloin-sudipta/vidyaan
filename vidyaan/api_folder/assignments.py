@@ -662,14 +662,30 @@ def add_assignment_comment(name, content, student_id=None):
 	# We use the internal helper for consistency
 	comment = _add_private_comment(name, content, student_id)
 
+	# Broadcast real-time update
+	comment_data = {
+		"id": comment.name,
+		"content": comment.content,
+		"author": frappe.db.get_value("User", frappe.session.user, "full_name") or frappe.session.user,
+		"author_email": frappe.session.user,
+		"creation": str(comment.creation),
+	}
+	frappe.publish_realtime(
+		"vidyaan:assignment_message",
+		{
+			"action": "add",
+			"assignment": name,
+			"student": student_id or comment.subject,
+			"comment": comment_data,
+		},
+		room=f"doc:Assignment/{name}",
+		after_commit=True,
+	)
+
 	return {
 		"success": True,
 		"comment": {
-			"id": comment.name,
-			"content": comment.content,
-			"author": frappe.db.get_value("User", frappe.session.user, "full_name") or frappe.session.user,
-			"author_email": frappe.session.user,
-			"creation": str(comment.creation),
+			**comment_data,
 			"is_me": True,
 		},
 	}
@@ -695,6 +711,20 @@ def update_assignment_comment(comment_name, content):
 	comment.content = content
 	comment.save(ignore_permissions=True)
 
+	# Broadcast real-time update
+	frappe.publish_realtime(
+		"vidyaan:assignment_message",
+		{
+			"action": "update",
+			"assignment": comment.reference_name,
+			"student": comment.subject,
+			"comment_id": comment_name,
+			"content": content,
+		},
+		room=f"doc:Assignment/{comment.reference_name}",
+		after_commit=True,
+	)
+
 	return {"success": True, "content": comment.content}
 
 
@@ -710,7 +740,23 @@ def delete_assignment_comment(comment_name):
 	if comment.comment_email != frappe.session.user:
 		frappe.throw(_("You do not have permission to delete this comment."), frappe.PermissionError)
 
+	reference_name = comment.reference_name
+	subject = comment.subject
+
 	frappe.delete_doc("Comment", comment_name, ignore_permissions=True)
+
+	# Broadcast real-time update
+	frappe.publish_realtime(
+		"vidyaan:assignment_message",
+		{
+			"action": "delete",
+			"assignment": reference_name,
+			"student": subject,
+			"comment_id": comment_name,
+		},
+		room=f"doc:Assignment/{reference_name}",
+		after_commit=True,
+	)
 
 	return {"success": True}
 

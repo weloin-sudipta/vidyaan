@@ -184,9 +184,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, onUnmounted, computed } from 'vue'
 import { useRoute } from 'nuxt/app'
 import { useAssignments } from '~/composables/academics/useAssignments'
+import { useRealtime } from '~/composables/useRealtime'
+import { useUserProfile } from '~/composables/student/useUserProfile'
 import AssignmentChat from '~/components/academics/AssignmentChat.vue'
 import AppModal from '~/components/ui/AppModal.vue'
 import { useToast } from '~/composables/ui/useToast'
@@ -196,6 +198,8 @@ const route = useRoute()
 const assignmentId = route.params.id as string
 const { addToast } = useToast()
 const { confirm } = useConfirm()
+const { on, off, docSubscribe, docUnsubscribe } = useRealtime()
+const { profileData } = useUserProfile()
 
 const { fetchAssignmentDetail, addComment, updateComment, deleteComment, submitAssignment, uploadFile, loading, error } = useAssignments()
 
@@ -205,12 +209,48 @@ const showSubmitModal = ref(false)
 const selectedFile = ref<File | null>(null)
 const submitting = ref(false)
 
+const setupRealtime = () => {
+  docSubscribe('Assignment', assignmentId)
+  on('vidyaan:assignment_message', handleRealtimeMessage)
+}
+
+const handleRealtimeMessage = (data: any) => {
+  if (!assignment.value || data.assignment !== assignmentId) return
+
+  if (data.action === 'add') {
+    if (!assignment.value.messages) assignment.value.messages = []
+    // Prevent duplicate entries (e.g. from local update)
+    const exists = assignment.value.messages.find((m: any) => m.id === data.comment.id)
+    if (!exists) {
+      assignment.value.messages.push({
+        ...data.comment,
+        is_me: data.comment.author_email === profileData.value.email
+      })
+    }
+  } else if (data.action === 'update') {
+    const msg = assignment.value.messages?.find((m: any) => m.id === data.comment_id)
+    if (msg) msg.content = data.content
+  } else if (data.action === 'delete') {
+    if (assignment.value.messages) {
+      assignment.value.messages = assignment.value.messages.filter((m: any) => m.id !== data.comment_id)
+    }
+  }
+}
+
 const loadData = async () => {
   const res = await fetchAssignmentDetail(assignmentId)
   if (res) assignment.value = res
 }
 
-onMounted(() => loadData())
+onMounted(() => {
+  loadData()
+  setupRealtime()
+})
+
+onUnmounted(() => {
+  docUnsubscribe('Assignment', assignmentId)
+  off('vidyaan:assignment_message', handleRealtimeMessage)
+})
 
 const resubmissionRequested = computed(() => {
   if (!assignment.value?.messages) return false
@@ -227,7 +267,10 @@ const postComment = async (content: string) => {
     const res = await addComment(assignmentId, content)
     if (res?.success) {
       if (!assignment.value.messages) assignment.value.messages = []
-      assignment.value.messages.push(res.comment)
+      const exists = assignment.value.messages.find((m: any) => m.id === res.comment.id)
+      if (!exists) {
+        assignment.value.messages.push(res.comment)
+      }
     }
   } finally {
     sendingComment.value = false
@@ -236,7 +279,7 @@ const postComment = async (content: string) => {
 
 const handleUpdateComment = async (id: string, content: string) => {
   const res = await updateComment(id, content)
-  if (res?.success) {
+  if (res?.success && assignment.value) {
     const msg = assignment.value.messages.find((m: any) => m.id === id)
     if (msg) msg.content = res.content
     addToast('Comment updated', 'success')

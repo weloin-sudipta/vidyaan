@@ -210,9 +210,11 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, onUnmounted, computed } from 'vue'
 import { useRoute } from 'nuxt/app'
 import { useTeacherAssignments } from '~/composables/teacher/useTeacherAssignments'
+import { useRealtime } from '~/composables/useRealtime'
+import { useUserProfile } from '~/composables/student/useUserProfile'
 import AssignmentChat from '~/components/academics/AssignmentChat.vue'
 import AppModal from '~/components/ui/AppModal.vue'
 import UiAvatar from '~/components/ui/UiAvatar.vue'
@@ -224,6 +226,8 @@ const config = useRuntimeConfig()
 const assignmentId = route.params.id as string
 const { addToast } = useToast()
 const { confirm } = useConfirm()
+const { on, off, docSubscribe, docUnsubscribe } = useRealtime()
+const { profileData } = useUserProfile()
 
 const { 
   fetchAssignmentDetail, 
@@ -243,6 +247,36 @@ const showGradeModal = ref(false)
 const grading = ref(false)
 const gradeForm = ref({ score: 0, remarks: '' })
 
+const setupRealtime = () => {
+  docSubscribe('Assignment', assignmentId)
+  on('vidyaan:assignment_message', handleRealtimeMessage)
+}
+
+const handleRealtimeMessage = (data: any) => {
+  if (!assignment.value || data.assignment !== assignmentId) return
+  
+  // Update view only if we are currently looking at the student this message is for
+  if (selectedStudent.value?.student !== data.student) return
+
+  if (data.action === 'add') {
+    if (!assignment.value.messages) assignment.value.messages = []
+    const exists = assignment.value.messages.find((m: any) => m.id === data.comment.id)
+    if (!exists) {
+      assignment.value.messages.push({
+        ...data.comment,
+        is_me: data.comment.author_email === profileData.value.email
+      })
+    }
+  } else if (data.action === 'update') {
+    const msg = assignment.value.messages?.find((m: any) => m.id === data.comment_id)
+    if (msg) msg.content = data.content
+  } else if (data.action === 'delete') {
+    if (assignment.value.messages) {
+      assignment.value.messages = assignment.value.messages.filter((m: any) => m.id !== data.comment_id)
+    }
+  }
+}
+
 const loadData = async (studentId: string | null = null) => {
   if (studentId) {
     chatLoading.value = true
@@ -258,6 +292,12 @@ const loadData = async (studentId: string | null = null) => {
 
 onMounted(() => {
   loadData()
+  setupRealtime()
+})
+
+onUnmounted(() => {
+  docUnsubscribe('Assignment', assignmentId)
+  off('vidyaan:assignment_message', handleRealtimeMessage)
 })
 
 // Overall submissions for the side list
@@ -295,7 +335,10 @@ const postComment = async (content: string) => {
     const res = await addComment(assignmentId, content, selectedStudent.value.student)
     if (res?.success && assignment.value) {
       if (!assignment.value.messages) assignment.value.messages = []
-      assignment.value.messages.push(res.comment)
+      const exists = assignment.value.messages.find((m: any) => m.id === res.comment.id)
+      if (!exists) {
+        assignment.value.messages.push(res.comment)
+      }
     }
   } finally {
     sendingComment.value = false
