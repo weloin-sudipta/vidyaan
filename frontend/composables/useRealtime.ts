@@ -12,7 +12,7 @@ export const useRealtime = () => {
 
     // Connect directly to the socket server on the same hostname as the page.
     // Frappe realtime validates the origin hostname, so the socket host must match.
-    const sitename = 'school.localhost'
+    const sitename = 'mysite.local'
     const socketOrigin = new URL(window.location.origin)
     socketOrigin.port = '9000'
     const socketUrl = `${socketOrigin.origin}/${sitename}`

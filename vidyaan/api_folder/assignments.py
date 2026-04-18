@@ -421,6 +421,24 @@ def get_instructor_assignments(course=None, status=None, academic_year=None, pro
 		):
 			course_names_map[row.name] = row.course_name
 
+	# Resolve program_name in bulk
+	program_names_map = {}
+	program_ids = list({a.program for a in assignments if a.program})
+	if program_ids:
+		for row in frappe.get_all(
+			"Program", filters={"name": ["in", program_ids]}, fields=["name", "program_name"]
+		):
+			program_names_map[row.name] = row.program_name
+
+	# Resolve academic_year_name in bulk
+	academic_year_names_map = {}
+	academic_year_ids = list({a.academic_year for a in assignments if a.academic_year})
+	if academic_year_ids:
+		for row in frappe.get_all(
+			"Academic Year", filters={"name": ["in", academic_year_ids]}, fields=["name", "academic_year_name"]
+		):
+			academic_year_names_map[row.name] = row.academic_year_name
+
 	# Fetch target_groups in bulk
 	assignment_names = [a.name for a in assignments]
 
@@ -450,6 +468,8 @@ def get_instructor_assignments(course=None, status=None, academic_year=None, pro
 
 	for a in assignments:
 		a["course_name"] = course_names_map.get(a.course, a.course)
+		a["program_name"] = program_names_map.get(a.program, a.program) if a.program else None
+		a["academic_year_name"] = academic_year_names_map.get(a.academic_year, a.academic_year) if a.academic_year else None
 		a["target_groups"] = tg_map.get(a.name, [])
 		students = student_map.get(a.name, [])
 		a["student_count"] = len(students)

@@ -210,7 +210,7 @@ const updateNavItems = () => {
           { name: 'Assignments', route: '/teacher/academics/assignments' },
           { name: 'Lesson Planning', route: '/teacher/academics/lesson-planning' },
           { name: 'My Classes', route: '/teacher/academics/my-classes' },
-          { name: 'Assignment History', route: '/teacher/academics/assignments/history' }
+          // { name: 'Assignment History', route: '/teacher/academics/assignments/history' }
         ]
       },
 
@@ -225,6 +225,7 @@ const updateNavItems = () => {
         ]
       },
       { name: 'Applications', icon: 'fa fa-file-pen', route: '/teacher/applications' },
+      { name: 'Library', icon: 'fa fa-book', route: '/library' },
       { name: 'Students', icon: 'fa fa-users', route: '/teacher/students' },
       { name: 'My Profile', icon: 'fa fa-user-circle', route: '/profile' },
     ]

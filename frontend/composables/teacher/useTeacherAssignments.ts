@@ -39,6 +39,10 @@ export interface AssignmentListItem {
   title?: string
   course?: string
   course_name?: string
+  program?: string
+  program_name?: string
+  academic_year?: string
+  academic_year_name?: string
   due_date?: string
   status?: string
   max_score?: number
